@@ -1,0 +1,259 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Darwin 1942 — The Forgotten War That Reshaped Australia</title>
+<style>
+  :root{
+    --sky-blue:#3fa3e8;
+    --red:#c8102e;
+    --white:#ffffff;
+    --dark:#0b1c2c;
+  }
+  *{box-sizing:border-box;margin:0;padding:0;}
+  body{
+    font-family:'Arial Narrow', Arial, sans-serif;
+    background:var(--sky-blue);
+    color:var(--white);
+  }
+  .page{
+    max-width:1536px;
+    margin:0 auto;
+    position:relative;
+  }
+
+  /* NAV */
+  header.nav{
+    position:absolute;
+    top:0;left:0;right:0;
+    display:flex;
+    align-items:center;
+    justify-content:space-between;
+    padding:28px 40px 0;
+    z-index:10;
+  }
+  .brand{
+    line-height:1;
+  }
+  .brand .title{
+    font-family:Arial, sans-serif;
+    font-weight:800;
+    font-size:28px;
+    letter-spacing:1px;
+  }
+  .brand .subtitle{
+    font-size:10px;
+    letter-spacing:3px;
+    margin-top:4px;
+    color:#e8f2fb;
+  }
+  nav ul{
+    list-style:none;
+    display:flex;
+    gap:34px;
+  }
+  nav a{
+    color:var(--white);
+    text-decoration:none;
+    font-size:13px;
+    font-weight:700;
+    letter-spacing:1px;
+  }
+  nav li.active a{
+    color:var(--red);
+    padding-bottom:10px;
+    border-bottom:2px solid var(--red);
+  }
+
+  /* HERO */
+  .hero{
+    position:relative;
+    width:100%;
+    aspect-ratio:1536/1024;
+    background:url('images/background.webp') no-repeat center center;
+    background-size:cover;
+    overflow:hidden;
+  }
+  .hero-tagline{
+    position:absolute;
+    top:15%;
+    left:3%;
+    font-size:1.7vw;
+    font-weight:700;
+    line-height:1.25;
+    text-transform:uppercase;
+    max-width:24%;
+  }
+  .hero-tagline .accent{
+    color:var(--red);
+  }
+  .hero-logo{
+    position:absolute;
+    left:2%;
+    top:26%;
+    width:65%;
+    max-width:950px;
+  }
+  .hero-logo img{
+    width:100%;
+    display:block;
+  }
+
+  /* INFO STRIP */
+  .info-strip{
+    display:grid;
+    grid-template-columns:1fr 1fr 1fr;
+    border:1px solid rgba(255,255,255,0.4);
+    border-top:none;
+  }
+  .info-card{
+    position:relative;
+    min-height:260px;
+    background-size:cover;
+    background-position:center;
+    padding:28px 30px;
+    display:flex;
+    flex-direction:column;
+    justify-content:flex-end;
+    border-right:1px solid rgba(255,255,255,0.4);
+  }
+  .info-card:last-child{border-right:none;}
+  .info-card::before{
+    content:"";
+    position:absolute;
+    inset:0;
+    background:linear-gradient(180deg, rgba(6,20,38,0.35) 0%, rgba(6,20,38,0.85) 100%);
+  }
+  .info-card > *{position:relative;z-index:1;}
+  .info-card h3{
+    font-size:22px;
+    font-weight:800;
+    letter-spacing:1px;
+    margin-bottom:14px;
+  }
+  .info-card p{
+    font-size:14px;
+    line-height:1.5;
+    color:#e6eef5;
+    margin-bottom:20px;
+    max-width:90%;
+  }
+  .btn{
+    display:inline-block;
+    align-self:flex-start;
+    border:1px solid var(--white);
+    color:var(--white);
+    text-decoration:none;
+    font-size:12px;
+    font-weight:700;
+    letter-spacing:1.5px;
+    padding:12px 22px;
+  }
+  .card1{background-image:url('images/card1.webp');}
+  .card2{background-image:url('images/card2.webp');}
+  .card3{background-image:url('images/card3.webp');}
+
+  /* FOOTER */
+  footer{
+    background:var(--sky-blue);
+    padding:22px 40px;
+    display:flex;
+    align-items:center;
+    justify-content:space-between;
+  }
+  .socials{
+    display:flex;
+    gap:14px;
+  }
+  .socials a{
+    width:38px;height:38px;
+    border:1.5px solid var(--white);
+    border-radius:50%;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    color:var(--white);
+    text-decoration:none;
+  }
+  .socials svg{width:18px;height:18px;fill:var(--white);}
+  .copyright{
+    font-size:13px;
+    letter-spacing:0.5px;
+    color:var(--white);
+  }
+  .footer-spacer{width:130px;}
+
+  @media (max-width:900px){
+    nav ul{display:none;}
+    .hero-tagline{font-size:3.2vw;max-width:50%;}
+    .info-strip{grid-template-columns:1fr;}
+    .info-card{border-right:none;border-bottom:1px solid rgba(255,255,255,0.4);}
+    footer{flex-direction:column;gap:14px;}
+    .footer-spacer{display:none;}
+  }
+</style>
+</head>
+<body>
+<div class="page">
+
+  <header class="nav">
+    <div class="brand">
+      <div class="title">DARWIN 1942</div>
+      <div class="subtitle">THE FORGOTTEN WAR THAT RESHAPED AUSTRALIA</div>
+    </div>
+    <nav>
+      <ul>
+        <li class="active"><a href="#">HOME</a></li>
+        <li><a href="#">THE STORY</a></li>
+        <li><a href="#">ABOUT THE FILM</a></li>
+        <li><a href="#">COMMUNITY IMPACT</a></li>
+        <li><a href="#">GET INVOLVED</a></li>
+        <li><a href="#">CONTACT</a></li>
+      </ul>
+    </nav>
+  </header>
+
+  <section class="hero">
+    <div class="hero-tagline">
+      STORIES OF THE<br>
+      VETERANS WHO<br>
+      DEFENDED AUSTRALIA<br>
+      <span class="accent">LEST WE FORGET.</span>
+    </div>
+    <div class="hero-logo">
+      <img src="images/logo.webp" alt="Darwin 1942 — The Forgotten War That Reshaped Australia">
+    </div>
+  </section>
+
+  <section class="info-strip">
+    <div class="info-card card1">
+      <h3>ABOUT THE FILM</h3>
+      <p>DARWIN 1942 is a feature-length documentary honouring the bravery, resilience and enduring spirit of a generation.</p>
+      <a class="btn" href="#">LEARN MORE</a>
+    </div>
+    <div class="info-card card2">
+      <h3>GET INVOLVED</h3>
+      <p>Bring DARWIN 1942 to your community in meaningful ways that inspire connection, conversation and remembrance across schools, community groups and the wider public.</p>
+      <a class="btn" href="#">FIND OUT HOW</a>
+    </div>
+    <div class="info-card card3">
+      <h3>THE BOMBING OF DARWIN</h3>
+      <p>19 February 1942.<br>A day that changed Australia forever.</p>
+      <a class="btn" href="#">EXPLORE THE STORY</a>
+    </div>
+  </section>
+
+  <footer>
+    <div class="socials">
+      <a href="#" aria-label="Facebook"><svg viewBox="0 0 24 24"><path d="M22 12a10 10 0 1 0-11.6 9.9v-7H7.9V12h2.5V9.8c0-2.5 1.5-3.9 3.8-3.9 1.1 0 2.2.2 2.2.2v2.5h-1.3c-1.2 0-1.6.8-1.6 1.6V12h2.8l-.4 2.9h-2.4v7A10 10 0 0 0 22 12Z"/></svg></a>
+      <a href="#" aria-label="Instagram"><svg viewBox="0 0 24 24"><path d="M12 2c2.7 0 3.1 0 4.1.1 1.1 0 1.8.2 2.5.5.7.3 1.2.6 1.8 1.2.6.6.9 1.1 1.2 1.8.3.7.5 1.4.5 2.5.1 1 .1 1.4.1 4.1s0 3.1-.1 4.1c0 1.1-.2 1.8-.5 2.5-.3.7-.6 1.2-1.2 1.8-.6.6-1.1.9-1.8 1.2-.7.3-1.4.5-2.5.5-1 .1-1.4.1-4.1.1s-3.1 0-4.1-.1c-1.1 0-1.8-.2-2.5-.5-.7-.3-1.2-.6-1.8-1.2-.6-.6-.9-1.1-1.2-1.8-.3-.7-.5-1.4-.5-2.5C2 15.1 2 14.7 2 12s0-3.1.1-4.1c0-1.1.2-1.8.5-2.5.3-.7.6-1.2 1.2-1.8.6-.6 1.1-.9 1.8-1.2.7-.3 1.4-.5 2.5-.5C8.9 2 9.3 2 12 2Zm0 5a5 5 0 1 0 0 10 5 5 0 0 0 0-10Zm0 8.2a3.2 3.2 0 1 1 0-6.4 3.2 3.2 0 0 1 0 6.4ZM17.4 6.6a1.2 1.2 0 1 0 0-2.4 1.2 1.2 0 0 0 0 2.4Z"/></svg></a>
+      <a href="#" aria-label="YouTube"><svg viewBox="0 0 24 24"><path d="M23.5 6.2a3 3 0 0 0-2.1-2.1C19.5 3.5 12 3.5 12 3.5s-7.5 0-9.4.6A3 3 0 0 0 .5 6.2 31.6 31.6 0 0 0 0 12a31.6 31.6 0 0 0 .5 5.8 3 3 0 0 0 2.1 2.1c1.9.6 9.4.6 9.4.6s7.5 0 9.4-.6a3 3 0 0 0 2.1-2.1A31.6 31.6 0 0 0 24 12a31.6 31.6 0 0 0-.5-5.8ZM9.6 15.5v-7l6.3 3.5-6.3 3.5Z"/></svg></a>
+    </div>
+    <div class="copyright">© 2025 DARWIN 1942 FILM PTY LTD. ALL RIGHTS RESERVED.</div>
+    <div class="footer-spacer"></div>
+  </footer>
+
+</div>
+</body>
+</html>
