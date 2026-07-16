@@ -14,6 +14,8 @@
     --white:#ffffff;
     --dark:#0b1c2c;
     --heading-font:'Bebas Neue', 'Arial Narrow', Arial, sans-serif;
+    --hero-h:95vh;
+    --strip-h:19vh;
   }
   *{box-sizing:border-box;margin:0;padding:0;}
   body{
@@ -76,16 +78,25 @@
   .hero{
     position:relative;
     width:100vw;
-    height:95vh;
-    background:url('images/background.webp') no-repeat center center;
-    background-size:cover;
+    height:var(--hero-h);
+    background:var(--sky-blue);
     overflow:hidden;
+  }
+  .hero-image{
+    position:absolute;
+    top:0;left:0;
+    width:100%;
+    height:calc(var(--hero-h) - (var(--strip-h) / 2));
+    background:url('images/background.webp') no-repeat top center;
+    background-size:100% auto;
+    overflow:hidden;
+    z-index:0;
   }
   .hero::after{
     content:"";
     position:absolute;
     inset:0;
-    background:linear-gradient(180deg, transparent 30%, var(--sky-blue) 92%);
+    background:linear-gradient(180deg, transparent calc(var(--hero-h) - var(--strip-h)), var(--sky-blue) calc(var(--hero-h) - (var(--strip-h) / 2)));
     pointer-events:none;
     z-index:1;
   }
@@ -129,7 +140,7 @@
   }
   .info-card{
     position:relative;
-    min-height:19vh;
+    min-height:var(--strip-h);
     background-size:cover;
     background-position:center;
     padding:18px 24px;
@@ -212,6 +223,7 @@
   @media (max-width:900px){
     nav ul{display:none;}
     .hero{height:auto;min-height:70vh;}
+    .hero-image{height:100%;background-size:cover;background-position:center;}
     .hero-tagline{font-size:3.2vw;max-width:50%;}
     .info-strip{position:static;grid-template-columns:1fr;border-bottom:1px solid rgba(255,255,255,0.4);}
     .info-card{border-right:none;border-bottom:1px solid rgba(255,255,255,0.4);min-height:auto;padding:24px 30px;}
@@ -241,6 +253,7 @@
   </header>
 
   <section class="hero">
+    <div class="hero-image"></div>
     <div class="hero-tagline">
       STORIES OF THE<br>
       VETERANS WHO<br>
