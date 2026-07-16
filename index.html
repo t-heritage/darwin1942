@@ -141,22 +141,24 @@
   .info-card{
     position:relative;
     min-height:var(--strip-h);
-    background-color:#081524;
-    background-size:auto 100%;
-    background-position:right center;
-    background-repeat:no-repeat;
+    background:#081524;
     padding:32px 36px;
     display:flex;
     flex-direction:column;
     justify-content:flex-end;
+    overflow:hidden;
   }
-  .info-card::before{
-    content:"";
+  .info-card .card-bg{
     position:absolute;
-    inset:0;
-    background:linear-gradient(90deg, rgba(6,20,38,0.95) 0%, rgba(6,20,38,0.8) 35%, rgba(6,20,38,0.25) 70%, rgba(6,20,38,0) 100%);
+    top:0;right:0;
+    height:100%;
+    width:auto;
+    -webkit-mask-image:linear-gradient(90deg, transparent 0%, #000 60%);
+    mask-image:linear-gradient(90deg, transparent 0%, #000 60%);
+    pointer-events:none;
   }
   .info-card > *{position:relative;z-index:1;}
+  .info-card .card-bg{z-index:0;}
   .info-card h3{
     font-family:var(--heading-font);
     font-size:26px;
@@ -183,9 +185,6 @@
     letter-spacing:1.5px;
     padding:12px 22px;
   }
-  .card1{background-image:url('images/card1.webp');}
-  .card2{background-image:url('images/card2.webp');}
-  .card3{background-image:url('images/card3.webp');}
 
   /* FOOTER */
   footer{
@@ -265,17 +264,20 @@
     </div>
 
     <div class="info-strip">
-      <div class="info-card card1">
+      <div class="info-card">
+        <img class="card-bg" src="images/card1.webp" alt="">
         <h3>ABOUT THE FILM</h3>
         <p>DARWIN 1942 is a feature-length documentary honouring the bravery, resilience and enduring spirit of a generation.</p>
         <a class="btn" href="#">LEARN MORE</a>
       </div>
-      <div class="info-card card2">
+      <div class="info-card">
+        <img class="card-bg" src="images/card2.webp" alt="">
         <h3>GET INVOLVED</h3>
         <p>Bring DARWIN 1942 to your community in meaningful ways that inspire connection, conversation and remembrance across schools, community groups and the wider public.</p>
         <a class="btn" href="#">FIND OUT HOW</a>
       </div>
-      <div class="info-card card3">
+      <div class="info-card">
+        <img class="card-bg" src="images/card3.webp" alt="">
         <h3>THE BOMBING OF DARWIN</h3>
         <p>19 February 1942.<br>A day that changed Australia forever.</p>
         <a class="btn" href="#">EXPLORE THE STORY</a>
