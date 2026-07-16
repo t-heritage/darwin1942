@@ -81,24 +81,24 @@
     height:var(--hero-h);
     background:var(--sky-blue);
     overflow:hidden;
+    display:flex;
+    flex-direction:column;
   }
   .hero-image{
-    position:absolute;
-    top:0;left:0;
+    position:relative;
+    flex:1 1 auto;
+    min-height:0;
     width:100%;
-    height:calc(var(--hero-h) - (var(--strip-h) / 2));
-    background:url('images/background.webp') no-repeat top center;
-    background-size:100% auto;
-    overflow:hidden;
+    background:url('images/background.webp') no-repeat center center;
+    background-size:cover;
     z-index:0;
   }
-  .hero::after{
+  .hero-image::after{
     content:"";
     position:absolute;
     inset:0;
-    background:linear-gradient(180deg, transparent calc(var(--hero-h) - var(--strip-h)), var(--sky-blue) calc(var(--hero-h) - (var(--strip-h) / 2)));
+    background:linear-gradient(180deg, transparent 78%, var(--sky-blue) 100%);
     pointer-events:none;
-    z-index:1;
   }
   .hero-tagline{
     position:absolute;
@@ -128,10 +128,10 @@
     display:block;
   }
 
-  /* INFO STRIP (overlaid at the bottom of the hero) */
+  /* INFO STRIP (bottom band of the hero, below the image) */
   .info-strip{
-    position:absolute;
-    left:0;right:0;bottom:0;
+    position:relative;
+    flex:0 0 auto;
     display:grid;
     grid-template-columns:1fr 1fr 1fr;
     border:1px solid rgba(255,255,255,0.4);
