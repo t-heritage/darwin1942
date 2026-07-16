@@ -4,12 +4,16 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Darwin 1942 — The Forgotten War That Reshaped Australia</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&display=swap" rel="stylesheet">
 <style>
   :root{
     --sky-blue:#3fa3e8;
     --red:#c8102e;
     --white:#ffffff;
     --dark:#0b1c2c;
+    --heading-font:'Bebas Neue', 'Arial Narrow', Arial, sans-serif;
   }
   *{box-sizing:border-box;margin:0;padding:0;}
   body{
@@ -37,13 +41,14 @@
     line-height:1;
   }
   .brand .title{
-    font-family:Arial, sans-serif;
-    font-weight:800;
-    font-size:28px;
-    letter-spacing:1px;
+    font-family:var(--heading-font);
+    font-weight:400;
+    font-size:32px;
+    letter-spacing:1.5px;
   }
   .brand .subtitle{
-    font-size:10px;
+    font-family:var(--heading-font);
+    font-size:11px;
     letter-spacing:3px;
     margin-top:4px;
     color:#e8f2fb;
@@ -54,11 +59,12 @@
     gap:34px;
   }
   nav a{
+    font-family:var(--heading-font);
     color:var(--white);
     text-decoration:none;
-    font-size:13px;
-    font-weight:700;
-    letter-spacing:1px;
+    font-size:15px;
+    font-weight:400;
+    letter-spacing:1.5px;
   }
   nav li.active a{
     color:var(--red);
@@ -70,20 +76,30 @@
   .hero{
     position:relative;
     width:100%;
-    aspect-ratio:1536/1024;
+    height:95vh;
     background:url('images/background.webp') no-repeat center center;
     background-size:cover;
     overflow:hidden;
+  }
+  .hero::after{
+    content:"";
+    position:absolute;
+    inset:0;
+    background:linear-gradient(180deg, transparent 35%, var(--sky-blue) 100%);
+    pointer-events:none;
+    z-index:1;
   }
   .hero-tagline{
     position:absolute;
     top:15%;
     left:3%;
-    font-size:1.7vw;
-    font-weight:700;
-    line-height:1.25;
+    font-family:var(--heading-font);
+    font-size:2.1vw;
+    font-weight:400;
+    line-height:1.2;
     text-transform:uppercase;
     max-width:24%;
+    z-index:2;
   }
   .hero-tagline .accent{
     color:var(--red);
@@ -94,6 +110,7 @@
     top:26%;
     width:65%;
     max-width:950px;
+    z-index:2;
   }
   .hero-logo img{
     width:100%;
@@ -127,8 +144,9 @@
   }
   .info-card > *{position:relative;z-index:1;}
   .info-card h3{
-    font-size:22px;
-    font-weight:800;
+    font-family:var(--heading-font);
+    font-size:26px;
+    font-weight:400;
     letter-spacing:1px;
     margin-bottom:14px;
   }
@@ -145,8 +163,9 @@
     border:1px solid var(--white);
     color:var(--white);
     text-decoration:none;
-    font-size:12px;
-    font-weight:700;
+    font-family:var(--heading-font);
+    font-size:14px;
+    font-weight:400;
     letter-spacing:1.5px;
     padding:12px 22px;
   }
@@ -157,7 +176,9 @@
   /* FOOTER */
   footer{
     background:var(--sky-blue);
-    padding:22px 40px;
+    height:5vh;
+    min-height:56px;
+    padding:0 40px;
     display:flex;
     align-items:center;
     justify-content:space-between;
@@ -167,7 +188,7 @@
     gap:14px;
   }
   .socials a{
-    width:38px;height:38px;
+    width:32px;height:32px;
     border:1.5px solid var(--white);
     border-radius:50%;
     display:flex;
@@ -176,9 +197,10 @@
     color:var(--white);
     text-decoration:none;
   }
-  .socials svg{width:18px;height:18px;fill:var(--white);}
+  .socials svg{width:16px;height:16px;fill:var(--white);}
   .copyright{
-    font-size:13px;
+    font-family:var(--heading-font);
+    font-size:14px;
     letter-spacing:0.5px;
     color:var(--white);
   }
