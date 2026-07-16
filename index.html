@@ -102,7 +102,7 @@
   }
   .hero-tagline{
     position:absolute;
-    top:11%;
+    top:14%;
     left:40px;
     font-family:var(--heading-font);
     font-size:1.9vw;
@@ -111,6 +111,7 @@
     text-transform:uppercase;
     max-width:24%;
     z-index:2;
+    filter:drop-shadow(0 10px 14px rgba(4,14,26,0.5)) drop-shadow(0 26px 45px rgba(4,14,26,0.3));
   }
   .hero-tagline .accent{
     color:var(--red);
@@ -118,7 +119,7 @@
   .hero-logo{
     position:absolute;
     left:40px;
-    top:44%;
+    top:55%;
     width:31%;
     max-width:600px;
     z-index:2;
@@ -230,7 +231,7 @@
     nav ul{gap:20px;}
     nav a{font-size:14px;}
     .hero-tagline{left:24px;font-size:2.3vw;max-width:34%;}
-    .hero-logo{left:24px;width:42%;}
+    .hero-logo{left:24px;width:42%;top:auto;bottom:5vh;}
     .info-strip{padding:0 16px;gap:12px;}
     .info-card{padding:26px 28px;}
     .info-card p{max-width:60%;}
@@ -245,7 +246,7 @@
     nav a{font-size:12px;white-space:nowrap;}
     .brand{max-width:220px;}
     .hero-tagline{top:10vh;font-size:3vw;max-width:44%;}
-    .hero-logo{top:32vh;width:56%;}
+    .hero-logo{top:auto;bottom:4vh;width:56%;}
     .info-strip{grid-template-columns:1fr;gap:14px;padding:16px;}
     .info-card{min-height:190px;}
     .info-card p{max-width:55%;}
@@ -259,7 +260,7 @@
     .brand .subtitle{font-size:9px;letter-spacing:2px;}
     .hero-image{min-height:70vh;}
     .hero-tagline{left:20px;top:12vh;font-size:5.5vw;max-width:64%;}
-    .hero-logo{left:20px;top:40vh;width:84%;}
+    .hero-logo{left:20px;top:auto;bottom:4vh;width:84%;}
     .info-strip{padding:14px;}
     .info-card{min-height:200px;padding:22px 22px;}
     .info-card h3{font-size:22px;}
@@ -291,15 +292,16 @@
   </header>
 
   <section class="hero">
-    <div class="hero-image"></div>
-    <div class="hero-tagline">
-      STORIES OF THE<br>
-      VETERANS WHO<br>
-      DEFENDED AUSTRALIA<br>
-      <span class="accent">LEST WE FORGET.</span>
-    </div>
-    <div class="hero-logo">
-      <img src="images/logo.webp" alt="Darwin 1942 — The Forgotten War That Reshaped Australia">
+    <div class="hero-image">
+      <div class="hero-tagline">
+        STORIES OF THE<br>
+        VETERANS WHO<br>
+        DEFENDED AUSTRALIA<br>
+        <span class="accent">LEST WE FORGET.</span>
+      </div>
+      <div class="hero-logo">
+        <img src="images/logo.webp" alt="Darwin 1942 — The Forgotten War That Reshaped Australia">
+      </div>
     </div>
 
     <div class="info-strip">
