@@ -85,7 +85,7 @@
     content:"";
     position:absolute;
     inset:0;
-    background:linear-gradient(180deg, transparent 65%, var(--sky-blue) 100%);
+    background:linear-gradient(180deg, transparent 50%, rgba(8,21,36,0.85) 100%);
     pointer-events:none;
   }
   .hero-tagline{
@@ -120,7 +120,10 @@
 
   /* INFO STRIP */
   .info-strip{
-    position:relative;
+    position:absolute;
+    bottom:0;
+    left:0;
+    right:0;
     display:grid;
     grid-template-columns:1fr 1fr 1fr;
     gap:14px;
@@ -276,7 +279,7 @@
     </nav>
   </header>
 
-  <section class="hero">
+  <section class="hero" style="position:relative;">
     <img class="hero-bg" src="images/background.webp" alt="Darwin 1942 background">
     <div class="hero-tagline">
       STORIES OF THE<br>
@@ -287,9 +290,7 @@
     <div class="hero-logo">
       <img src="images/logo.webp" alt="Darwin 1942 — The Forgotten War That Reshaped Australia">
     </div>
-  </section>
-
-  <div class="info-strip">
+    <div class="info-strip">
     <div class="info-card">
         <img class="card-bg" src="images/card1.webp" alt="">
         <h3>ABOUT THE FILM</h3>
@@ -308,7 +309,8 @@
         <p>19 February 1942.<br>A day that changed Australia forever.</p>
         <a class="btn" href="#">EXPLORE THE STORY</a>
       </div>
-  </div>
+    </div>
+  </section>
 
   <footer>
     <div class="socials">
