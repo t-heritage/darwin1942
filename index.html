@@ -14,7 +14,7 @@
     --white:#ffffff;
     --dark:#0b1c2c;
     --heading-font:'Bebas Neue', 'Arial Narrow', Arial, sans-serif;
-    --hero-h:95vh;
+    --hero-h:76vh;
     --strip-h:19vh;
   }
   *{box-sizing:border-box;margin:0;padding:0;}
@@ -75,26 +75,19 @@
     position:relative;
     width:100vw;
     height:var(--hero-h);
-    background:var(--sky-blue);
+    background:url('images/background.webp') no-repeat center 20%;
+    background-size:110%;
     overflow:hidden;
-    display:flex;
-    flex-direction:column;
   }
-  .hero-image{
-    position:relative;
-    flex:1 1 auto;
-    min-height:0;
-    width:100%;
-    background:url('images/background.webp') no-repeat center 18%;
-    background-size:cover;
-    z-index:0;
-  }
-  .hero-image::after{
+  .hero::after{
     content:"";
     position:absolute;
     inset:0;
-    background:linear-gradient(180deg, transparent 78%, var(--sky-blue) 100%);
+    background:linear-gradient(180deg, transparent 70%, var(--sky-blue) 100%);
     pointer-events:none;
+  }
+  .hero-image{
+    display:none;
   }
   .hero-tagline{
     position:absolute;
@@ -126,10 +119,9 @@
     filter:drop-shadow(0 10px 14px rgba(4,14,26,0.5)) drop-shadow(0 26px 45px rgba(4,14,26,0.3));
   }
 
-  /* INFO STRIP (bottom band of the hero, below the image) */
+  /* INFO STRIP */
   .info-strip{
     position:relative;
-    flex:0 0 auto;
     display:grid;
     grid-template-columns:1fr 1fr 1fr;
     gap:14px;
@@ -235,9 +227,7 @@
 
   /* Tablet portrait */
   @media (max-width:900px){
-    :root{--hero-h:auto;}
-    .hero{height:auto;}
-    .hero-image{min-height:62vh;}
+    :root{--hero-h:62vh;}
     nav ul{flex-wrap:wrap;justify-content:flex-end;gap:10px 18px;}
     nav a{font-size:12px;white-space:nowrap;}
     .brand{max-width:220px;}
@@ -288,20 +278,19 @@
   </header>
 
   <section class="hero">
-    <div class="hero-image">
-      <div class="hero-tagline">
-        STORIES OF THE<br>
-        VETERANS WHO<br>
-        DEFENDED AUSTRALIA<br>
-        <span class="accent">LEST WE FORGET.</span>
-      </div>
-      <div class="hero-logo">
-        <img src="images/logo.webp" alt="Darwin 1942 — The Forgotten War That Reshaped Australia">
-      </div>
+    <div class="hero-tagline">
+      STORIES OF THE<br>
+      VETERANS WHO<br>
+      DEFENDED AUSTRALIA<br>
+      <span class="accent">LEST WE FORGET.</span>
     </div>
+    <div class="hero-logo">
+      <img src="images/logo.webp" alt="Darwin 1942 — The Forgotten War That Reshaped Australia">
+    </div>
+  </section>
 
-    <div class="info-strip">
-      <div class="info-card">
+  <div class="info-strip">
+    <div class="info-card">
         <img class="card-bg" src="images/card1.webp" alt="">
         <h3>ABOUT THE FILM</h3>
         <p>DARWIN 1942 is a feature-length documentary honouring the bravery, resilience and enduring spirit of a generation.</p>
@@ -319,8 +308,7 @@
         <p>19 February 1942.<br>A day that changed Australia forever.</p>
         <a class="btn" href="#">EXPLORE THE STORY</a>
       </div>
-    </div>
-  </section>
+  </div>
 
   <footer>
     <div class="socials">
