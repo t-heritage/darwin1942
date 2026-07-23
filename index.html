@@ -73,25 +73,24 @@
   /* HERO */
   .hero{
     position:relative;
-    width:100vw;
-    height:var(--hero-h);
-    background:url('images/background.webp') no-repeat center 20%;
-    background-size:110%;
+    width:100%;
     overflow:hidden;
+  }
+  .hero-bg{
+    display:block;
+    width:100%;
+    height:auto;
   }
   .hero::after{
     content:"";
     position:absolute;
     inset:0;
-    background:linear-gradient(180deg, transparent 70%, var(--sky-blue) 100%);
+    background:linear-gradient(180deg, transparent 65%, var(--sky-blue) 100%);
     pointer-events:none;
-  }
-  .hero-image{
-    display:none;
   }
   .hero-tagline{
     position:absolute;
-    top:30%;
+    top:38%;
     left:40px;
     font-family:var(--heading-font);
     font-size:1.9vw;
@@ -108,7 +107,7 @@
   .hero-logo{
     position:absolute;
     left:40px;
-    top:55%;
+    top:62%;
     width:31%;
     max-width:600px;
     z-index:2;
@@ -278,6 +277,7 @@
   </header>
 
   <section class="hero">
+    <img class="hero-bg" src="images/background.webp" alt="Darwin 1942 background">
     <div class="hero-tagline">
       STORIES OF THE<br>
       VETERANS WHO<br>
