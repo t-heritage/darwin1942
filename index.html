@@ -22,14 +22,10 @@
     font-family:'Arial Narrow', Arial, sans-serif;
     background:var(--sky-blue);
     color:var(--white);
-    height:100vh;
-    overflow:hidden;
   }
   .page{
     width:100%;
-    height:100vh;
-    display:flex;
-    flex-direction:column;
+    position:relative;
     overflow:hidden;
   }
 
@@ -67,7 +63,6 @@
     font-size:22px;
     font-weight:400;
     letter-spacing:1.5px;
-    text-shadow:0 2px 8px rgba(4,14,26,0.7), 0 4px 18px rgba(4,14,26,0.4);
   }
   nav li.active a{
     color:var(--red);
@@ -78,18 +73,17 @@
   /* HERO */
   .hero{
     position:relative;
-    width:100%;
-    flex:1 1 auto;
-    min-height:0;
-    background:url('images/background.webp') no-repeat center center;
-    background-size:cover;
+    width:100vw;
+    height:var(--hero-h);
+    background:url('images/background.webp') no-repeat center 20%;
+    background-size:110%;
     overflow:hidden;
   }
   .hero::after{
     content:"";
     position:absolute;
     inset:0;
-    background:linear-gradient(180deg, transparent 65%, rgba(11,28,44,0.6) 100%);
+    background:linear-gradient(180deg, transparent 70%, var(--sky-blue) 100%);
     pointer-events:none;
   }
   .hero-image{
@@ -128,7 +122,6 @@
   /* INFO STRIP */
   .info-strip{
     position:relative;
-    flex:0 0 auto;
     display:grid;
     grid-template-columns:1fr 1fr 1fr;
     gap:14px;
@@ -137,8 +130,7 @@
   }
   .info-card{
     position:relative;
-    min-height:0;
-    height:var(--strip-h);
+    min-height:var(--strip-h);
     background:#081524;
     padding:32px 36px;
     display:flex;
@@ -191,7 +183,6 @@
   /* FOOTER */
   footer{
     background:var(--sky-blue);
-    flex:0 0 auto;
     height:5vh;
     min-height:56px;
     padding:0 40px;
@@ -236,7 +227,7 @@
 
   /* Tablet portrait */
   @media (max-width:900px){
-    :root{--strip-h:auto;}
+    :root{--hero-h:62vh;}
     nav ul{flex-wrap:wrap;justify-content:flex-end;gap:10px 18px;}
     nav a{font-size:12px;white-space:nowrap;}
     .brand{max-width:220px;}
