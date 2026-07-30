@@ -76,14 +76,14 @@
   .page-hero-overlay{
     position:absolute;
     inset:0;
-    background:none;
+    background:linear-gradient(180deg, rgba(4,14,26,0.35) 0%, rgba(4,14,26,0.25) 40%, rgba(4,14,26,0.75) 100%);
   }
   .page-hero-content{
     position:relative;
     z-index:2;
     padding:160px 40px 60px;
   }
-  .page-hero-content .date-tag{text-shadow:0 1px 6px rgba(4,14,26,0.9), 0 4px 16px rgba(4,14,26,0.7);
+  .page-hero-content .date-tag{text-shadow:0 2px 8px rgba(4,14,26,0.95), 0 6px 20px rgba(4,14,26,0.85), 0 16px 40px rgba(4,14,26,0.7);
     font-family:var(--heading-font);
     font-size:24px;
     letter-spacing:3px;
@@ -97,9 +97,9 @@
     letter-spacing:2px;
     line-height:1;
     color:var(--white);
-    text-shadow:0 2px 8px rgba(4,14,26,0.9), 0 8px 32px rgba(4,14,26,0.8), 0 24px 64px rgba(4,14,26,0.6);
+    text-shadow:0 2px 8px rgba(4,14,26,0.95), 0 8px 32px rgba(4,14,26,0.9), 0 24px 64px rgba(4,14,26,0.8), 0 40px 80px rgba(4,14,26,0.6);
   }
-  .page-hero-content .hero-sub{text-shadow:0 1px 6px rgba(4,14,26,0.9), 0 4px 16px rgba(4,14,26,0.7);
+  .page-hero-content .hero-sub{text-shadow:0 2px 8px rgba(4,14,26,0.95), 0 6px 20px rgba(4,14,26,0.85), 0 16px 40px rgba(4,14,26,0.7);
     margin-top:18px;
     font-size:18px;
     line-height:1.6;
@@ -193,7 +193,7 @@
     display:block;
     margin-top:14px;
     font-size:14px;
-    color:#7aaac8;
+    color:#ffffff;
     letter-spacing:1px;
     font-style:normal;
   }
@@ -259,7 +259,8 @@
   }
   @media (max-width:640px){
     header.nav{padding:18px 20px 0;}
-    nav ul{display:none;}
+    nav ul{flex-wrap:wrap;gap:10px 16px;}
+    nav a{font-size:11px;}
     .page-hero-content{padding:130px 20px 48px;}
     .content-section{padding:48px 20px;}
     .stats-grid{grid-template-columns:1fr;}
