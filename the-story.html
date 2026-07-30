@@ -270,6 +270,68 @@
     footer{flex-direction:column;gap:14px;padding:18px 20px;}
     .footer-spacer{display:none;}
   }
+
+  /* HAMBURGER */
+  .nav-toggle{
+    display:none;
+    background:none;
+    border:none;
+    color:var(--white);
+    font-size:28px;
+    cursor:pointer;
+    padding:4px 8px;
+    line-height:1;
+    z-index:20;
+  }
+  @media (max-width:768px){
+    .nav-toggle{display:block;}
+    header.nav nav ul{
+      display:none;
+      position:absolute;
+      top:100%;
+      left:0;right:0;
+      background:rgba(8,21,36,0.97);
+      flex-direction:column;
+      gap:0;
+      padding:12px 0 20px;
+      z-index:100;
+    }
+    header.nav nav ul.nav-open{display:flex;}
+    header.nav nav ul li a{
+      display:block;
+      padding:14px 32px;
+      font-size:20px;
+      border-bottom:1px solid rgba(255,255,255,0.07);
+    }
+    header.nav nav ul li.active a{
+      border-bottom:1px solid rgba(255,255,255,0.07);
+      padding-bottom:14px;
+    }
+  }
+
+  @media (max-width:768px){
+    .page-hero{min-height:38vh;}
+    .page-hero-content{padding:110px 20px 40px;}
+    .content-section{padding:44px 20px;}
+    .cta-strip{padding:40px 20px;}
+    .btn,.btn-cta{display:block;width:100%;text-align:center;box-sizing:border-box;}
+    footer{flex-direction:column;gap:12px;padding:18px 20px;text-align:center;}
+    .footer-spacer{display:none;}
+  }
+  @media (max-width:1024px) and (min-width:769px){
+    .page-hero{min-height:44vh;}
+    .page-hero-content{padding:140px 32px 52px;}
+    .content-section{padding:60px 32px;}
+  }
+
+  @media (max-width:768px){
+    .stats-grid{grid-template-columns:1fr;}
+    .quote-block{padding:20px 20px;}
+  }
+  @media (max-width:1024px) and (min-width:769px){
+    .stats-grid{grid-template-columns:1fr 1fr;}
+  }
+
 </style>
 </head>
 <body>
@@ -278,8 +340,9 @@
   <div class="brand">
     <a class="title" href="index.html">DARWIN 1942</a>
   </div>
+  <button class="nav-toggle" id="nav-toggle" aria-label="Toggle navigation" aria-expanded="false">&#9776;</button>
   <nav>
-    <ul>
+    <ul id="nav-menu">
       <li><a href="index.html">HOME</a></li>
       <li class="active"><a href="the-story.html">THE STORY</a></li>
       <li><a href="about-the-film.html">ABOUT THE FILM</a></li>
@@ -385,5 +448,19 @@
   <div class="footer-spacer"></div>
 </footer>
 
+
+<script>
+(function(){
+  var btn = document.getElementById('nav-toggle');
+  var menu = document.getElementById('nav-menu');
+  if(btn && menu){
+    btn.addEventListener('click', function(){
+      var open = menu.classList.toggle('nav-open');
+      btn.setAttribute('aria-expanded', open ? 'true' : 'false');
+      btn.innerHTML = open ? '&#x2715;' : '&#9776;';
+    });
+  }
+})();
+</script>
 </body>
 </html>
