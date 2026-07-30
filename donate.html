@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Community Impact | Darwin 1942 — The Forgotten War That Reshaped Australia</title>
+<title>Support the Project | Darwin 1942 — The Forgotten War That Reshaped Australia</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&display=swap" rel="stylesheet">
@@ -42,12 +42,12 @@
     text-decoration:none;
     display:block;
   }
-  nav ul{list-style:none;display:flex;gap:42px;}
+  nav ul{list-style:none;display:flex;gap:28px;}
   nav a{
     font-family:var(--heading-font);
     color:var(--white);
     text-decoration:none;
-    font-size:22px;
+    font-size:19px;
     font-weight:400;
     letter-spacing:1.5px;
   }
@@ -76,12 +76,20 @@
   .page-hero-overlay{
     position:absolute;
     inset:0;
-    background:none;
+    background:linear-gradient(180deg, transparent 30%, rgba(8,21,36,0.85) 100%);
   }
   .page-hero-content{
     position:relative;
     z-index:2;
     padding:160px 40px 60px;
+  }
+  .page-hero-content .hero-label{
+    font-family:var(--heading-font);
+    font-size:16px;
+    letter-spacing:4px;
+    color:#e8526a;
+    margin-bottom:12px;
+    text-shadow:0 1px 6px rgba(4,14,26,0.9);
   }
   .page-hero-content h1{
     font-family:var(--heading-font);
@@ -92,12 +100,13 @@
     color:var(--white);
     text-shadow:0 2px 8px rgba(4,14,26,0.9), 0 8px 32px rgba(4,14,26,0.8), 0 24px 64px rgba(4,14,26,0.6);
   }
-  .page-hero-content .hero-sub{text-shadow:0 1px 6px rgba(4,14,26,0.9), 0 4px 16px rgba(4,14,26,0.7);
+  .page-hero-content .hero-sub{
+    text-shadow:0 1px 6px rgba(4,14,26,0.9), 0 4px 16px rgba(4,14,26,0.7);
     margin-top:18px;
     font-size:18px;
     line-height:1.6;
     color:#c8dff0;
-    max-width:640px;
+    max-width:600px;
   }
 
   /* CONTENT */
@@ -118,6 +127,7 @@
     letter-spacing:4px;
     color:#e8526a;
     margin-bottom:12px;
+    text-transform:uppercase;
   }
   .section-heading{
     font-family:var(--heading-font);
@@ -131,73 +141,83 @@
     font-size:17px;
     line-height:1.75;
     color:#d8eaf6;
-    max-width:780px;
+    max-width:740px;
   }
-  .section-body p + p{margin-top:18px;}
-  .content-section.dark .section-body{color:#a8c4d8;}
+  .section-body p + p{
+    margin-top:18px;
+  }
+  .content-section.dark .section-body{
+    color:#a8c4d8;
+  }
 
-  /* IMPACT CARDS */
-  .impact-grid{
+  /* DONATE LAYOUT */
+  .donate-layout{
     display:grid;
-    grid-template-columns:repeat(3, 1fr);
-    gap:14px;
-    margin-top:56px;
+    grid-template-columns:3fr 2fr;
+    gap:56px;
+    margin-top:48px;
+    align-items:start;
   }
-  .impact-card{
+
+  /* DONATE CARD */
+  .donate-card{
     background:var(--card-dark);
-    padding:36px 32px;
     border-top:3px solid var(--red);
+    padding:48px 40px;
     display:flex;
     flex-direction:column;
-    justify-content:space-between;
-    min-height:240px;
+    gap:20px;
   }
-  .impact-card h3{
+  .donate-card h3{
     font-family:var(--heading-font);
-    font-size:26px;
-    font-weight:400;
-    letter-spacing:1px;
-    margin-bottom:14px;
+    font-size:clamp(24px, 2.5vw, 36px);
+    letter-spacing:1.5px;
   }
-  .impact-card p{
-    font-size:15px;
-    line-height:1.6;
+  .donate-card p{
+    font-size:16px;
+    line-height:1.7;
     color:#a8c4d8;
-    flex:1;
-    margin-bottom:22px;
   }
-  .btn{
+  .donate-card .tax-note{
+    font-size:14px;
+    line-height:1.6;
+    color:#7aaac8;
+    border-top:1px solid rgba(255,255,255,0.1);
+    padding-top:20px;
+    margin-top:4px;
+  }
+  .btn-donate{
     display:inline-block;
-    align-self:flex-start;
-    border:1px solid var(--white);
+    background:var(--red);
+    border:2px solid var(--red);
     color:var(--white);
     text-decoration:none;
     font-family:var(--heading-font);
-    font-size:13px;
-    font-weight:400;
-    letter-spacing:1.5px;
-    padding:12px 22px;
-    transition:background 0.2s, color 0.2s;
+    font-size:18px;
+    letter-spacing:2px;
+    padding:18px 48px;
+    text-align:center;
+    transition:background 0.2s;
+    align-self:flex-start;
   }
-  .btn:hover{background:var(--white);color:var(--card-dark);}
+  .btn-donate:hover{background:transparent;}
 
-  /* TOGETHER LIST */
-  .together-list{
+  /* WHY DONATE LIST */
+  .why-list{
     list-style:none;
-    margin-top:32px;
     display:flex;
     flex-direction:column;
-    gap:14px;
+    gap:16px;
   }
-  .together-list li{
+  .why-list li{
     display:flex;
     align-items:flex-start;
     gap:16px;
     font-size:16px;
-    line-height:1.6;
-    color:#a8c4d8;
+    line-height:1.65;
+    color:#d8eaf6;
   }
-  .together-list li::before{
+  .why-list li::before{
     content:'';
     display:block;
     width:3px;
@@ -207,60 +227,49 @@
     flex-shrink:0;
   }
 
-  /* DETAIL ROWS */
-  .detail-row{
-    display:grid;
-    grid-template-columns:1fr 2fr;
-    gap:48px;
-    padding:56px 0;
-    border-top:1px solid rgba(255,255,255,0.12);
+  /* QUOTE BLOCK */
+  .quote-block{
+    border-left:4px solid var(--red);
+    padding:24px 32px;
+    margin:48px 0;
+    background:rgba(200,16,46,0.08);
   }
-  .detail-row:first-of-type{border-top:none;padding-top:0;}
-  .detail-label-col .section-label{margin-bottom:16px;}
-  .detail-label-col h3{
+  .quote-block blockquote{
     font-family:var(--heading-font);
-    font-size:clamp(24px, 2.5vw, 36px);
-    letter-spacing:1px;
-    line-height:1.1;
-  }
-  .detail-body{
-    font-size:16px;
-    line-height:1.75;
-    color:#a8c4d8;
-  }
-  .detail-body p + p{margin-top:16px;}
-
-  /* CTA STRIP */
-  .cta-strip{
-    background:var(--red);
-    padding:56px 40px;
-    text-align:center;
-  }
-  .cta-strip h2{
-    font-family:var(--heading-font);
-    font-size:clamp(28px, 3.5vw, 44px);
+    font-size:clamp(20px, 2.2vw, 28px);
     font-weight:400;
-    letter-spacing:2px;
-    margin-bottom:10px;
-  }
-  .cta-strip p{
-    font-size:16px;
-    color:rgba(255,255,255,0.8);
-    margin-bottom:28px;
-    line-height:1.6;
-  }
-  .btn-cta{
-    display:inline-block;
-    border:1px solid var(--white);
+    letter-spacing:0.5px;
     color:var(--white);
-    text-decoration:none;
-    font-family:var(--heading-font);
-    font-size:14px;
-    letter-spacing:1.5px;
-    padding:14px 36px;
-    transition:background 0.2s, color 0.2s;
+    line-height:1.4;
   }
-  .btn-cta:hover{background:var(--white);color:var(--red);}
+  .quote-block cite{
+    display:block;
+    margin-top:14px;
+    font-size:14px;
+    color:#7aaac8;
+    letter-spacing:1px;
+    font-style:normal;
+  }
+
+  /* AUSPICE BLOCK */
+  .auspice-block{
+    background:rgba(255,255,255,0.05);
+    border:1px solid rgba(255,255,255,0.12);
+    padding:32px 36px;
+    margin-top:48px;
+  }
+  .auspice-block h4{
+    font-family:var(--heading-font);
+    font-size:16px;
+    letter-spacing:2px;
+    color:#e8526a;
+    margin-bottom:12px;
+  }
+  .auspice-block p{
+    font-size:15px;
+    line-height:1.65;
+    color:#7aaac8;
+  }
 
   /* FOOTER */
   footer{
@@ -287,9 +296,8 @@
   .footer-spacer{width:130px;}
 
   @media (max-width:900px){
-    .impact-grid{grid-template-columns:1fr 1fr;}
-    .detail-row{grid-template-columns:1fr;gap:20px;}
-    nav ul{gap:18px;}
+    .donate-layout{grid-template-columns:1fr;}
+    nav ul{gap:14px;}
     nav a{font-size:14px;}
   }
   @media (max-width:640px){
@@ -297,8 +305,7 @@
     nav ul{display:none;}
     .page-hero-content{padding:130px 20px 48px;}
     .content-section{padding:48px 20px;}
-    .impact-grid{grid-template-columns:1fr;}
-    .cta-strip{padding:48px 20px;}
+    .donate-card{padding:32px 24px;}
     footer{flex-direction:column;gap:14px;padding:18px 20px;}
     .footer-spacer{display:none;}
   }
@@ -315,10 +322,10 @@
       <li><a href="index.html">HOME</a></li>
       <li><a href="the-story.html">THE STORY</a></li>
       <li><a href="about-the-film.html">ABOUT THE FILM</a></li>
-      <li class="active"><a href="community-impact.html">COMMUNITY IMPACT</a></li>
+      <li><a href="community-impact.html">COMMUNITY IMPACT</a></li>
       <li><a href="get-involved.html">GET INVOLVED</a></li>
       <li><a href="veteran-stories.html">VETERAN STORIES</a></li>
-      <li><a href="donate.html">DONATE</a></li>
+      <li class="active"><a href="donate.html">DONATE</a></li>
       <li><a href="contact.html">CONTACT</a></li>
     </ul>
   </nav>
@@ -328,80 +335,65 @@
   <img class="page-hero-bg" src="images/background.webp" alt="Darwin 1942">
   <div class="page-hero-overlay"></div>
   <div class="page-hero-content">
-    <h1>COMMUNITY IMPACT</h1>
-    <p class="hero-sub">Darwin 1942 is more than a documentary – it is an opportunity for Australians to gather, remember, share stories and strengthen our communities.</p>
+    <div class="hero-label">SUPPORT THE PROJECT</div>
+    <h1>DONATE</h1>
+    <p class="hero-sub">Make a tax-deductible donation to support the production, distribution and education resources of Darwin 1942.</p>
   </div>
 </section>
 
 <section class="content-section">
   <div class="content-wrap">
-    <div class="section-label">More Than A Screening</div>
-    <h2 class="section-heading">A MOMENT FOR EVERY COMMUNITY</h2>
-    <div class="section-body">
-      <p>Darwin 1942 is more than a documentary. It is an opportunity for Australians to gather, remember and share stories about one of the defining moments in our nation's history. As the 85th Anniversary of the bombing of Darwin approaches, this project creates meaningful ways for RSL Sub Branches and Clubs, museums and historical societies, schools, and communities to honour those who defended Australia, while ensuring their stories continue to inspire future generations.</p>
-      <p>Every screening becomes more than a viewing. It becomes a conversation. A classroom. A remembrance service. A shared experience that strengthens the connection between generations and reminds us of the resilience, courage and fighting spirit that helped shape modern Australia.</p>
+    <div class="section-label">Why Your Support Matters</div>
+    <h2 class="section-heading">HELP BRING THIS STORY TO AUSTRALIA</h2>
+
+    <div class="donate-layout">
+      <div class="section-body">
+        <p>Darwin 1942 will be completed and released. The minimum viable budget for this film has been secured. But every contribution goes further — strengthening the quality of the production, increasing the number of Veteran stories we can include, and expanding the reach and educational impact of the project.</p>
+        <p>Your donation directly supports the production, distribution and creation of educational resources for schools, RSL Sub Branches and Clubs, and communities across Australia.</p>
+
+        <ul class="why-list" style="margin-top:32px;">
+          <li>Fund veteran story collection and archival research</li>
+          <li>Support community screening programs across regional Australia</li>
+          <li>Develop educational resources for schools</li>
+          <li>Ensure the film reaches RSL Sub Branches and Clubs nationwide</li>
+          <li>Help preserve Australia's WW2 military history for future generations</li>
+        </ul>
+
+        <div class="auspice-block">
+          <h4>TAX-DEDUCTIBLE DONATIONS</h4>
+          <p>This project is supported by our auspicing partner Media Arts Foundation Ltd (ABN 75 150 136 815). Donations over $2 received via Media Arts Foundation Ltd are tax deductible.</p>
+        </div>
+      </div>
+
+      <div class="donate-card">
+        <h3>MAKE A DONATION</h3>
+        <p>Every contribution — large or small — helps ensure this important chapter of Australian history reaches the communities that need to hear it.</p>
+        <a class="btn-donate" href="https://tvgroup.com.au/donate-darwin1942/" target="_blank" rel="noopener noreferrer">DONATE NOW</a>
+        <p class="tax-note">Donations over $2 are tax deductible. You will receive a receipt via Media Arts Foundation Ltd (ABN 75 150 136 815).</p>
+      </div>
     </div>
 
-    <div class="impact-grid">
-      <div class="impact-card">
-        <div>
-          <h3>RSL SUB BRANCHES AND CLUBS</h3>
-          <p>Create a lasting legacy in your local community through Darwin 1942. Become the local custodian of the film within your region in the 85th anniversary year.</p>
-        </div>
-        <a class="btn" href="get-involved.html">GET INVOLVED</a>
-      </div>
-      <div class="impact-card">
-        <div>
-          <h3>SCHOOLS &amp; EDUCATION</h3>
-          <p>Support schools with meaningful educational resources and school screening opportunities that strengthen relationships between communities and the next generation.</p>
-        </div>
-        <a class="btn" href="get-involved.html">LEARN MORE</a>
-      </div>
-      <div class="impact-card">
-        <div>
-          <h3>COMMUNITY SCREENINGS</h3>
-          <p>Bring communities together around remembrance and reflection – screen the film to community groups such as Lions, Probus, Men's and Women's Sheds, Youth Groups, Historical Societies, and local organisations across Australia.</p>
-        </div>
-        <a class="btn" href="get-involved.html">FIND OUT HOW</a>
-      </div>
+    <div class="quote-block" style="margin-top:56px;">
+      <blockquote>"If we don't preserve our military history, future generations will not understand what's happened."</blockquote>
+      <cite>— David Czerkies, President Merrylands RSL Sub Branch</cite>
     </div>
+
   </div>
 </section>
 
 <section class="content-section dark">
   <div class="content-wrap">
-    <div class="section-label">Leaving a Legacy Together</div>
-    <h2 class="section-heading">THE STORIES OF OUR VETERANS DESERVE MORE THAN PRESERVATION. THEY DESERVE PARTICIPATION.</h2>
+    <div class="section-label">Other Ways to Get Involved</div>
+    <h2 class="section-heading">THERE'S MORE THAN ONE WAY TO SUPPORT DARWIN 1942</h2>
     <div class="section-body">
-      <p>Through community screenings, educational resources, local commemorative events and partnerships with RSL Sub Branches and Clubs, and community organisations across Australia, Darwin 1942 is designed to create a lasting legacy that extends far beyond the screen.</p>
+      <p>If you represent an RSL Sub Branch, Club, museum, historical society, school or community organisation, there are meaningful partnership opportunities available ahead of the 85th anniversary of the bombing of Darwin in February 2027.</p>
     </div>
-
-    <ul class="together-list">
-      <li>Honour the service and sacrifice of those who defended Australia.</li>
-      <li>Inspire younger generations through authentic Australian stories.</li>
-      <li>Support schools with meaningful educational resources.</li>
-      <li>Bring communities together around remembrance and commemoration.</li>
-    </ul>
-  </div>
-</section>
-
-<section class="content-section">
-  <div class="content-wrap">
-    <div class="section-label">Stories That Continue to Matter</div>
-    <h2 class="section-heading">KEEPING HISTORY ALIVE</h2>
-    <div class="section-body">
-      <p>Many of the veterans who experienced the bombing of Darwin are no longer with us. Their voices, however, still have the power to educate, challenge and inspire.</p>
-      <p>By supporting Darwin 1942, you're helping ensure these stories remain part of Australia's living history — not simply preserved in archives, but experienced by communities, discussed in classrooms and shared around the country for generations to come.</p>
-      <p>Because remembrance is not simply about looking back. It's about shaping the future.</p>
+    <div style="margin-top:32px;display:flex;gap:20px;flex-wrap:wrap;">
+      <a href="get-involved.html" style="display:inline-block;border:1px solid var(--white);color:var(--white);text-decoration:none;font-family:var(--heading-font);font-size:14px;letter-spacing:1.5px;padding:14px 32px;transition:background 0.2s,color 0.2s;">BECOME A PARTNER</a>
+      <a href="veteran-stories.html" style="display:inline-block;border:1px solid rgba(255,255,255,0.4);color:rgba(255,255,255,0.7);text-decoration:none;font-family:var(--heading-font);font-size:14px;letter-spacing:1.5px;padding:14px 32px;transition:border-color 0.2s,color 0.2s;">SHARE A VETERAN STORY</a>
     </div>
   </div>
 </section>
-
-<div class="cta-strip">
-  <h2>BRING DARWIN 1942 TO YOUR COMMUNITY</h2>
-  <p>Discover how partnering with Darwin 1942 can help your RSL Sub Branch or Club honour the past while creating meaningful impact in your local community.</p>
-  <a class="btn-cta" href="get-involved.html">GET INVOLVED</a>
-</div>
 
 <footer>
   <div class="socials">
