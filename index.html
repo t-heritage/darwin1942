@@ -277,19 +277,30 @@
     padding:4px 8px;
     line-height:1;
     z-index:20;
+    margin-left:auto;
   }
   @media (max-width:768px){
+    header.nav{
+      flex-wrap:nowrap;
+      align-items:center;
+      position:fixed;
+      background:rgba(8,21,36,0.95);
+      padding:14px 20px;
+    }
     .nav-toggle{display:block;}
-    header.nav nav ul{
-      display:none;
+    header.nav nav{
       position:absolute;
       top:100%;
       left:0;right:0;
+    }
+    header.nav nav ul{
+      display:none;
       background:rgba(8,21,36,0.97);
       flex-direction:column;
       gap:0;
       padding:12px 0 20px;
       z-index:100;
+      width:100%;
     }
     header.nav nav ul.nav-open{display:flex;}
     header.nav nav ul li a{
@@ -302,12 +313,40 @@
       border-bottom:1px solid rgba(255,255,255,0.07);
       padding-bottom:14px;
     }
-  }
-
-  @media (max-width:768px){
-    .hero-tagline{left:20px;top:8%;font-size:5vw;max-width:70%;}
-    .hero-logo{left:20px;top:auto;bottom:30%;width:80%;}
-    .info-strip{grid-template-columns:1fr;padding:12px;gap:12px;}
+    /* Hero: use background-image on mobile so it fills properly */
+    .hero{
+      min-height:60vh;
+      background:url('images/background.webp') center top/cover no-repeat;
+      display:flex;
+      flex-direction:column;
+    }
+    .hero-bg{display:none;}
+    .hero-gradient{
+      background:linear-gradient(180deg, transparent 30%, rgba(8,21,36,0.85) 80%);
+    }
+    .hero-tagline{
+      position:relative;
+      top:auto;left:auto;
+      margin:80px 20px 0;
+      font-size:6.5vw;
+      max-width:100%;
+      flex:0 0 auto;
+    }
+    .hero-logo{
+      position:relative;
+      top:auto;left:auto;bottom:auto;
+      width:75%;
+      margin:16px 20px;
+      flex:0 0 auto;
+    }
+    .info-strip{
+      position:relative;
+      grid-template-columns:1fr;
+      padding:12px;
+      gap:12px;
+      background:var(--sky-blue);
+      flex:1 0 auto;
+    }
     .info-card p{max-width:65%;}
     .btn{width:100%;text-align:center;display:block;}
     footer{flex-direction:column;gap:12px;height:auto;padding:18px 20px;text-align:center;}
