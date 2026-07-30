@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>About the Film | Darwin 1942 — The Forgotten War That Reshaped Australia</title>
+<title>Veteran Stories | Darwin 1942 — The Forgotten War That Reshaped Australia</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&display=swap" rel="stylesheet">
@@ -42,12 +42,12 @@
     text-decoration:none;
     display:block;
   }
-  nav ul{list-style:none;display:flex;gap:42px;}
+  nav ul{list-style:none;display:flex;gap:32px;}
   nav a{
     font-family:var(--heading-font);
     color:var(--white);
     text-decoration:none;
-    font-size:22px;
+    font-size:20px;
     font-weight:400;
     letter-spacing:1.5px;
   }
@@ -83,6 +83,14 @@
     z-index:2;
     padding:160px 40px 60px;
   }
+  .page-hero-content .hero-label{
+    font-family:var(--heading-font);
+    font-size:16px;
+    letter-spacing:4px;
+    color:var(--red);
+    margin-bottom:12px;
+    text-shadow:0 1px 6px rgba(4,14,26,0.9);
+  }
   .page-hero-content h1{
     font-family:var(--heading-font);
     font-size:clamp(52px, 7vw, 90px);
@@ -92,7 +100,8 @@
     color:var(--white);
     text-shadow:0 2px 8px rgba(4,14,26,0.9), 0 8px 32px rgba(4,14,26,0.8), 0 24px 64px rgba(4,14,26,0.6);
   }
-  .page-hero-content .hero-sub{text-shadow:0 1px 6px rgba(4,14,26,0.9), 0 4px 16px rgba(4,14,26,0.7);
+  .page-hero-content .hero-sub{
+    text-shadow:0 1px 6px rgba(4,14,26,0.9), 0 4px 16px rgba(4,14,26,0.7);
     margin-top:18px;
     font-size:18px;
     line-height:1.6;
@@ -118,6 +127,7 @@
     letter-spacing:4px;
     color:var(--red);
     margin-bottom:12px;
+    text-transform:uppercase;
   }
   .section-heading{
     font-family:var(--heading-font);
@@ -140,60 +150,67 @@
     color:#a8c4d8;
   }
 
-  /* FILM SPECS */
-  .specs-grid{
-    display:grid;
-    grid-template-columns:repeat(3, 1fr);
-    gap:2px;
-    margin-top:48px;
+  /* QUOTE BLOCK */
+  .quote-block{
+    border-left:4px solid var(--red);
+    padding:24px 32px;
+    margin:48px 0;
+    background:rgba(200,16,46,0.08);
   }
-  .spec-block{
-    background:rgba(255,255,255,0.08);
-    padding:32px 28px;
-    border-top:3px solid var(--red);
-  }
-  .spec-label{
+  .quote-block blockquote{
     font-family:var(--heading-font);
-    font-size:13px;
-    letter-spacing:3px;
-    color:var(--red);
-    margin-bottom:10px;
-  }
-  .spec-value{
-    font-family:var(--heading-font);
-    font-size:26px;
+    font-size:clamp(20px, 2.2vw, 28px);
+    font-weight:400;
+    letter-spacing:0.5px;
     color:var(--white);
-    letter-spacing:1px;
+    line-height:1.4;
   }
-  .spec-note{
-    margin-top:6px;
-    font-size:13px;
+  .quote-block cite{
+    display:block;
+    margin-top:14px;
+    font-size:14px;
     color:#7aaac8;
+    letter-spacing:1px;
+    font-style:normal;
   }
 
-  /* TWO COL */
-  .two-col{
-    display:grid;
-    grid-template-columns:1fr 1fr;
-    gap:40px;
-    margin-top:48px;
-  }
-  .dark-card{
+  /* SHARE CARD */
+  .share-card{
     background:var(--card-dark);
-    padding:36px 32px;
     border-top:3px solid var(--red);
+    padding:48px 40px;
+    margin-top:48px;
+    display:flex;
+    flex-direction:column;
+    gap:24px;
   }
-  .dark-card h3{
+  .share-card h3{
     font-family:var(--heading-font);
-    font-size:24px;
-    letter-spacing:1px;
-    margin-bottom:16px;
+    font-size:clamp(26px, 3vw, 40px);
+    letter-spacing:1.5px;
   }
-  .dark-card p{
-    font-size:15px;
+  .share-card p{
+    font-size:16px;
     line-height:1.7;
     color:#a8c4d8;
+    max-width:600px;
   }
+  .btn-facebook{
+    display:inline-flex;
+    align-items:center;
+    gap:12px;
+    background:#1877f2;
+    color:var(--white);
+    text-decoration:none;
+    font-family:var(--heading-font);
+    font-size:16px;
+    letter-spacing:1.5px;
+    padding:16px 32px;
+    align-self:flex-start;
+    transition:background 0.2s;
+  }
+  .btn-facebook:hover{background:#1464d8;}
+  .btn-facebook svg{width:20px;height:20px;fill:var(--white);flex-shrink:0;}
 
   /* CTA STRIP */
   .cta-strip{
@@ -246,10 +263,9 @@
   .copyright{font-family:var(--heading-font);font-size:15px;letter-spacing:0.5px;color:var(--dark);}
   .footer-spacer{width:130px;}
 
+  /* RESPONSIVE */
   @media (max-width:900px){
-    .specs-grid{grid-template-columns:1fr 1fr;}
-    .two-col{grid-template-columns:1fr;}
-    nav ul{gap:18px;}
+    nav ul{gap:16px;}
     nav a{font-size:14px;}
   }
   @media (max-width:640px){
@@ -257,7 +273,7 @@
     nav ul{display:none;}
     .page-hero-content{padding:130px 20px 48px;}
     .content-section{padding:48px 20px;}
-    .specs-grid{grid-template-columns:1fr;}
+    .share-card{padding:32px 24px;}
     footer{flex-direction:column;gap:14px;padding:18px 20px;}
     .footer-spacer{display:none;}
   }
@@ -273,10 +289,10 @@
     <ul>
       <li><a href="index.html">HOME</a></li>
       <li><a href="the-story.html">THE STORY</a></li>
-      <li class="active"><a href="about-the-film.html">ABOUT THE FILM</a></li>
+      <li><a href="about-the-film.html">ABOUT THE FILM</a></li>
       <li><a href="community-impact.html">COMMUNITY IMPACT</a></li>
       <li><a href="get-involved.html">GET INVOLVED</a></li>
-      <li><a href="veteran-stories.html">VETERAN STORIES</a></li>
+      <li class="active"><a href="veteran-stories.html">VETERAN STORIES</a></li>
       <li><a href="contact.html">CONTACT</a></li>
     </ul>
   </nav>
@@ -286,91 +302,44 @@
   <img class="page-hero-bg" src="images/background.webp" alt="Darwin 1942">
   <div class="page-hero-overlay"></div>
   <div class="page-hero-content">
-    <h1>ABOUT THE FILM</h1>
-    <p class="hero-sub">Recognising Australian Veterans as heroes.</p>
+    <div class="hero-label">VETERAN STORIES</div>
+    <h1>STORIES WORTH TELLING</h1>
+    <p class="hero-sub">Our veterans are heroes — and every veteran has a story worth telling.</p>
   </div>
 </section>
 
 <section class="content-section">
   <div class="content-wrap">
-    <div class="section-label">From an 8-minute TV segment to a feature documentary</div>
-    <h2 class="section-heading">DARWIN 1942 — THE FILM</h2>
+    <div class="section-label">Share Your Story</div>
+    <h2 class="section-heading">SHARE YOUR STORY</h2>
     <div class="section-body">
-      <p>This documentary began as an ANZAC Day TV segment broadcast across the Nine Network in 2026, telling the story of celebrated WW2 veteran Wilbert 'Darky' Hudson and a commemorative lunch hosted by Merrylands RSL Club.</p>
-      <p>The response was overwhelming. RSL Clubs and Sub Branches replayed the segment at ANZAC Day services, and requests to rerun the story kept coming. After meeting with Merrylands RSL Club and the Hudson family, the concept grew into a feature documentary – told from the perspective of the veterans who fought to defend Australia.</p>
+      <p>Darwin 1942 is a place where veterans, their families, friends, and RSL Sub Branches and Clubs can share their stories.</p>
+      <p>Tell us about the service and sacrifice of Veterans, share photos and videos of your parents and grandparents, share information from your RSL Sub Branch or Club.</p>
+      <p>Together, we will remember their service and sacrifice, and honour our Veterans.</p>
     </div>
 
-    <div class="specs-grid">
-      <div class="spec-block">
-        <div class="spec-label">FORMAT</div>
-        <div class="spec-value">FEATURE DOCUMENTARY</div>
-        <div class="spec-note">Cinema release + community screenings</div>
-      </div>
-      <div class="spec-block">
-        <div class="spec-label">RUNTIME</div>
-        <div class="spec-value">70–80 MINS</div>
-        <div class="spec-note">Feature length</div>
-      </div>
-      <div class="spec-block">
-        <div class="spec-label">CLASSIFICATION</div>
-        <div class="spec-value">PG</div>
-        <div class="spec-note">Suitable for general viewing and schools</div>
-      </div>
+    <div class="quote-block">
+      <blockquote>"Without our Veterans, the Australia we live in today will be a totally, totally different place. We should never forget what the Veterans have done."</blockquote>
+      <cite>— Dr Norman Cramp, Director of the Darwin Military Museum</cite>
     </div>
 
-    <div style="margin-top:48px;" class="section-body">
-      <p>Darwin 1942: the forgotten war that reshaped Australia is the documentary which commemorates the 85th anniversary of the WW2 bombing of Darwin. It tells the story of the largest military attack on Australian soil since Federation from the perspective of the Veterans who defended Australia.</p>
-      <p>More bombs were dropped on Darwin during WW2 than on Pearl Harbour. The Fall of Singapore ended British dominance in the Pacific. The Allies were losing the war … and Australia was next.</p>
-      <p>During 21-months of bombing raids, countless attacks along our coastlines, battles in Fremantle, Broome, the Coral Sea, and military activity in Sydney Harbour, the Mornington Peninsula, Gippsland, Bass Strait, and the Great Australia Bight, Australia had a weakened defence force and prepared itself for invasion.</p>
-      <p>Darwin 1942 brings to life the stories of our WW2 heroes who fought on Australian soil.</p>
-      <p>Drawing on veteran stories passed onto their children, personal family heirlooms, private photo collection, rare archival footage, and recordings of veteran testimonies, the film brings this largely forgotten story to modern Australia.</p>
-      <p>Darwin 1942 is the story that should have been told decades ago.</p>
-      <p><em>Lest We Forget.</em></p>
-    </div>
-  </div>
-</section>
-
-<section class="content-section dark">
-  <div class="content-wrap">
-    <div class="section-label">Production</div>
-    <h2 class="section-heading">MAKING THE FILM</h2>
     <div class="section-body">
-      <p>The production of Darwin 1942 is driven by a deep sense of urgency. The stories of our veterans, their experiences, and their voices are being forgotten. Once lost, they will be gone forever. If this story is going to be told with the authenticity it deserves, the time to tell it is now.</p>
+      <p><strong>LEST WE FORGET.</strong></p>
     </div>
-    <div class="two-col">
-      <div class="dark-card">
-        <h3>ARCHIVAL RESEARCH</h3>
-        <p>The production team is combing through national archives, military and RSL Sub Branch records, and private family collections to source stories, footage, photographs, and documents that have never been seen by the public. Darwin 1942 will provide access to never before seen footage.</p>
-      </div>
-      <div class="dark-card">
-        <h3>VETERAN TESTIMONIES</h3>
-        <p>At the heart of the film are the stories of the veterans who defended Australia. Archival interviews, stories passed onto children, photos shared on social media, and responses from the families of those who have since passed form the emotional backbone of Darwin 1942 – giving the history a human face.</p>
-      </div>
-      <div class="dark-card">
-        <h3>CINEMATIC APPROACH</h3>
-        <p>Darwin 1942 is made with the same care and craft as the finest theatrical documentaries. It is built for the big screen and designed to move audiences. Every frame, every sound, every interview and every veteran story is selected with that intention.</p>
-      </div>
-      <div class="dark-card">
-        <h3>COMMUNITY PARTNERSHIP</h3>
-        <p>The film is being produced in partnership with RSL Sub Branches, Clubs, military historical societies, community groups and veteran organisations who recognise the significance of commemorating this event. Their involvement helps to identify veteran stories, and ensures authenticity, accuracy, awareness, and community engagement with this film.</p>
-      </div>
-    </div>
-  </div>
-</section>
 
-<section class="content-section">
-  <div class="content-wrap">
-    <div class="section-label">Distribution</div>
-    <h2 class="section-heading">BRINGING THIS FILM TO AUSTRALIA</h2>
-    <div class="section-body">
-      <p>Darwin 1942 will be distributed through Heritage Films – Australia's leading film distribution company for community and event screenings. The film will be available for cinematic release and streaming, as well as community screenings at RSL Sub Branches, Clubs, museums, military historical societies, cultural institutions, schools and public venues across the country.</p>
-      <p>Our goal is simple: every Australian should have the opportunity to see this film and hear these stories. We are committed to making Darwin 1942 as accessible as possible – in major cities, small towns, regional areas and in the communities where this history lives most vividly.</p>
+    <div class="share-card">
+      <h3>JOIN THE DARWIN 1942 VETERAN STORIES GROUP</h3>
+      <p>Share Your Story — join families and friends of veterans sharing stories, photos and memorabilia in our Facebook group.</p>
+      <a class="btn-facebook" href="https://www.facebook.com/groups/darwin1942.veteranstories" target="_blank" rel="noopener noreferrer">
+        <svg viewBox="0 0 24 24"><path d="M22 12a10 10 0 1 0-11.6 9.9v-7H7.9V12h2.5V9.8c0-2.5 1.5-3.9 3.8-3.9 1.1 0 2.2.2 2.2.2v2.5h-1.3c-1.2 0-1.6.8-1.6 1.6V12h2.8l-.4 2.9h-2.4v7A10 10 0 0 0 22 12Z"/></svg>
+        SHARE YOUR STORY ON FACEBOOK
+      </a>
     </div>
   </div>
 </section>
 
 <div class="cta-strip">
-  <h2>BRING DARWIN 1942 TO YOUR COMMUNITY</h2>
+  <h2>PARTNER WITH DARWIN 1942</h2>
   <a class="btn" href="get-involved.html">GET INVOLVED</a>
 </div>
 
