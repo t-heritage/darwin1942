@@ -56,8 +56,11 @@
   }
   nav li.active a{
     color:var(--red);
-    padding-bottom:10px;
-    border-bottom:2px solid var(--red);
+    text-shadow:0 2px 8px rgba(4,14,26,0.55), 0 4px 16px rgba(4,14,26,0.3);
+    text-decoration:underline;
+    text-decoration-color:var(--red);
+    text-decoration-thickness:2px;
+    text-underline-offset:6px;
   }
 
   /* PAGE HERO */
@@ -328,6 +331,7 @@
     header.nav nav ul li.active a{
       border-bottom:1px solid rgba(255,255,255,0.07);
       padding-bottom:14px;
+      text-decoration:none;
     }
     /* push page content below fixed nav */
     .page-hero{padding-top:56px;}
