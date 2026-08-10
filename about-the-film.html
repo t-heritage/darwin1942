@@ -228,6 +228,41 @@
   }
   .btn:hover{background:var(--white);color:var(--red);}
 
+  /* LOGO GRID */
+  .logo-grid{
+    display:grid;
+    grid-template-columns:repeat(3, 1fr);
+    gap:2px;
+    margin-top:48px;
+  }
+  .logo-tile{
+    background:rgba(255,255,255,0.06);
+    border-top:3px solid var(--red);
+    min-height:110px;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    text-align:center;
+    padding:18px 20px;
+    font-family:var(--heading-font);
+    font-size:17px;
+    letter-spacing:0.5px;
+    color:var(--white);
+    line-height:1.3;
+  }
+  .logo-note{
+    margin-top:24px;
+    font-size:14px;
+    color:#a8c4d8;
+    font-style:italic;
+  }
+  @media (max-width:768px){
+    .logo-grid{grid-template-columns:1fr 1fr;}
+  }
+  @media (max-width:480px){
+    .logo-grid{grid-template-columns:1fr;}
+  }
+
   /* FOOTER */
   footer{
     background:var(--sky-blue);
@@ -397,8 +432,8 @@
     <div class="section-label">From an 8-minute TV segment to a feature documentary</div>
     <h2 class="section-heading">DARWIN 1942 — THE FILM</h2>
     <div class="section-body">
-      <p>This documentary began as an ANZAC Day TV segment broadcast across the Nine Network in 2026, telling the story of celebrated WW2 veteran Wilbert 'Darky' Hudson and a commemorative lunch hosted by Merrylands RSL Club.</p>
-      <p>The response was overwhelming. RSL Clubs and Sub Branches replayed the segment at ANZAC Day services, and requests to rerun the story kept coming. After meeting with Merrylands RSL Club and the Hudson family, the concept grew into a feature documentary – told from the perspective of the veterans who fought to defend Australia.</p>
+      <p>This documentary began as an ANZAC Day TV segment broadcast across the Nine Network in 2026, telling the story of celebrated WW2 Veteran Wilbert 'Darky' Hudson and a commemorative lunch hosted by Merrylands RSL Club.</p>
+      <p>The response was overwhelming. RSL Clubs and Sub Branches replayed the segment at ANZAC Day services, and requests to rerun the story kept coming. After meeting with Merrylands RSL Club and the Hudson family, the concept grew into a feature documentary – told from the perspective of the Veterans who fought to defend Australia.</p>
     </div>
 
     <div class="specs-grid">
@@ -423,8 +458,15 @@
       <p>Darwin 1942: the forgotten war that reshaped Australia is the documentary which commemorates the 85th anniversary of the WW2 bombing of Darwin. It tells the story of the largest military attack on Australian soil since Federation from the perspective of the Veterans who defended Australia.</p>
       <p>More bombs were dropped on Darwin during WW2 than on Pearl Harbor. The Fall of Singapore ended British dominance in the Pacific. The Allies were losing the war … and Australia was next.</p>
       <p>During the 21-months of bombing raids, countless attacks along our coastlines, battles in Broome, Townsville, and the Coral Sea, and military activity in Sydney Harbour, the Mornington Peninsula, Gippsland, Fremantle and along the West Australian coastline, Bass Strait and the Great Australian Bight, Australia had a weakened defence force and prepared itself for invasion.</p>
-      <p>Darwin 1942 brings to life the stories of our WW2 heroes who fought on Australian soil.</p>
-      <p>Drawing on veteran stories passed onto their children, personal family heirlooms, private photo collections, rare archival footage, and recordings of veteran testimonies, the film brings this largely forgotten story to life.</p>
+    </div>
+
+    <div class="quote-block">
+      <blockquote>"Darwin 1942 will bring to life the stories of our WW2 heroes who fought on Australian soil."</blockquote>
+      <cite>— Richard Attieh, Producer and Director</cite>
+    </div>
+
+    <div class="section-body">
+      <p>Drawing on Veteran stories identified by RSL Sub Branches and Clubs, passed onto their children, personal family heirlooms, private photo collections, rare archival footage, and recordings of Veteran testimonies, the film brings this largely forgotten story to life.</p>
       <p>Darwin 1942 is the story that should have been told decades ago.</p>
       <p>Lest We Forget.</p>
     </div>
@@ -436,7 +478,7 @@
     <div class="section-label">Production</div>
     <h2 class="section-heading">MAKING THE FILM</h2>
     <div class="section-body">
-      <p>The production of Darwin 1942 is driven by a deep sense of urgency. The stories of our veterans, their experiences, and their voices are being forgotten. Once lost, they will be gone forever. If this story is going to be told with the authenticity it deserves, the time to tell it is now.</p>
+      <p>The production of Darwin 1942 is driven by a deep sense of urgency. The stories of our Veterans, their experiences, and their voices are being forgotten. Once lost, they will be gone forever. If this story is going to be told with the authenticity it deserves, the time to tell it is now.</p>
     </div>
     <div class="two-col">
       <div class="dark-card">
@@ -445,15 +487,15 @@
       </div>
       <div class="dark-card">
         <h3>VETERAN TESTIMONIES</h3>
-        <p>At the heart of the film are the stories of the veterans who defended Australia. Archival interviews, stories passed onto children, photos shared on social media, and responses from the families of those who have since passed form the emotional backbone of Darwin 1942 – giving the history a human face.</p>
+        <p>At the heart of the film are the stories of the Veterans who defended Australia. Archival interviews, stories passed onto children, photos shared on social media, and responses from the families of those who have since passed form the emotional backbone of Darwin 1942 – giving the history a human face.</p>
       </div>
       <div class="dark-card">
         <h3>CINEMATIC APPROACH</h3>
-        <p>Darwin 1942 is made with the same care and craft as the finest theatrical documentaries. It is built for the big screen and designed to move audiences. Every frame, every sound, every interview and every veteran story is selected with that intention.</p>
+        <p>Darwin 1942 is made with the same care and craft as the finest theatrical documentaries. It is built for the big screen and designed to move audiences. Every frame, every sound, every interview and every Veteran story is selected with that intention.</p>
       </div>
       <div class="dark-card">
         <h3>COMMUNITY PARTNERSHIP</h3>
-        <p>The film is being produced in partnership with RSL Sub Branches, Clubs, military historical societies, community groups and veteran organisations who recognise the significance of commemorating this event. Their involvement helps to identify veteran stories, and ensures authenticity, accuracy, awareness, and community engagement with this film.</p>
+        <p>The film is being produced in partnership with RSL Sub Branches, Clubs, military historical societies, community groups and Veteran organisations who recognise the significance of commemorating this event. Their involvement helps to identify Veteran stories, and ensures authenticity, accuracy, awareness, and community engagement with this film.</p>
       </div>
     </div>
   </div>
@@ -467,6 +509,28 @@
       <p>Darwin 1942 will be distributed through Heritage Films – Australia's leading film distribution company for community and event screenings. The film will be available for cinematic release and streaming, as well as community screenings at RSL Sub Branches, Clubs, museums, military historical societies, cultural institutions, schools and public venues across the country.</p>
       <p>Our goal is simple: every Australian should have the opportunity to see this film and hear these stories. We are committed to making Darwin 1942 as accessible as possible – in major cities, small towns, regional areas and in the communities where this history lives most vividly.</p>
     </div>
+  </div>
+</section>
+
+<section class="content-section dark">
+  <div class="content-wrap">
+    <div class="section-label">With Thanks</div>
+    <h2 class="section-heading">SUPPORTERS AND CONTENT PROVIDERS</h2>
+    <div class="section-body">
+      <p>Darwin 1942 has been made possible with the generous support and contribution of the following organisations.</p>
+    </div>
+    <div class="logo-grid">
+      <div class="logo-tile">Merrylands RSL Club</div>
+      <div class="logo-tile">Cumberland City Council</div>
+      <div class="logo-tile">Darwin Military Museum</div>
+      <div class="logo-tile">Darwin Aviation Museum</div>
+      <div class="logo-tile">Darwin Defenders</div>
+      <div class="logo-tile">Royal Australian Artillery Association</div>
+      <div class="logo-tile">National Archives of Australia</div>
+      <div class="logo-tile">Naval Historical Society of Australia</div>
+      <div class="logo-tile">Military History Society of NSW</div>
+    </div>
+    <p class="logo-note">More logos of RSL Sub Branches and other supporters will be added as they come to hand.</p>
   </div>
 </section>
 

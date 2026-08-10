@@ -154,8 +154,8 @@
     display:flex;
     align-items:flex-start;
     gap:18px;
-    font-size:16px;
-    line-height:1.65;
+    font-size:19px;
+    line-height:1.75;
     color:#a8c4d8;
   }
   .benefits-list li::before{
@@ -183,8 +183,8 @@
     color:var(--white);
   }
   .guarantee-block p{
-    font-size:16px;
-    line-height:1.7;
+    font-size:19px;
+    line-height:1.75;
     color:#a8c4d8;
   }
   .guarantee-block p + p{margin-top:12px;}
@@ -203,8 +203,8 @@
     margin-bottom:14px;
   }
   .experience-block p{
-    font-size:16px;
-    line-height:1.7;
+    font-size:19px;
+    line-height:1.75;
     color:#a8c4d8;
   }
 
@@ -480,8 +480,8 @@
     <div class="section-label">Partner With Darwin 1942</div>
     <h2 class="section-heading">AN OPPORTUNITY FOR YOUR RSL SUB BRANCH AND CLUB</h2>
     <div class="section-body">
-      <p>This isn't a sponsorship proposal. This is an opportunity for your Sub Branch and Club to become the local custodian of the film and use it for commemoration within your region.</p>
-      <p>By partnering with the project, your RSL Sub Branch and Club will help bring this important Australian story to life throughout the 85th anniversary year of the bombing of Darwin in February 2027. Your support will contribute to the production, marketing and nationwide release of the feature documentary, ensuring this remarkable chapter of our history reaches communities across Australia.</p>
+      <p>This is an opportunity for your Sub Branch and Club to become the local custodian of the film and use it for commemoration within your region.</p>
+      <p>Your RSL Sub Branch and Club will help bring this important Australian story to life throughout the 85th anniversary year of the bombing of Darwin throughout 2027. Your support will contribute to the production, marketing and nationwide release of the feature documentary, ensuring this remarkable chapter of our history reaches communities across Australia.</p>
     </div>
   </div>
 </section>
@@ -494,7 +494,7 @@
       <p>Our partnership packages equip your RSL Sub Branch and Club with valuable resources to engage your community with ongoing commemoration long after the credits roll, including:</p>
     </div>
 
-    <ul class="benefits-list">
+    <ul class="benefits-list" style="font-size:19px;">
       <li>Thousands of digital watch-at-home licences to share throughout your local community.</li>
       <li>Educational resources and school screening opportunities that strengthen relationships with schools in your region.</li>
       <li>Community Screening and engagement resources to promote your community events to local organisations including Lions, Probus, Men's Sheds, Women's Sheds and other community groups.</li>
@@ -505,7 +505,7 @@
       <h3>BUILT ON EXPERIENCE</h3>
       <p>Darwin 1942 is being brought to life by an executive team with more than 50 years of combined experience in film production, distribution and audience engagement.</p>
       <br>
-      <p>Together, we've helped connect powerful stories with communities across Australia and around the world.</p>
+      <p>The producers, Australian Television and Media Group, and distributors, Heritage Films, have helped connect powerful stories with communities across Australia and around the world.</p>
     </div>
 
     <div class="guarantee-block">
@@ -596,6 +596,25 @@
       phone: document.getElementById('phone').value.trim(),
       referral_source: document.getElementById('referral').value
     };
+
+    // Best-effort email notification alongside the Supabase record (does not block success state)
+    try {
+      var fd = new FormData();
+      fd.append('_subject', 'New RSL partnership enquiry — Darwin 1942');
+      fd.append('_cc', 'darwin1942@darwin1942.com');
+      fd.append('_captcha', 'false');
+      fd.append('club_name', payload.club_name);
+      fd.append('your_name', payload.your_name);
+      fd.append('your_role', payload.your_role);
+      fd.append('email', payload.email);
+      fd.append('phone', payload.phone);
+      fd.append('referral_source', payload.referral_source);
+      fetch('https://formsubmit.co/ajax/darwin1942@darwin1942.com', {
+        method: 'POST',
+        headers: { 'Accept': 'application/json' },
+        body: fd
+      }).catch(function(){});
+    } catch(e){}
 
     fetch(SUPABASE_URL + '/rest/v1/darwin1942_enquiries', {
       method: 'POST',
