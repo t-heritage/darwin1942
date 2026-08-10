@@ -53,13 +53,35 @@
   main{
     flex:1;
     display:flex;
+    flex-direction:column;
     align-items:center;
-    justify-content:center;
-    padding:60px 24px;
+    padding:60px 24px 40px;
     text-align:center;
   }
   .holding-card{
-    max-width:640px;
+    max-width:720px;
+    margin-bottom:36px;
+  }
+  .pdf-wrap{
+    width:100%;
+    max-width:960px;
+    background:rgba(8,21,36,0.4);
+    border:1px solid rgba(255,255,255,0.15);
+    padding:12px;
+    margin:0 auto;
+  }
+  .pdf-wrap iframe{
+    display:block;
+    width:100%;
+    height:85vh;
+    min-height:600px;
+    border:none;
+    background:#ffffff;
+  }
+  .pdf-fallback{
+    display:none;
+    padding:60px 20px;
+    text-align:center;
   }
   .section-label{
     font-family:var(--heading-font);
@@ -137,11 +159,36 @@
   <div class="holding-card">
     <div class="section-label">RSL Sub Branches &amp; Clubs</div>
     <h1>PARTNERSHIP PRESENTATION</h1>
-    <p class="sub">Download our partnership presentation to see how your RSL Sub Branch or Club can become the local custodian of Darwin 1942 and share this commemorative project with your community.</p>
-    <a class="btn" href="assets/darwin1942-rsl-presentation.pdf" target="_blank" rel="noopener">DOWNLOAD THE PRESENTATION (PDF)</a>
-    <p class="sub" style="margin-top:32px;margin-bottom:0;font-size:16px;">Ready to take the next step? <a href="../get-involved.html" style="color:#ffffff;">Get involved</a> or <a href="../contact.html" style="color:#ffffff;">get in touch</a>.</p>
+    <p class="sub">See how your RSL Sub Branch or Club can become the local custodian of Darwin 1942 and share this commemorative project with your community.</p>
+    <a class="btn" href="assets/darwin1942-rsl-presentation.pdf" target="_blank" rel="noopener">OPEN IN NEW TAB / DOWNLOAD</a>
   </div>
+
+  <div class="pdf-wrap">
+    <iframe src="assets/darwin1942-rsl-presentation.pdf" title="Darwin 1942 RSL Partnership Presentation" id="rsl-pdf-frame"></iframe>
+    <div class="pdf-fallback" id="rsl-pdf-fallback">
+      <p class="sub">Your browser can't preview the PDF here.</p>
+      <a class="btn" href="assets/darwin1942-rsl-presentation.pdf" target="_blank" rel="noopener">DOWNLOAD THE PRESENTATION (PDF)</a>
+    </div>
+  </div>
+
+  <p class="sub" style="margin-top:32px;margin-bottom:0;font-size:16px;">Ready to take the next step? <a href="../get-involved.html" style="color:#ffffff;">Get involved</a> or <a href="../contact.html" style="color:#ffffff;">get in touch</a>.</p>
 </main>
+
+<script>
+(function(){
+  // Mobile Safari and some in-app browsers (Slack, Instagram, etc.) can't render
+  // PDFs inside an iframe. Detect and swap to the download fallback.
+  var isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent) && !window.MSStream;
+  if (isIOS) {
+    var frame = document.getElementById('rsl-pdf-frame');
+    var fallback = document.getElementById('rsl-pdf-fallback');
+    if (frame && fallback) {
+      frame.style.display = 'none';
+      fallback.style.display = 'block';
+    }
+  }
+})();
+</script>
 
 <footer>
   <div class="copyright">© 2026 AUSTRALIAN TELEVISION AND MEDIA GROUP PTY LTD. ALL RIGHTS RESERVED.</div>
