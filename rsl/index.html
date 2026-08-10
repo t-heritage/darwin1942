@@ -12,167 +12,47 @@
 <link rel="icon" type="image/png" sizes="192x192" href="../images/favicon/favicon-192.png">
 <link rel="apple-touch-icon" sizes="180x180" href="../images/favicon/apple-touch-icon.png">
 <link rel="shortcut icon" href="../favicon.ico">
-<link rel="preconnect" href="https://fonts.googleapis.com">
-<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&display=swap" rel="stylesheet">
 <style>
-  :root{
-    --sky-blue:#2b8cc4;
-    --red:#c8102e;
-    --white:#ffffff;
-    --dark:#0b1c2c;
-    --heading-font:'Bebas Neue', 'Arial Narrow', Arial, sans-serif;
-  }
   *{box-sizing:border-box;margin:0;padding:0;}
-  html,body{height:100%;}
-  body{
-    font-family:'Arial Narrow', Arial, sans-serif;
-    background:linear-gradient(160deg, #3492cc 0%, #2480b0 60%, #1e6e98 100%) fixed;
-    color:var(--white);
-    min-height:100vh;
-    display:flex;
-    flex-direction:column;
-  }
-
-  header.nav{
-    display:flex;
-    align-items:center;
-    justify-content:center;
-    padding:40px 20px 0;
-  }
-  .brand .title{
-    font-family:var(--heading-font);
-    font-weight:400;
-    font-size:32px;
-    letter-spacing:1.5px;
-    color:var(--white);
-    text-decoration:none;
-    display:block;
-  }
-
-  main{
-    flex:1;
-    display:flex;
-    flex-direction:column;
-    align-items:center;
-    padding:60px 24px 40px;
-    text-align:center;
-  }
-  .holding-card{
-    max-width:720px;
-    margin-bottom:36px;
-  }
-  .pdf-wrap{
-    width:100%;
-    max-width:960px;
-    background:rgba(8,21,36,0.4);
-    border:1px solid rgba(255,255,255,0.15);
-    padding:12px;
-    margin:0 auto;
-  }
-  .pdf-wrap iframe{
+  html,body{height:100%;width:100%;overflow:hidden;background:#0b1c2c;}
+  iframe{
     display:block;
     width:100%;
-    height:85vh;
-    min-height:600px;
+    height:100%;
     border:none;
-    background:#ffffff;
   }
   .pdf-fallback{
     display:none;
-    padding:60px 20px;
-    text-align:center;
-  }
-  .section-label{
-    font-family:var(--heading-font);
-    font-size:15px;
-    letter-spacing:4px;
-    color:#ffffff;
-    margin-bottom:16px;
-    text-transform:uppercase;
-  }
-  h1{
-    font-family:var(--heading-font);
-    font-size:clamp(40px, 6vw, 68px);
-    font-weight:400;
-    letter-spacing:2px;
-    line-height:1.1;
-    margin-bottom:22px;
-    text-shadow:0 4px 12px rgba(4,14,26,0.45), 0 12px 40px rgba(4,14,26,0.3);
-  }
-  p.sub{
-    font-size:19px;
-    line-height:1.7;
-    color:#d8eaf6;
-    max-width:520px;
-    margin:0 auto 36px;
-  }
-  .btn{
-    display:inline-block;
-    border:1px solid var(--white);
-    color:var(--white);
-    text-decoration:none;
-    font-family:var(--heading-font);
-    font-size:14px;
-    font-weight:400;
-    letter-spacing:1.5px;
-    padding:14px 32px;
-    transition:background 0.2s, color 0.2s;
-  }
-  .btn:hover{background:var(--white);color:var(--sky-blue);}
-
-  footer{
-    background:var(--sky-blue);
-    min-height:56px;
-    padding:18px 40px;
-    display:flex;
+    height:100%;
+    width:100%;
     align-items:center;
     justify-content:center;
+    flex-direction:column;
+    text-align:center;
+    padding:24px;
+    font-family:Arial, sans-serif;
+    color:#ffffff;
   }
-  .copyright{font-family:var(--heading-font);font-size:15px;letter-spacing:0.5px;color:var(--dark);}
-
-  /* GRAIN OVERLAY */
-  body::after{
-    content:"";
-    position:fixed;
-    inset:0;
-    width:100%;
-    height:100%;
-    pointer-events:none;
-    z-index:9999;
-    opacity:0.045;
-    background-image:url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)'/%3E%3C/svg%3E");
-    background-size:180px 180px;
-    background-repeat:repeat;
+  .pdf-fallback a{
+    display:inline-block;
+    margin-top:20px;
+    border:1px solid #ffffff;
+    color:#ffffff;
+    text-decoration:none;
+    font-family:Arial, sans-serif;
+    font-size:14px;
+    letter-spacing:1px;
+    padding:14px 32px;
   }
 </style>
 </head>
 <body>
 
-<header class="nav">
-  <div class="brand">
-    <a class="title" href="../index.html">DARWIN 1942</a>
-  </div>
-</header>
-
-<main>
-  <div class="holding-card">
-    <div class="section-label">RSL Sub Branches &amp; Clubs</div>
-    <h1>PARTNERSHIP PRESENTATION</h1>
-    <p class="sub">See how your RSL Sub Branch or Club can become the local custodian of Darwin 1942 and share this commemorative project with your community.</p>
-    <a class="btn" href="assets/darwin1942-rsl-presentation.pdf" target="_blank" rel="noopener">OPEN IN NEW TAB / DOWNLOAD</a>
-  </div>
-
-  <div class="pdf-wrap">
-    <iframe src="assets/darwin1942-rsl-presentation.pdf" title="Darwin 1942 RSL Partnership Presentation" id="rsl-pdf-frame"></iframe>
-    <div class="pdf-fallback" id="rsl-pdf-fallback">
-      <p class="sub">Your browser can't preview the PDF here.</p>
-      <a class="btn" href="assets/darwin1942-rsl-presentation.pdf" target="_blank" rel="noopener">DOWNLOAD THE PRESENTATION (PDF)</a>
-    </div>
-  </div>
-
-  <p class="sub" style="margin-top:32px;margin-bottom:0;font-size:16px;">Ready to take the next step? <a href="../get-involved.html" style="color:#ffffff;">Get involved</a> or <a href="../contact.html" style="color:#ffffff;">get in touch</a>.</p>
-</main>
+<iframe src="assets/darwin1942-rsl-presentation.pdf" title="Darwin 1942 RSL Partnership Presentation" id="rsl-pdf-frame"></iframe>
+<div class="pdf-fallback" id="rsl-pdf-fallback">
+  <p>Your browser can't preview the PDF here.</p>
+  <a href="assets/darwin1942-rsl-presentation.pdf" target="_blank" rel="noopener">DOWNLOAD THE PRESENTATION (PDF)</a>
+</div>
 
 <script>
 (function(){
@@ -184,15 +64,11 @@
     var fallback = document.getElementById('rsl-pdf-fallback');
     if (frame && fallback) {
       frame.style.display = 'none';
-      fallback.style.display = 'block';
+      fallback.style.display = 'flex';
     }
   }
 })();
 </script>
-
-<footer>
-  <div class="copyright">© 2026 AUSTRALIAN TELEVISION AND MEDIA GROUP PTY LTD. ALL RIGHTS RESERVED.</div>
-</footer>
 
 </body>
 </html>
