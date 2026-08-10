@@ -597,22 +597,22 @@
       referral_source: document.getElementById('referral').value
     };
 
-    // Best-effort email notification alongside the Supabase record (does not block success state)
+    // Push to Customer.io (identify + contacted_about_darwin1942 event) and email notification.
+    // Best-effort — does not block the Supabase record or the success state below.
     try {
-      var fd = new FormData();
-      fd.append('_subject', 'New RSL partnership enquiry — Darwin 1942');
-      fd.append('_cc', 'darwin1942@darwin1942.com');
-      fd.append('_captcha', 'false');
-      fd.append('club_name', payload.club_name);
-      fd.append('your_name', payload.your_name);
-      fd.append('your_role', payload.your_role);
-      fd.append('email', payload.email);
-      fd.append('phone', payload.phone);
-      fd.append('referral_source', payload.referral_source);
-      fetch('https://formsubmit.co/ajax/darwin1942@darwin1942.com', {
+      fetch('https://nwchcduhlhhppvyhxbpo.supabase.co/functions/v1/darwin1942-intake', {
         method: 'POST',
-        headers: { 'Accept': 'application/json' },
-        body: fd
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          event_type: 'contacted_about_darwin1942',
+          source: 'get-involved',
+          name: payload.your_name,
+          email: payload.email,
+          phone: payload.phone,
+          club_name: payload.club_name,
+          your_role: payload.your_role,
+          referral_source: payload.referral_source
+        })
       }).catch(function(){});
     } catch(e){}
 

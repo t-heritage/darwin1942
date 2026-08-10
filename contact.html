@@ -432,11 +432,7 @@
     <div class="section-label">Send a Message</div>
     <h2 class="section-heading">GET IN TOUCH</h2>
 
-    <form name="contact" method="POST" action="https://formsubmit.co/darwin1942@darwin1942.com">
-      <input type="hidden" name="_subject" value="New enquiry — Darwin 1942 website">
-      <input type="hidden" name="_cc" value="darwin1942@darwin1942.com">
-      <input type="hidden" name="_captcha" value="false">
-      <input type="hidden" name="_next" value="https://t-heritage.github.io/darwin1942/contact.html?sent=1">
+    <form name="contact" id="contact-form">
       <div class="form-group">
         <label for="name">Name <span class="required">*</span></label>
         <input type="text" id="name" name="name" placeholder="Your full name" required>
@@ -453,8 +449,9 @@
         <label for="message">Message <span class="required">*</span></label>
         <textarea id="message" name="message" rows="7" placeholder="Your message..." required></textarea>
       </div>
-      <button type="submit" class="btn-submit">SEND MESSAGE</button>
+      <button type="submit" class="btn-submit" id="contact-submit-btn">SEND MESSAGE</button>
       <p class="form-note">We aim to respond to all enquiries within two business days.</p>
+      <div id="contact-form-message" style="display:none;margin-top:24px;padding:18px 24px;font-size:15px;line-height:1.6;"></div>
     </form>
   </div>
 
@@ -496,6 +493,51 @@
   <div class="footer-spacer"></div>
 </footer>
 
+
+<script>
+(function(){
+  var INTAKE_URL = 'https://nwchcduhlhhppvyhxbpo.supabase.co/functions/v1/darwin1942-intake';
+  var form = document.getElementById('contact-form');
+  var btn = document.getElementById('contact-submit-btn');
+  var msg = document.getElementById('contact-form-message');
+  if(!form) return;
+
+  form.addEventListener('submit', function(e){
+    e.preventDefault();
+    btn.disabled = true;
+    btn.textContent = 'SENDING...';
+    msg.style.display = 'none';
+
+    var payload = {
+      event_type: 'contacted_about_darwin1942',
+      source: 'contact',
+      name: document.getElementById('name').value.trim(),
+      email: document.getElementById('email').value.trim(),
+      subject: document.getElementById('subject').value.trim(),
+      message: document.getElementById('message').value.trim()
+    };
+
+    fetch(INTAKE_URL, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(payload)
+    })
+    .then(function(res){ return res.ok ? res.json() : Promise.reject(res); })
+    .then(function(){
+      msg.style.cssText = 'display:block;margin-top:24px;padding:18px 24px;font-size:15px;line-height:1.6;background:rgba(63,163,232,0.12);border-left:3px solid #3fa3e8;color:#c8dff0;';
+      msg.textContent = 'Thank you for your message. We aim to respond within two business days.';
+      form.reset();
+      btn.textContent = 'SENT';
+    })
+    .catch(function(){
+      msg.style.cssText = 'display:block;margin-top:24px;padding:18px 24px;font-size:15px;line-height:1.6;background:rgba(200,16,46,0.1);border-left:3px solid #c8102e;color:#e8a0a8;';
+      msg.textContent = 'Something went wrong. Please try again or email us directly at darwin1942@darwin1942.com.';
+      btn.disabled = false;
+      btn.textContent = 'SEND MESSAGE';
+    });
+  });
+})();
+</script>
 
 <script>
 (function(){
