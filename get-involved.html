@@ -634,7 +634,7 @@
     .then(function(res){
       if(res.ok || res.status === 201){
         msg.style.cssText = 'display:block;margin-top:24px;padding:18px 24px;font-size:15px;line-height:1.6;background:rgba(63,163,232,0.12);border-left:3px solid #3fa3e8;color:#c8dff0;';
-        msg.textContent = 'Thank you for your enquiry. A member of our team will be in touch with your partnership presentation shortly.';
+        msg.textContent = 'Thank you for your enquiry. A member of our team will be in touch with your partnership presentation shortly. If you don\'t see it in your inbox, please check your junk/spam folder.';
         document.getElementById('rsl-interest-form').reset();
         btn.textContent = 'SUBMITTED';
       } else {
