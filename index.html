@@ -151,27 +151,30 @@
     background:var(--white);
     color:var(--dark);
     font-family:var(--heading-font);
-    font-size:clamp(12px, 1.8vh, 15px);
+    font-size:clamp(17px, 4.4vh, 32px);
     font-weight:400;
-    letter-spacing:1.5px;
-    padding:clamp(10px, 1.8vh, 15px) 34px;
+    letter-spacing:1px;
+    padding:clamp(8px, 1.4vh, 14px) 34px;
     text-decoration:none;
     text-transform:uppercase;
+    text-shadow:none;
     border-bottom:none;
     transition:background 0.2s, color 0.2s;
   }
   header.nav nav ul.nav-open li.nav-cta a.nav-cta-btn:hover{
     background:var(--red);
     color:var(--white);
-    padding-left:34px;
   }
   header.nav nav ul.nav-open li.nav-cta .nav-cta-note{
     font-family:'Arial Narrow', Arial, sans-serif;
-    font-size:clamp(10px, 1.4vh, 12px);
+    font-size:clamp(8px, 1vw, 11px);
     letter-spacing:0.3px;
     color:rgba(255,255,255,0.5);
-    line-height:1.5;
-    max-width:460px;
+    line-height:1.4;
+    white-space:nowrap;
+    overflow:hidden;
+    text-overflow:ellipsis;
+    max-width:100%;
   }
   body.menu-open{overflow:hidden;}
   body.menu-open header.nav{
