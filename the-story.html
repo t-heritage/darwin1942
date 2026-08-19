@@ -68,6 +68,34 @@
     text-underline-offset:6px;
   }
 
+  /* Hamburger menu is always on — nav list is a toggled dropdown at every screen size. */
+  header.nav nav{
+    position:absolute;
+    top:100%;
+    left:0;right:0;
+  }
+  header.nav nav ul{
+    display:none;
+    background:rgba(8,21,36,0.97);
+    flex-direction:column;
+    gap:0;
+    padding:12px 0 20px;
+    z-index:100;
+    width:100%;
+  }
+  header.nav nav ul.nav-open{display:flex;}
+  header.nav nav ul li a{
+    display:block;
+    padding:14px 32px;
+    font-size:20px;
+    border-bottom:1px solid rgba(255,255,255,0.07);
+  }
+  header.nav nav ul li.active a{
+    border-bottom:1px solid rgba(255,255,255,0.07);
+    padding-bottom:14px;
+    text-decoration:none;
+  }
+
   /* PAGE HERO */
   .page-hero{
     position:relative;
@@ -281,7 +309,7 @@
 
   /* HAMBURGER */
   .nav-toggle{
-    display:none;
+    display:block;
     background:none;
     border:none;
     color:var(--white);
