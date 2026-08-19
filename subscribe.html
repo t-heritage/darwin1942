@@ -6,7 +6,7 @@
 <meta http-equiv="Pragma" content="no-cache">
 <meta http-equiv="Expires" content="0">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Veteran Stories | Darwin 1942 — The Forgotten War That Reshaped Australia</title>
+<title>Subscribe | Darwin 1942 — The Forgotten War That Reshaped Australia</title>
 <link rel="icon" type="image/png" sizes="32x32" href="images/favicon/favicon-32x32.png">
 <link rel="icon" type="image/png" sizes="16x16" href="images/favicon/favicon-16x16.png">
 <link rel="icon" type="image/png" sizes="192x192" href="images/favicon/favicon-192.png">
@@ -50,12 +50,12 @@
     text-decoration:none;
     display:block;
   }
-  nav ul{list-style:none;display:flex;gap:32px;}
+  nav ul{list-style:none;display:flex;gap:34px;flex-wrap:wrap;justify-content:flex-end;}
   nav a{
     font-family:var(--heading-font);
     color:var(--white);
     text-decoration:none;
-    font-size:22px;
+    font-size:20px;
     font-weight:400;
     letter-spacing:1.5px;
     text-shadow:0 2px 8px rgba(4,14,26,0.55), 0 4px 16px rgba(4,14,26,0.3);
@@ -72,7 +72,7 @@
   .page-hero{
     position:relative;
     width:100%;
-    min-height:52vh;
+    min-height:40vh;
     overflow:hidden;
     display:flex;
     align-items:flex-end;
@@ -84,23 +84,10 @@
     object-fit:cover;
     object-position:center top;
   }
-  .page-hero-overlay{
-    position:absolute;
-    inset:0;
-    background:none;
-  }
   .page-hero-content{
     position:relative;
     z-index:2;
-    padding:160px 40px 60px;
-  }
-  .page-hero-content .hero-label{
-    font-family:var(--heading-font);
-    font-size:16px;
-    letter-spacing:4px;
-    color:var(--white);
-    margin-bottom:12px;
-    text-shadow:0 1px 6px rgba(4,14,26,0.9);
+    padding:140px 40px 56px;
   }
   .page-hero-content h1{
     font-family:var(--heading-font);
@@ -117,20 +104,21 @@
     font-size:18px;
     line-height:1.6;
     color:#ffffff;
-    max-width:600px;
+    max-width:560px;
   }
 
-  /* CONTENT */
-  .content-section{
-    background:var(--sky-blue);
-    padding:72px 40px;
+  /* SUBSCRIBE CARD */
+  .subscribe-section{
+    display:flex;
+    justify-content:center;
+    padding:64px 40px 96px;
   }
-  .content-section.dark{
+  .subscribe-card{
     background:var(--card-dark);
-  }
-  .content-wrap{
-    max-width:960px;
-    margin:0 auto;
+    max-width:640px;
+    width:100%;
+    padding:56px;
+    text-align:center;
   }
   .section-label{
     font-family:var(--heading-font);
@@ -138,117 +126,89 @@
     letter-spacing:4px;
     color:#ffffff;
     margin-bottom:12px;
-    text-transform:uppercase;
   }
   .section-heading{
     font-family:var(--heading-font);
-    font-size:clamp(32px, 4vw, 52px);
+    font-size:clamp(28px, 3vw, 40px);
     font-weight:400;
     letter-spacing:1.5px;
-    margin-bottom:28px;
+    margin-bottom:18px;
     line-height:1.1;
   }
-  .section-body{
-    font-size:19px;
-    line-height:1.75;
-    color:#d8eaf6;
-    max-width:740px;
-  }
-  .section-body p + p{
-    margin-top:18px;
-  }
-  .content-section.dark .section-body{
-    color:#a8c4d8;
+  .subscribe-card .section-body{
+    font-size:15px;
+    line-height:1.7;
+    color:#e6eef5;
+    margin-bottom:32px;
   }
 
-  /* QUOTE BLOCK */
-  .quote-block{
-    border-left:4px solid var(--red);
-    padding:24px 32px;
-    margin:48px 0;
-    background:rgba(200,16,46,0.08);
-  }
-  .quote-block blockquote{
-    font-family:var(--heading-font);
-    font-size:clamp(20px, 2.2vw, 28px);
-    font-weight:400;
-    letter-spacing:0.5px;
-    color:var(--white);
-    line-height:1.4;
-  }
-  .quote-block cite{
-    display:block;
-    margin-top:14px;
-    font-size:14px;
-    color:#ffffff;
-    letter-spacing:1px;
-    font-style:normal;
-  }
-
-  /* SHARE CARD */
-  .share-card{
-    background:var(--card-dark);
-    border-top:3px solid var(--red);
-    padding:48px 40px;
-    margin-top:48px;
+  .subscribe-form{
     display:flex;
     flex-direction:column;
-    gap:24px;
+    gap:16px;
+    text-align:left;
   }
-  .share-card h3{
+  .form-group{
+    display:flex;
+    flex-direction:column;
+  }
+  .form-group label{
     font-family:var(--heading-font);
-    font-size:clamp(26px, 3vw, 40px);
+    font-size:13px;
     letter-spacing:1.5px;
-  }
-  .share-card p{
-    font-size:16px;
-    line-height:1.7;
-    color:#a8c4d8;
-    max-width:600px;
-  }
-  .btn-facebook{
-    display:inline-flex;
-    align-items:center;
-    gap:12px;
-    background:#1877f2;
     color:var(--white);
-    text-decoration:none;
+    margin-bottom:8px;
+  }
+  .form-group label .required{
+    color:var(--red);
+    margin-left:2px;
+  }
+  .form-group input{
+    background:rgba(255,255,255,0.06);
+    border:1px solid rgba(255,255,255,0.18);
+    color:var(--white);
+    font-family:'Arial Narrow', Arial, sans-serif;
+    font-size:16px;
+    padding:13px 16px;
+    outline:none;
+    transition:border-color 0.2s;
+    border-radius:0;
+    -webkit-appearance:none;
+    appearance:none;
+  }
+  .form-group input::placeholder{color:rgba(255,255,255,0.28);}
+  .form-group input:focus{
+    border-color:var(--red);
+    background:rgba(255,255,255,0.09);
+  }
+
+  .btn-submit{
+    display:inline-block;
+    background:var(--red);
+    border:2px solid var(--red);
+    color:var(--white);
     font-family:var(--heading-font);
     font-size:16px;
-    letter-spacing:1.5px;
-    padding:16px 32px;
-    align-self:flex-start;
+    letter-spacing:2px;
+    padding:15px 44px;
+    cursor:pointer;
+    text-transform:uppercase;
     transition:background 0.2s;
-  }
-  .btn-facebook:hover{background:#1464d8;}
-  .btn-facebook svg{width:20px;height:20px;fill:var(--white);flex-shrink:0;}
-
-  /* CTA STRIP */
-  .cta-strip{
-    background:var(--red);
-    padding:48px 40px;
+    border-radius:0;
+    -webkit-appearance:none;
+    appearance:none;
+    margin-top:8px;
+    width:100%;
     text-align:center;
   }
-  .cta-strip h2{
-    font-family:var(--heading-font);
-    font-size:clamp(28px, 3.5vw, 44px);
-    font-weight:400;
-    letter-spacing:2px;
-    margin-bottom:22px;
+  .btn-submit:hover{background:transparent;}
+  .form-note{
+    margin-top:16px;
+    font-size:12px;
+    color:#7d9bb0;
+    line-height:1.6;
+    text-align:center;
   }
-  .btn{
-    display:inline-block;
-    border:1px solid var(--white);
-    color:var(--white);
-    text-decoration:none;
-    font-family:var(--heading-font);
-    font-size:14px;
-    font-weight:400;
-    letter-spacing:1.5px;
-    padding:14px 32px;
-    transition:background 0.2s, color 0.2s;
-  }
-  .btn:hover{background:var(--white);color:var(--red);}
 
   /* FOOTER */
   footer{
@@ -274,18 +234,17 @@
   .copyright{font-family:var(--heading-font);font-size:15px;letter-spacing:0.5px;color:var(--dark);}
   .footer-spacer{width:130px;}
 
-  /* RESPONSIVE */
   @media (max-width:900px){
-    nav ul{gap:16px;}
+    nav ul{gap:18px;}
     nav a{font-size:14px;}
   }
   @media (max-width:640px){
     header.nav{padding:18px 20px 0;}
     nav ul{flex-wrap:wrap;gap:10px 16px;}
     nav a{font-size:11px;}
-    .page-hero-content{padding:130px 20px 48px;}
-    .content-section{padding:48px 20px;}
-    .share-card{padding:32px 24px;}
+    .page-hero-content{padding:120px 20px 44px;}
+    .subscribe-section{padding:40px 20px 64px;}
+    .subscribe-card{padding:36px 24px;}
     footer{flex-direction:column;gap:14px;padding:18px 20px;}
     .footer-spacer{display:none;}
   }
@@ -330,7 +289,7 @@
     header.nav nav ul li a{
       display:block;
       padding:14px 32px;
-      font-size:22px;
+      font-size:20px;
       border-bottom:1px solid rgba(255,255,255,0.07);
     }
     header.nav nav ul li.active a{
@@ -338,31 +297,9 @@
       padding-bottom:14px;
       text-decoration:none;
     }
-    /* push page content below fixed nav */
-    .page-hero{padding-top:56px;}
-  }
-
-  @media (max-width:768px){
-    .page-hero{min-height:38vh;}
+    .page-hero{padding-top:56px;min-height:34vh;}
     .page-hero-content{padding:110px 20px 40px;}
-    .content-section{padding:44px 20px;}
-    .cta-strip{padding:40px 20px;}
-    .btn,.btn-cta{display:block;width:100%;text-align:center;box-sizing:border-box;}
-    footer{flex-direction:column;gap:12px;padding:18px 20px;text-align:center;}
-    .footer-spacer{display:none;}
   }
-  @media (max-width:1024px) and (min-width:769px){
-    .page-hero{min-height:44vh;}
-    .page-hero-content{padding:140px 32px 52px;}
-    .content-section{padding:60px 32px;}
-  }
-
-  @media (max-width:768px){
-    .share-card{padding:28px 20px;}
-    .btn-facebook{width:100%;text-align:center;justify-content:center;}
-    .quote-block{padding:20px 20px;}
-  }
-
 
   /* GRAIN OVERLAY */
   body::after{
@@ -394,58 +331,43 @@
       <li><a href="about-the-film.html">ABOUT THE FILM</a></li>
       <li><a href="community-impact.html">COMMUNITY IMPACT</a></li>
       <li><a href="get-involved.html">GET INVOLVED</a></li>
-      <li class="active"><a href="veteran-stories.html">VETERAN STORIES</a></li>
+      <li><a href="veteran-stories.html">VETERAN STORIES</a></li>
       <li><a href="donate.html">DONATE</a></li>
       <li><a href="contact.html">CONTACT</a></li>
-      <li><a href="subscribe.html">SUBSCRIBE</a></li>
+      <li class="active"><a href="subscribe.html">SUBSCRIBE</a></li>
     </ul>
   </nav>
 </header>
 
 <section class="page-hero">
   <img class="page-hero-bg" src="images/background.webp" alt="Darwin 1942">
-  <div class="page-hero-overlay"></div>
   <div class="page-hero-content">
-    <div class="hero-label">VETERAN STORIES</div>
-    <h1>STORIES WORTH TELLING</h1>
-    <p class="hero-sub">Our Veterans are heroes — and every Veteran has a story worth telling.</p>
+    <h1>SUBSCRIBE</h1>
+    <p class="hero-sub">Join the Darwin 1942 mailing list for updates on the film's production, release, screenings and ways to get involved.</p>
   </div>
 </section>
 
-<section class="content-section">
-  <div class="content-wrap">
-    <div class="section-label">Share Your Story</div>
-    <h2 class="section-heading">COMMEMORATE A VETERAN STORY</h2>
-    <div class="section-body">
-      <p>Darwin 1942 is a place where Veterans, their families, friends, and RSL Sub Branches and Clubs can share their stories.</p>
-      <p>Tell us about the service and sacrifice of Veterans, share photos and videos of your parents and grandparents, share information from your RSL Sub Branch or Club.</p>
-      <p>Together, we will remember their service and sacrifice, and honour our Veterans.</p>
-    </div>
+<section class="subscribe-section">
+  <div class="subscribe-card">
+    <div class="section-label">Stay Connected</div>
+    <h2 class="section-heading">JOIN THE MAILING LIST</h2>
+    <p class="section-body">Be the first to hear about screening announcements, Veteran stories, production updates and how you can support Darwin 1942 as we approach the 85th anniversary of the bombing of Darwin in 2027.</p>
 
-    <div class="quote-block">
-      <blockquote>"Without our Veterans, the Australia we live in today will be a totally, totally different place. We should never forget what the Veterans have done."</blockquote>
-      <cite>— Dr Norman Cramp, Director of the Darwin Military Museum</cite>
-    </div>
-
-    <div class="section-body">
-      <p><strong>LEST WE FORGET.</strong></p>
-    </div>
-
-    <div class="share-card">
-      <h3>JOIN THE DARWIN 1942 VETERAN STORIES GROUP TO SHARE YOUR STORY.</h3>
-      <p>Join families and friends of Veterans sharing stories, photos and memorabilia in our Facebook group.</p>
-      <a class="btn-facebook" href="https://www.facebook.com/groups/darwin1942.veteranstories" target="_blank" rel="noopener noreferrer">
-        <svg viewBox="0 0 24 24"><path d="M22 12a10 10 0 1 0-11.6 9.9v-7H7.9V12h2.5V9.8c0-2.5 1.5-3.9 3.8-3.9 1.1 0 2.2.2 2.2.2v2.5h-1.3c-1.2 0-1.6.8-1.6 1.6V12h2.8l-.4 2.9h-2.4v7A10 10 0 0 0 22 12Z"/></svg>
-        SHARE YOUR STORY ON FACEBOOK
-      </a>
-    </div>
+    <form name="subscribe" id="subscribe-form" class="subscribe-form">
+      <div class="form-group">
+        <label for="sub-name">Name</label>
+        <input type="text" id="sub-name" name="name" placeholder="Your full name">
+      </div>
+      <div class="form-group">
+        <label for="sub-email">Email Address <span class="required">*</span></label>
+        <input type="email" id="sub-email" name="email" placeholder="your@email.com" required>
+      </div>
+      <button type="submit" class="btn-submit" id="subscribe-submit-btn">SUBSCRIBE</button>
+      <p class="form-note">We respect your privacy. You can unsubscribe at any time.</p>
+      <div id="subscribe-form-message" style="display:none;margin-top:8px;padding:18px 24px;font-size:15px;line-height:1.6;"></div>
+    </form>
   </div>
 </section>
-
-<div class="cta-strip">
-  <h2>PARTNER WITH DARWIN 1942</h2>
-  <a class="btn" href="get-involved.html">GET INVOLVED</a>
-</div>
 
 <footer>
   <div class="socials">
@@ -455,6 +377,48 @@
   <div class="footer-spacer"></div>
 </footer>
 
+<script>
+(function(){
+  var INTAKE_URL = 'https://nwchcduhlhhppvyhxbpo.supabase.co/functions/v1/darwin1942-intake';
+  var form = document.getElementById('subscribe-form');
+  var btn = document.getElementById('subscribe-submit-btn');
+  var msg = document.getElementById('subscribe-form-message');
+  if(!form) return;
+
+  form.addEventListener('submit', function(e){
+    e.preventDefault();
+    btn.disabled = true;
+    btn.textContent = 'SUBSCRIBING...';
+    msg.style.display = 'none';
+
+    var payload = {
+      event_type: 'subscribed_to_darwin1942',
+      source: 'subscribe',
+      name: document.getElementById('sub-name').value.trim(),
+      email: document.getElementById('sub-email').value.trim()
+    };
+
+    fetch(INTAKE_URL, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(payload)
+    })
+    .then(function(res){ return res.ok ? res.json() : Promise.reject(res); })
+    .then(function(){
+      msg.style.cssText = 'display:block;margin-top:8px;padding:18px 24px;font-size:15px;line-height:1.6;background:rgba(63,163,232,0.12);border-left:3px solid #3fa3e8;color:#c8dff0;';
+      msg.textContent = 'Thanks for subscribing! You\'re on the list for Darwin 1942 updates.';
+      form.reset();
+      btn.textContent = 'SUBSCRIBED';
+    })
+    .catch(function(){
+      msg.style.cssText = 'display:block;margin-top:8px;padding:18px 24px;font-size:15px;line-height:1.6;background:rgba(200,16,46,0.1);border-left:3px solid #c8102e;color:#e8a0a8;';
+      msg.textContent = 'Something went wrong. Please try again or email us directly at darwin1942@darwin1942.com.';
+      btn.disabled = false;
+      btn.textContent = 'SUBSCRIBE';
+    });
+  });
+})();
+</script>
 
 <script>
 (function(){
