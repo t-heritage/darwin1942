@@ -491,6 +491,9 @@
     background-repeat:repeat;
   }
 
+  /* Dropdown parent is a label, not a link */
+  header.nav nav ul li a.nav-parent{cursor:pointer;}
+
   /* Dropdown inside the hamburger overlay: always shown, indented */
   header.nav nav ul.nav-open ul.dropdown{
     display:block;
@@ -616,8 +619,9 @@
   <nav>
     <ul id="nav-menu">
       <li class="has-dropdown">
-        <a href="the-story.html">THE STORY</a>
+        <a class="nav-parent" tabindex="0">ABOUT</a>
         <ul class="dropdown">
+          <li><a href="the-story.html">THE STORY</a></li>
           <li><a href="about-the-film.html">ABOUT THE FILM</a></li>
         </ul>
       </li>
