@@ -570,26 +570,26 @@
       max-width:none;
     }
     header.nav nav ul > li > a{
-      padding:0 0 8px;
+      padding:0 0 6px;
       font-size:clamp(14px, 1.25vw, 20px);
       line-height:1.15;
       letter-spacing:1.5px;
       white-space:nowrap;
+      /* Border rather than text-decoration so the rule runs unbroken
+         under the label and its dropdown caret. */
+      text-decoration:none;
+      border-bottom:2px solid transparent;
     }
     header.nav nav ul li a:hover{padding-left:0;}
     header.nav nav ul > li.active > a{
       color:var(--white);
-      text-decoration:underline;
-      text-decoration-color:var(--white);
-      text-decoration-thickness:2px;
-      text-underline-offset:6px;
+      text-decoration:none;
+      border-bottom-color:var(--white);
     }
     header.nav nav ul > li.has-dropdown:has(.dropdown li.active) > a{
       color:var(--white);
-      text-decoration:underline;
-      text-decoration-color:var(--white);
-      text-decoration-thickness:2px;
-      text-underline-offset:6px;
+      text-decoration:none;
+      border-bottom-color:var(--white);
     }
 
     /* THE STORY dropdown */
@@ -597,6 +597,7 @@
       content:'\25BE';
       font-size:0.68em;
       margin-left:8px;
+      letter-spacing:0;
       vertical-align:middle;
     }
     header.nav nav ul.dropdown{
