@@ -505,7 +505,7 @@
     }
     header.nav nav ul > li > a{
       padding:0 0 6px;
-      font-size:clamp(16px, 1.5vw, 25px);
+      font-size:clamp(17px, 1.75vw, 29px);
       line-height:1.15;
       letter-spacing:1.5px;
       white-space:nowrap;
@@ -560,7 +560,7 @@
     header.nav nav ul.dropdown li a{
       display:block;
       padding:9px 20px;
-      font-size:clamp(15px, 1.2vw, 20px);
+      font-size:clamp(16px, 1.35vw, 23px);
       line-height:1.2;
       letter-spacing:1.5px;
       white-space:nowrap;
@@ -576,30 +576,24 @@
       text-decoration:none;
     }
 
-    /* DONATE renders as a button here too; its blurb stays overlay-only */
-    header.nav nav ul > li.nav-cta{
-      display:block;
-      margin-left:clamp(2px, 0.5vw, 10px);
-    }
+    /* DONATE is a plain item here; the button treatment is overlay-only */
+    header.nav nav ul > li.nav-cta{display:block;}
     header.nav nav ul > li.nav-cta .nav-cta-note{display:none;}
     header.nav nav ul > li.nav-cta > a.nav-cta-btn{
-      display:block;
-      background:var(--white);
-      color:var(--dark);
-      padding:clamp(6px, 0.55vw, 10px) clamp(14px, 1.35vw, 24px);
-      border-bottom:none;
-      text-shadow:none;
-      white-space:nowrap;
-      transition:background 0.2s, color 0.2s;
+      background:none;
+      color:var(--white);
+      padding:0 0 6px;
+      text-transform:none;
+      text-shadow:0 2px 8px rgba(4,14,26,0.55), 0 4px 16px rgba(4,14,26,0.3);
+      border-bottom:2px solid transparent;
     }
     header.nav nav ul > li.nav-cta > a.nav-cta-btn:hover{
-      background:var(--red);
-      color:var(--white);
-      padding-left:clamp(14px, 1.35vw, 24px);
+      background:none;
+      color:var(--red);
     }
     header.nav nav ul > li.nav-cta.active > a.nav-cta-btn{
-      background:var(--red);
       color:var(--white);
+      border-bottom-color:var(--white);
     }
   }
 </style>
@@ -621,9 +615,9 @@
         </ul>
       </li>
       <li><a href="community-impact.html">COMMUNITY IMPACT</a></li>
-      <li><a href="veteran-stories.html">SHARE VETERAN STORIES</a></li>
-      <li><a href="contact.html">CONTACT</a></li>
       <li><a href="get-involved.html">GET INVOLVED</a></li>
+      <li><a href="veteran-stories.html">VETERAN STORIES</a></li>
+      <li><a href="contact.html">CONTACT</a></li>
       <li><a href="subscribe.html">SUBSCRIBE</a></li>
       <li class="nav-cta">
         <a class="nav-cta-btn" href="donate.html">DONATE</a>
