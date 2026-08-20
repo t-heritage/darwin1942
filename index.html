@@ -416,19 +416,40 @@
       padding:14px 20px;
     }
     .nav-toggle{display:block;}
-    /* Hero: use background-image on mobile so it fills properly */
+    /* Hero on mobile: the background belongs to .hero-top only. Putting it on
+       .hero made cover() scale the image to the full section height (cards
+       included), which blew it up and cropped the scene out of frame. */
     .hero{
       min-height:60vh;
-      background:url('images/background.webp') center top/cover no-repeat;
+      background:none;
       display:flex;
       flex-direction:column;
     }
     .hero-bg{display:none;}
-    .hero-gradient{
-      background:linear-gradient(180deg, transparent 30%, rgba(8,21,36,0.85) 80%);
+    .hero-gradient{display:none;}
+    .hero-top{
+      position:relative;
+      flex:0 0 auto;
+      display:flex;
+      flex-direction:column;
+      justify-content:flex-end;
+      background:url('images/background.webp') center center/cover no-repeat;
+      /* Never shorter than the image's own height at full width (1536x1024),
+         so cover never has to crop horizontally. */
+      min-height:calc(100vw * 1024 / 1536);
+      padding-bottom:12px;
+    }
+    .hero-top::after{
+      content:'';
+      position:absolute;
+      inset:0;
+      background:linear-gradient(180deg, transparent 30%, rgba(8,21,36,0.85) 100%);
+      pointer-events:none;
+      z-index:1;
     }
     .hero-tagline{
       position:relative;
+      z-index:2;
       top:auto;left:auto;
       margin:80px 20px 0;
       font-size:6.5vw;
@@ -437,9 +458,10 @@
     }
     .hero-logo{
       position:relative;
+      z-index:2;
       top:auto;left:auto;bottom:auto;
       width:75%;
-      margin:16px 20px;
+      margin:16px 20px 0;
       flex:0 0 auto;
     }
     .info-strip{
@@ -631,14 +653,16 @@
   <section class="hero">
     <img class="hero-bg" src="images/background.webp" alt="Darwin 1942 background">
     <div class="hero-gradient"></div>
-    <div class="hero-tagline">
-      STORIES OF THE<br>
-      VETERANS WHO<br>
-      DEFENDED AUSTRALIA<br>
-      <span class="accent">LEST WE FORGET.</span>
-    </div>
-    <div class="hero-logo">
-      <img src="images/logo.webp" alt="Darwin 1942 — The Forgotten War That Reshaped Australia">
+    <div class="hero-top">
+      <div class="hero-tagline">
+        STORIES OF THE<br>
+        VETERANS WHO<br>
+        DEFENDED AUSTRALIA<br>
+        <span class="accent">LEST WE FORGET.</span>
+      </div>
+      <div class="hero-logo">
+        <img src="images/logo.webp" alt="Darwin 1942 — The Forgotten War That Reshaped Australia">
+      </div>
     </div>
     <div class="info-strip">
     <div class="info-card">
