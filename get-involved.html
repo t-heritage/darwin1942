@@ -199,6 +199,10 @@
     header.nav nav ul.nav-open{padding:calc(56px + 2vh) 28px calc(18px + 2vh);}
   }
 
+  html{scroll-behavior:smooth;}
+  @media (prefers-reduced-motion:reduce){html{scroll-behavior:auto;}}
+  #rsl-form{scroll-margin-top:70px;}
+
   /* PAGE HERO */
   .page-hero{
     position:relative;
@@ -241,6 +245,23 @@
     color:#ffffff;
     max-width:640px;
   }
+  .page-hero-content .btn{
+    margin-top:28px;
+  }
+  .btn{
+    display:inline-block;
+    border:1px solid var(--white);
+    color:var(--white);
+    text-decoration:none;
+    font-family:var(--heading-font);
+    font-size:14px;
+    font-weight:400;
+    letter-spacing:1.5px;
+    padding:14px 32px;
+    text-shadow:0 2px 8px rgba(4,14,26,0.45);
+    transition:background 0.2s, color 0.2s;
+  }
+  .btn:hover{background:var(--white);color:var(--red);text-shadow:none;}
 
   /* CONTENT */
   .content-section{
@@ -725,6 +746,7 @@
   <div class="page-hero-content">
     <h1>GET INVOLVED</h1>
     <p class="hero-sub">Partner with Darwin 1942 to bring this important Australian story to life ahead of the 85th anniversary of the bombing of Darwin in February 2027.</p>
+    <a class="btn" href="#rsl-form">REGISTER YOUR INTEREST</a>
   </div>
 </section>
 
