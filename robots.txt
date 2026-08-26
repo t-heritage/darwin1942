@@ -1,0 +1,5 @@
+User-agent: *
+Allow: /
+Disallow: /rsl/
+
+Sitemap: https://darwin1942.com/sitemap.xml
