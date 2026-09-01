@@ -148,7 +148,7 @@
 <!-- ============================================================== LOGIN -->
 <div class="auth-wrap" id="view-login">
   <div class="auth">
-    <h1>CALL WORKSHEET</h1>
+    <h1>Call worksheet</h1>
     <p class="sub">Darwin 1942 &mdash; RSL club outreach</p>
     <form id="login-form">
       <div class="field">
@@ -159,7 +159,7 @@
         <label for="password">Password</label>
         <input type="password" id="password" autocomplete="current-password" required>
       </div>
-      <button type="submit" class="btn-primary" id="login-btn">LOG IN</button>
+      <button type="submit" class="btn-primary" id="login-btn">Log in</button>
       <div class="msg" id="login-msg"></div>
     </form>
   </div>
@@ -168,7 +168,7 @@
 <!-- ============================================================== SETUP -->
 <div class="auth-wrap hidden" id="view-setup">
   <div class="auth">
-    <h1>SET YOUR PASSWORD</h1>
+    <h1>Set your password</h1>
     <p class="sub" id="setup-sub">&nbsp;</p>
     <form id="setup-form">
       <div class="field">
@@ -180,7 +180,7 @@
         <label for="confirm-password">Confirm password <span class="req">*</span></label>
         <input type="password" id="confirm-password" autocomplete="new-password" required>
       </div>
-      <button type="submit" class="btn-primary" id="setup-btn">SAVE PASSWORD</button>
+      <button type="submit" class="btn-primary" id="setup-btn">Save password</button>
       <div class="msg" id="setup-msg"></div>
     </form>
   </div>
@@ -190,12 +190,12 @@
 <div class="hidden" id="view-work">
   <div class="topbar">
     <div>
-      <h1>CALL WORKSHEET</h1>
+      <h1>Call worksheet</h1>
       <div class="who"><span id="who-name"></span> &middot; <button class="linkbtn" id="logout-btn">log out</button></div>
     </div>
     <div class="tabs hidden" id="admin-tabs">
-      <button class="tab on" id="tab-work">WORKSHEET</button>
-      <button class="tab" id="tab-admin">OVERVIEW</button>
+      <button class="tab on" id="tab-work">Worksheet</button>
+      <button class="tab" id="tab-admin">Overview</button>
     </div>
     <div class="counters">
       <div><b id="c-mine">0</b> my calls</div>
@@ -272,13 +272,13 @@
       var cf = document.getElementById("confirm-password").value;
       if (pw !== cf) { msg("setup-msg", "Those two passwords do not match.", "error"); return; }
       var btn = document.getElementById("setup-btn");
-      btn.disabled = true; btn.textContent = "SAVING...";
+      btn.disabled = true; btn.textContent = "Saving...";
       api("setup", { setup_token: setupToken, password: pw }).then(function(){
         msg("setup-msg", "Password saved. Taking you to the login screen...", "ok");
         setTimeout(function(){ location.href = location.pathname; }, 1400);
       }).catch(function(err){
         msg("setup-msg", err.message, "error");
-        btn.disabled = false; btn.textContent = "SAVE PASSWORD";
+        btn.disabled = false; btn.textContent = "Save password";
       });
     });
     return;
@@ -289,7 +289,7 @@
     e.preventDefault();
     clearMsg("login-msg");
     var btn = document.getElementById("login-btn");
-    btn.disabled = true; btn.textContent = "LOGGING IN...";
+    btn.disabled = true; btn.textContent = "Logging in...";
     api("login", {
       username: document.getElementById("username").value,
       password: document.getElementById("password").value
@@ -300,7 +300,7 @@
       startWork(r.caller);
     }).catch(function(err){
       msg("login-msg", err.message, "error");
-      btn.disabled = false; btn.textContent = "LOG IN";
+      btn.disabled = false; btn.textContent = "Log in";
     });
   });
 
@@ -309,7 +309,7 @@
     try { localStorage.removeItem(TOKEN_KEY); } catch(e){}
     show("view-login");
     var btn = document.getElementById("login-btn");
-    btn.disabled = false; btn.textContent = "LOG IN";
+    btn.disabled = false; btn.textContent = "Log in";
   }
 
   document.getElementById("logout-btn").addEventListener("click", function(){
@@ -342,7 +342,7 @@
     var el = document.getElementById("admin-body");
     el.innerHTML = '<div class="empty"><p>Loading overview...</p></div>';
     api("overview", {}).then(function(d){ renderOverview(el, d); }).catch(function(e){
-      el.innerHTML = '<div class="empty"><h2>COULD NOT LOAD</h2><p>' + esc(e.message) + "</p></div>";
+      el.innerHTML = '<div class="empty"><h2>Could not load</h2><p>' + esc(e.message) + "</p></div>";
     });
   }
 
@@ -370,7 +370,7 @@
     var failing = "";
     if (d.failing && d.failing.length) {
       failing =
-        "<h2>AWAITING DELIVERY</h2><div class='scroll'><table><thead><tr>" +
+        "<h2>Awaiting delivery</h2><div class='scroll'><table><thead><tr>" +
         "<th>Club</th><th>Recorded</th><th>Sheet tries</th><th>Sheet error</th><th>CIO tries</th><th>CIO error</th>" +
         "</tr></thead><tbody>" +
         d.failing.map(function(f){
@@ -382,7 +382,7 @@
 
     var outcomes = Object.keys(d.by_outcome || {});
     var outcomeHtml = outcomes.length
-      ? '<h2>OUTCOMES</h2><div class="cards">' +
+      ? '<h2>Outcomes</h2><div class="cards">' +
         outcomes.sort(function(a,b){ return d.by_outcome[b]-d.by_outcome[a]; })
           .map(function(k){ return card(d.by_outcome[k], k.replace(/_/g," ")); }).join("") + "</div>"
       : "";
@@ -391,7 +391,7 @@
       '<div class="admin">' +
         banner +
 
-        "<h2>PROGRESS</h2>" +
+        "<h2>Progress</h2>" +
         '<div class="cards">' +
           card(c.total, "clubs on the list") +
           card(c.done, "called", "good") +
@@ -402,7 +402,7 @@
           card(c.wants_info, "asked for info") +
         "</div>" +
 
-        "<h2>CALLERS</h2><div class='scroll'><table><thead><tr>" +
+        "<h2>Callers</h2><div class='scroll'><table><thead><tr>" +
           "<th>Name</th><th>Username</th><th>Calls</th><th>On a call</th><th>Password set</th><th>Last login</th>" +
         "</tr></thead><tbody>" +
         (d.callers.length
@@ -418,7 +418,7 @@
 
         outcomeHtml +
 
-        "<h2>RECENT CALLS</h2><div class='scroll'><table><thead><tr>" +
+        "<h2>Recent calls</h2><div class='scroll'><table><thead><tr>" +
           "<th>When</th><th>Club</th><th>Caller</th><th>Outcome</th><th>Decision maker</th>" +
           "<th>Wants info</th><th>In sheet</th><th>Notes</th>" +
         "</tr></thead><tbody>" +
@@ -440,7 +440,7 @@
 
         failing +
 
-        "<h2>DO NOT CALL &mdash; ALREADY CAME TO US</h2><div class='scroll'><table><thead><tr>" +
+        "<h2>Do not call &mdash; already came to us</h2><div class='scroll'><table><thead><tr>" +
           "<th>Club</th><th>Where</th><th>Why</th>" +
         "</tr></thead><tbody>" +
         (d.do_not_call.length
@@ -471,14 +471,14 @@
       current = r.target;
       if (!r.target) {
         document.getElementById("work-body").innerHTML =
-          '<div class="empty"><h2>NOTHING LEFT TO CALL</h2>' +
+          '<div class="empty"><h2>Nothing left to call</h2>' +
           '<p>Every club in your queue has been called. Check back after the next round opens.</p></div>';
         return;
       }
       render(r.target, r.history || []);
     }).catch(function(e){
       document.getElementById("work-body").innerHTML =
-        '<div class="empty"><h2>SOMETHING WENT WRONG</h2><p>' + esc(e.message) + '</p></div>';
+        '<div class="empty"><h2>Something went wrong</h2><p>' + esc(e.message) + '</p></div>';
     });
   }
 
@@ -499,7 +499,7 @@
     var historyHtml = "";
     if (history.length) {
       historyHtml =
-        '<div class="history"><h4>PREVIOUS CONTACT</h4><ul>' +
+        '<div class="history"><h4>Previous contact</h4><ul>' +
         history.map(function(h){
           var when = h.created_at ? new Date(h.created_at).toLocaleDateString("en-AU") : "";
           var who = (h.d1942_callers && h.d1942_callers.name) || "";
@@ -534,7 +534,7 @@
 
         // The script is deliberately plain HTML you can edit in this file.
         '<div class="script">' +
-          "<h3>CALL SCRIPT</h3>" +
+          "<h3>Call script</h3>" +
 
           '<div class="step"><b>1. Opening</b>' +
             'Hi, it’s <em>[your name]</em> calling from the Darwin 1942 documentary team. ' +
@@ -572,7 +572,7 @@
 
       // ------------------------------------------------------- right: form
       '<div class="pane">' +
-        '<div class="form-head"><h2>RECORD THE CALL</h2></div>' +
+        '<div class="form-head"><h2>Record the call</h2></div>' +
         '<form id="call-form">' +
           '<div class="field"><label for="f-dm">Who is the appropriate decision maker?</label>' +
             '<input type="text" id="f-dm" autocomplete="off"></div>' +
@@ -614,7 +614,7 @@
           "</div>" +
 
           '<div class="actions">' +
-            '<button type="submit" class="btn-primary" id="save-btn">DONE &mdash; SAVE AND NEXT</button>' +
+            '<button type="submit" class="btn-primary" id="save-btn">Done &mdash; save and next</button>' +
             '<button type="button" class="btn-ghost" id="skip-btn">Skip for now</button>' +
           "</div>" +
           '<div class="msg" id="save-msg"></div>' +
@@ -648,7 +648,7 @@
     }
 
     var btn = document.getElementById("save-btn");
-    btn.disabled = true; btn.textContent = "SAVING...";
+    btn.disabled = true; btn.textContent = "Saving...";
 
     api("save", {
       target_id: current.id,
@@ -666,7 +666,7 @@
       loadNext();
     }).catch(function(err){
       msg("save-msg", err.message, "error");
-      btn.disabled = false; btn.textContent = "DONE — SAVE AND NEXT";
+      btn.disabled = false; btn.textContent = "Done — save and next";
     });
   }
 
