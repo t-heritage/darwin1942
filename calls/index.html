@@ -94,9 +94,13 @@
     .topbar{position:sticky;top:0;}
   }
 
-  .club-head{display:flex;align-items:flex-start;justify-content:space-between;gap:20px;flex-wrap:wrap;margin-bottom:20px;}
+  /* nowrap + min-width:0 keeps the phone on the right and makes a long
+     address wrap onto a second line rather than shoving the button down. */
+  .club-head{display:flex;align-items:flex-start;justify-content:space-between;
+             gap:20px;flex-wrap:nowrap;margin-bottom:20px;}
+  @media (max-width:700px){ .club-head{flex-wrap:wrap;} }
   .club-name{font-size:27px;line-height:1.15;margin-bottom:4px;}
-  .club-id{min-width:0;}
+  .club-id{min-width:0;flex:1 1 auto;}
   .club-sub{color:var(--muted);margin:0;font-size:14px;}
   .club-web{margin:3px 0 0;font-size:14px;overflow-wrap:anywhere;}
   .phone-cta{
@@ -118,12 +122,16 @@
     .facts{grid-template-columns:repeat(2,minmax(0,1fr));}
   }
 
-  /* Sits on the pane's own background rather than a panel of its own. */
-  .script{background:none;border:0;margin:0;padding:0;}
-  .script h3{font-size:15px;margin-bottom:10px;color:var(--sky-blue);}
-  .script .step{margin-bottom:14px;}
+  /* Same ground as the form fields, so the script reads as an input surface. */
+  .script{background:rgba(255,255,255,0.07);border:0;margin:0;
+          padding:20px 22px;border-radius:6px;}
+  .script h2{font-size:27px;line-height:1.15;margin-bottom:14px;color:var(--white);}
+  .script .step{margin-bottom:18px;}
   .script .step:last-child{margin-bottom:0;}
-  .script .step b{color:#d6e6f2;font-family:var(--heading-font);letter-spacing:normal;font-size:14px;display:block;}
+  /* Colour and weight separate the step title from the words to say,
+     without resorting to uppercase. */
+  .script .step b{display:block;margin-bottom:5px;color:var(--sky-blue);
+                  font-family:var(--heading-font);font-size:15px;font-weight:700;}
   .script em{color:var(--white);font-style:normal;font-weight:700;}
   /* The things to actually ask, set apart from the words to say. */
   .script-do{display:block;margin-top:8px;padding-left:14px;
@@ -140,7 +148,9 @@
   .checkbox input{margin-top:3px;width:18px;height:18px;flex-shrink:0;accent-color:var(--sky-blue);}
   .checkbox label{margin:0;font-family:inherit;font-weight:400;letter-spacing:0;font-size:14px;color:var(--muted);line-height:1.5;}
   .actions{display:flex;gap:12px;margin-top:22px;flex-wrap:wrap;}
-  .actions .btn-primary{width:auto;flex:1;min-width:180px;}
+  .actions .btn-primary{width:auto;flex:1;min-width:180px;
+                        background:var(--sky-blue);}
+  .actions .btn-primary:hover:not(:disabled){background:#1f6f9e;}
   .btn-ghost{background:none;border:1px solid var(--line);color:var(--muted);padding:14px 20px;font-size:14px;font-weight:400;border-radius:6px;}
   .btn-ghost:hover:not(:disabled){border-color:var(--sky-blue);color:var(--white);}
 
@@ -149,9 +159,9 @@
      half filled, so it reads as a state switch rather than two actions. */
   .tabs{display:inline-flex;background:rgba(255,255,255,0.07);border-radius:999px;padding:3px;gap:0;}
   .tab{background:none;border:0;color:var(--muted);padding:7px 20px;font-size:13px;
-       border-radius:999px;transition:background 0.15s,color 0.15s;}
+       font-weight:400;border-radius:999px;transition:background 0.15s,color 0.15s;}
   .tab:hover:not(.on){color:var(--white);}
-  .tab.on{background:var(--sky-blue);color:var(--white);}
+  .tab.on{background:var(--sky-blue);color:var(--white);font-weight:700;}
   .admin{padding:24px;max-width:1400px;}
   .admin h2{font-size:17px;margin:30px 0 12px;}
   .admin h2:first-child{margin-top:0;}
@@ -174,12 +184,12 @@
   .pill.ok{background:rgba(43,140,196,0.22);color:#c8dff0;}
   .pill.bad{background:rgba(200,16,46,0.22);color:#e8a0a8;}
   .banner{padding:14px 18px;margin-bottom:16px;font-size:14px;border-radius:10px;}
-  .banner.ok{background:rgba(43,140,196,0.12);border-left:3px solid var(--sky-blue);color:#c8dff0;}
+  .banner.ok{background:rgba(43,140,196,0.12);border-left:0;color:#c8dff0;}
   .banner.bad{background:rgba(200,16,46,0.12);border-left:3px solid var(--red);color:#e8a0a8;}
   .nowrap{white-space:nowrap;}
 
   /* ------------------------------------------------------------- charts */
-  .panel{background:var(--card-dark);border-radius:10px;padding:22px 24px;}
+  .panel{background:var(--card-dark);border-radius:10px;padding:22px 24px;position:relative;}
   .panel-title{font-size:15px;margin-bottom:16px;}
   /* Counters take the greater share; the pie needs less room to read. */
   .progress-split{display:grid;grid-template-columns:6fr 4fr;gap:12px;align-items:start;}
@@ -213,12 +223,25 @@
            background:var(--sky-blue);color:var(--white);font-size:15px;font-weight:700;
            display:inline-flex;align-items:center;justify-content:center;}
   .funnel li:last-child .fn-step{background:#3fbf6f;}
-  .fn-label{display:block;font-weight:700;font-size:14px;}
-  .fn-hint{display:block;color:var(--muted);font-size:12px;margin:2px 0 12px;
-           min-height:2.4em;}
+  .fn-label{display:block;color:var(--muted);font-size:12px;margin-bottom:12px;
+            min-height:2.4em;}
   .fn-num{display:block;font-weight:700;font-size:26px;line-height:1.1;margin-top:12px;}
   .fn-pct{display:block;color:var(--muted);font-size:12px;margin-top:2px;}
-  .fn-note{color:var(--muted);font-size:13px;margin:22px 0 0;}
+  /* Explanatory note, tucked into the panel corner. Focusable so it is
+     reachable without a mouse. */
+  .info-i{position:absolute;top:14px;right:16px;width:20px;height:20px;border-radius:50%;
+          background:rgba(255,255,255,0.12);color:var(--muted);font-size:12px;font-weight:700;
+          display:inline-flex;align-items:center;justify-content:center;cursor:help;
+          font-style:italic;}
+  .info-i:hover,.info-i:focus,.info-i.open{background:var(--sky-blue);color:var(--white);outline:none;}
+  .info-i .tip{position:absolute;top:26px;right:0;width:270px;background:#0b1c2c;
+               color:var(--muted);font-size:12px;font-weight:400;font-style:normal;
+               line-height:1.5;padding:10px 12px;border-radius:8px;text-align:left;
+               box-shadow:0 6px 20px rgba(0,0,0,0.45);opacity:0;visibility:hidden;
+               transition:opacity 0.12s;z-index:5;}
+  /* .open covers touch, where hover never fires and the icon would
+     otherwise be dead. */
+  .info-i:hover .tip,.info-i:focus .tip,.info-i.open .tip{opacity:1;visibility:visible;}
   @media (max-width:860px){
     .funnel{grid-template-columns:repeat(2,minmax(0,1fr));gap:22px 0;}
     .funnel li::before,.funnel li::after{display:none;}
@@ -595,23 +618,37 @@
   // count and description underneath.
   function funnelChart(f, totalClubs){
     var stages = [
-      { key:"waiting",     label:"Waiting to be called", hint:"never rung" },
-      { key:"called_once", label:"Called",               hint:"spoke to someone" },
-      { key:"into_cio",    label:"Into Customer.io",     hint:"sent the pack" },
-      { key:"second_call", label:"Second call",          hint:"a later round" },
-      { key:"committed",   label:"Committed money",      hint:"agreed a package" }
+      { key:"waiting",     label:"Waiting to be called" },
+      { key:"called_once", label:"Called" },
+      { key:"into_cio",    label:"Into Customer.io" },
+      { key:"second_call", label:"Second call" },
+      { key:"committed",   label:"Committed money" }
     ];
     return '<ol class="funnel">' + stages.map(function(st, i){
       var n = Number(f[st.key] || 0);
       var pctOfAll = totalClubs ? Math.round((n / totalClubs) * 100) : 0;
       return "<li>" +
                '<span class="fn-label">' + esc(st.label) + "</span>" +
-               '<span class="fn-hint">' + esc(st.hint) + "</span>" +
                '<span class="fn-step">' + (i + 1) + "</span>" +
                '<span class="fn-num">' + n + "</span>" +
                '<span class="fn-pct">' + pctOfAll + "% of clubs</span>" +
              "</li>";
     }).join("") + "</ol>";
+  }
+
+  // Tap to toggle, since hover does not exist on touch. Delegated so it keeps
+  // working after the overview re-renders.
+  document.addEventListener("click", function(e){
+    var icon = e.target.closest && e.target.closest(".info-i");
+    document.querySelectorAll(".info-i.open").forEach(function(n){
+      if (n !== icon) n.classList.remove("open");
+    });
+    if (icon) icon.classList.toggle("open");
+  });
+
+  function infoIcon(text){
+    return '<span class="info-i" tabindex="0" role="note" aria-label="' + esc(text) + '">i' +
+             '<span class="tip">' + esc(text) + "</span></span>";
   }
 
   function card(value, label, cls){
@@ -650,10 +687,10 @@
 
     var outcomeHtml =
       '<h2>Where the clubs are up to</h2><div class="panel">' +
+        infoIcon("Every club counted once, at each stage it has reached. " +
+                 "Attempts that reached nobody (no answer, reception, wrong number) " +
+                 "do not count as a call. " + c.do_not_call + " club(s) are excluded as do-not-call.") +
         funnelChart(d.funnel || {}, c.total) +
-        '<p class="fn-note">Every club counted once, at each stage it has reached. ' +
-        'Attempts that reached nobody (no answer, reception, wrong number) do not count as a call. ' +
-        esc(c.do_not_call) + ' club(s) are excluded as do-not-call.</p>' +
       "</div>";
 
     el.innerHTML =
@@ -771,6 +808,8 @@
     var firstName = (t.primary_person || "").split(" ")[0] || "";
 
     var websites = (t.websites || "").split(";")[0].trim();
+    // Shown without the scheme or www, but the link still points at the full URL.
+    var webLabel = websites.replace(/^https?:\/\//i, "").replace(/^www\./i, "").replace(/\/$/, "");
     var place = t.full_address || [t.suburb, t.state, t.postcode].filter(Boolean).join(" ");
     if (t.distance_km) place += " (" + t.distance_km + " km from Sydney)";
 
@@ -808,7 +847,7 @@
           fact("Email on file", t.primary_email) +
           (websites
             ? '<div class="fact"><dt>Website</dt><dd><a href="' + esc(websites) +
-              '" target="_blank" rel="noopener">' + esc(websites) + "</a></dd></div>"
+              '" target="_blank" rel="noopener">' + esc(webLabel) + "</a></dd></div>"
             : '<div class="fact"></div>') +
           fact("Gaming machines", t.egm_count) +
           fact("Gaming revenue", money(t.gaming_revenue)) +
@@ -817,7 +856,7 @@
 
         // The script is deliberately plain HTML you can edit in this file.
         '<div class="script">' +
-          "<h3>Call script</h3>" +
+          "<h2>Call script</h2>" +
 
           '<div class="step"><b>1. Opening</b>' +
             "Hi, it’s <em>" + esc((meCaller && meCaller.name) || "[your name]") + "</em> calling from the Darwin 1942 documentary team. " +
