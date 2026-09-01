@@ -521,7 +521,8 @@
 
   function startWork(caller){
     meCaller = caller;
-    document.getElementById("who-name").textContent = caller.name;
+    document.getElementById("who-name").textContent =
+      caller.name + (caller.call_group ? "  ·  list " + caller.call_group + " of 5" : "");
     show("view-work");
     if (caller.is_admin) {
       document.getElementById("admin-tabs").classList.remove("hidden");
@@ -740,18 +741,36 @@
 
         outcomeHtml +
 
+        "<h2>The five lists</h2><div class='panel'>" +
+          infoIcon("The club list is split into five fixed groups, interleaved by club size so " +
+                   "each holds a comparable spread. A caller only ever sees their own group, so two " +
+                   "callers can never be offered the same club. Admins are unrestricted and can cover any group.") +
+          '<div class="cards cards-tight">' +
+            (d.groups || []).map(function(g){
+              return card(g.remaining + " / " + g.total, "list " + g.call_group + " left to call",
+                          g.remaining === 0 ? "good" : "");
+            }).join("") +
+          "</div>" +
+        "</div>" +
+
         "<h2>Callers</h2><div class='scroll'><table><thead><tr>" +
-          "<th>Name</th><th>Username</th><th>Calls</th><th>On a call</th><th>Password set</th><th>Last login</th>" +
+          "<th>Name</th><th>Username</th><th>List</th><th>Calls</th><th>Left in list</th>" +
+          "<th>On a call</th><th>Password set</th><th>Last login</th>" +
         "</tr></thead><tbody>" +
         (d.callers.length
           ? d.callers.map(function(x){
               return "<tr><td>" + esc(x.name) + (x.is_admin ? ' <span class="pill">admin</span>' : "") + "</td>" +
-                     "<td>" + esc(x.username) + "</td><td>" + esc(x.calls) + "</td><td>" + esc(x.assigned_now) + "</td>" +
+                     "<td>" + esc(x.username) + "</td>" +
+                     "<td>" + (x.call_group ? esc(x.call_group) + " of 5"
+                                            : '<span class="pill">any</span>') + "</td>" +
+                     "<td>" + esc(x.calls) + "</td>" +
+                     "<td>" + (x.call_group ? esc(x.group_remaining) : "\u2014") + "</td>" +
+                     "<td>" + esc(x.assigned_now) + "</td>" +
                      "<td>" + (x.password_set ? '<span class="pill ok">yes</span>'
                                               : '<span class="pill bad">setup link not used</span>') + "</td>" +
                      '<td class="nowrap">' + esc(when(x.last_login_at)) + "</td></tr>";
             }).join("")
-          : '<tr><td colspan="6">No callers set up yet.</td></tr>') +
+          : '<tr><td colspan="8">No callers set up yet.</td></tr>') +
         "</tbody></table></div>" +
 
         "<h2>Recent calls</h2><div class='scroll'><table><thead><tr>" +
