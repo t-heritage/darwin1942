@@ -677,20 +677,30 @@
   function yesno(v){ return v ? '<span class="pill ok">yes</span>' : '<span class="pill">no</span>'; }
 
   function renderOverview(el, d){
-    var c = d.counters, dl = d.delivery;
-    var undelivered = dl.unsynced_sheet + dl.unsynced_cio;
+    var c = d.counters, dl = d.delivery || {};
+    var waiting = Number(dl.waiting || 0);
+    var failing = Number(dl.failing || 0);
 
-    // Delivery is the guarantee that matters most, so it leads.
-    var banner = undelivered === 0
-      ? '<div class="banner ok">Every recorded call has reached the spreadsheet and Customer.io. Nothing is outstanding.</div>'
-      : '<div class="banner bad"><b>' + undelivered + ' call(s) not yet delivered.</b> ' +
-        'They are safely recorded in Supabase and the sweeper retries every 5 minutes — no data is lost. ' +
-        'Details below.</div>';
+    // Delivery leads, but only a genuine failure is alarming. A call saved
+    // between sweeps is simply queued, and saying otherwise trains people to
+    // ignore the banner.
+    var banner;
+    if (failing > 0) {
+      banner = '<div class="banner bad"><b>' + failing + ' call' + (failing === 1 ? "" : "s") +
+        ' could not be delivered yet.</b> Safely recorded in Supabase, and the sweeper keeps ' +
+        'retrying — no data is lost. Details below.</div>';
+    } else if (waiting > 0) {
+      banner = '<div class="banner ok">' + waiting + ' call' + (waiting === 1 ? "" : "s") +
+        ' queued for the next sync. The sweeper runs every 5 minutes.</div>';
+    } else {
+      banner = '<div class="banner ok">Every recorded call has reached the spreadsheet and ' +
+        'Customer.io. Nothing is outstanding.</div>';
+    }
 
-    var failing = "";
+    var failingHtml = "";
     if (d.failing && d.failing.length) {
-      failing =
-        "<h2>Awaiting delivery</h2><div class='scroll'><table><thead><tr>" +
+      failingHtml =
+        "<h2>Could not be delivered yet</h2><div class='scroll'><table><thead><tr>" +
         "<th>Club</th><th>Recorded</th><th>Sheet tries</th><th>Sheet error</th><th>CIO tries</th><th>CIO error</th>" +
         "</tr></thead><tbody>" +
         d.failing.map(function(f){
@@ -764,7 +774,7 @@
           : '<tr><td colspan="8">No calls recorded yet.</td></tr>') +
         "</tbody></table></div>" +
 
-        failing +
+        failingHtml +
 
         "<h2>Do not call &mdash; already came to us</h2><div class='scroll'><table><thead><tr>" +
           "<th>Club</th><th>Where</th><th>Why</th>" +
