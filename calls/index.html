@@ -38,7 +38,7 @@
   #admin-body{overflow-y:auto;}
   .topbar{
     display:flex;align-items:center;justify-content:space-between;gap:16px;
-    padding:12px 20px;background:var(--card-dark);border-bottom:1px solid var(--line);
+    padding:12px 20px;background:var(--card-dark);border-bottom:0;
     flex:0 0 auto;z-index:10;flex-wrap:wrap;
   }
   .topbar h1{font-size:18px;}
@@ -94,7 +94,9 @@
 
   .club-head{display:flex;align-items:flex-start;justify-content:space-between;gap:20px;flex-wrap:wrap;margin-bottom:20px;}
   .club-name{font-size:27px;line-height:1.15;margin-bottom:4px;}
+  .club-id{min-width:0;}
   .club-sub{color:var(--muted);margin:0;font-size:14px;}
+  .club-web{margin:3px 0 0;font-size:14px;overflow-wrap:anywhere;}
   .phone-cta{
     display:inline-block;background:var(--sky-blue);color:var(--white);text-decoration:none;
     font-family:var(--heading-font);font-weight:700;font-size:21px;letter-spacing:normal;padding:11px 22px;
@@ -103,14 +105,16 @@
   .phone-cta:hover{background:#1f6f9e;}
   .phone-cta.none{background:rgba(255,255,255,0.08);color:var(--muted);pointer-events:none;font-size:14px;font-weight:400;white-space:normal;max-width:230px;}
 
-  /* Two label/value pairs per row. minmax(0,1fr) lets long values (the
-     address, the website) wrap instead of forcing the grid wider. */
-  .facts{display:grid;grid-template-columns:auto minmax(0,1fr) auto minmax(0,1fr);
-         gap:8px 14px;font-size:14px;margin-bottom:22px;align-items:baseline;}
-  .facts dt{color:var(--muted);white-space:nowrap;}
+  /* Each fact is its own cell with the label stacked above the value. */
+  .facts{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));
+         gap:14px 20px;font-size:14px;margin:0 0 16px;}
+  .facts-3{grid-template-columns:repeat(3,minmax(0,1fr));margin-bottom:22px;}
+  .fact{min-width:0;}
+  .fact.wide{grid-column:1 / -1;}
+  .facts dt{color:var(--muted);font-size:12px;margin-bottom:2px;}
   .facts dd{margin:0;min-width:0;overflow-wrap:anywhere;}
   @media (max-width:1200px){
-    .facts{grid-template-columns:auto minmax(0,1fr);}
+    .facts,.facts-3{grid-template-columns:repeat(2,minmax(0,1fr));}
   }
 
   /* Full-bleed across the column: negative margins cancel the pane's padding
@@ -129,9 +133,9 @@
 
   .form-head{display:flex;align-items:baseline;justify-content:space-between;gap:12px;margin-bottom:18px;}
   .form-head h2{font-size:20px;}
-  .checkbox{display:flex;gap:10px;align-items:flex-start;background:rgba(43,140,196,0.1);border-left:3px solid var(--sky-blue);padding:12px 14px;}
+  .checkbox{display:flex;gap:10px;align-items:flex-start;background:none;border:0;padding:0;}
   .checkbox input{margin-top:3px;width:18px;height:18px;flex-shrink:0;accent-color:var(--sky-blue);}
-  .checkbox label{margin:0;font-family:inherit;letter-spacing:0;font-size:14px;color:#c8dff0;line-height:1.5;}
+  .checkbox label{margin:0;font-family:inherit;font-weight:400;letter-spacing:0;font-size:14px;color:var(--muted);line-height:1.5;}
   .actions{display:flex;gap:12px;margin-top:22px;flex-wrap:wrap;}
   .actions .btn-primary{width:auto;flex:1;min-width:180px;}
   .btn-ghost{background:none;border:1px solid var(--line);color:var(--muted);padding:14px 20px;font-size:14px;font-weight:400;border-radius:6px;}
@@ -182,21 +186,29 @@
   .lg-val{font-weight:700;white-space:nowrap;}
   .lg-pct{color:var(--muted);font-weight:400;margin-left:6px;}
 
-  .funnel{list-style:none;margin:0;padding:0;}
-  .funnel li{margin-bottom:18px;}
-  .funnel li:last-child{margin-bottom:0;}
-  .fn-head{display:flex;align-items:baseline;gap:10px;margin-bottom:7px;flex-wrap:wrap;}
-  .fn-step{width:21px;height:21px;border-radius:50%;background:rgba(255,255,255,0.1);
-           color:var(--muted);font-size:12px;display:inline-flex;align-items:center;
-           justify-content:center;flex-shrink:0;align-self:center;}
-  .fn-label{font-weight:700;}
-  .fn-hint{color:var(--muted);font-size:13px;flex:1 1 auto;}
-  .fn-num{font-weight:700;font-size:17px;white-space:nowrap;}
-  .fn-pct{color:var(--muted);font-weight:400;font-size:13px;margin-left:8px;}
-  .fn-track{background:rgba(255,255,255,0.07);border-radius:999px;height:9px;overflow:hidden;}
-  .fn-bar{background:var(--sky-blue);height:100%;border-radius:999px;min-width:0;}
-  .funnel li:last-child .fn-bar{background:#3fbf6f;}
-  .fn-note{color:var(--muted);font-size:13px;margin:18px 0 0;}
+  /* Five numbered steps across one line, joined by a rule that runs behind
+     the circles. Each step's detail sits under its own number. */
+  .funnel{list-style:none;margin:0;padding:0;display:grid;
+          grid-template-columns:repeat(5,minmax(0,1fr));}
+  .funnel li{position:relative;text-align:center;padding:0 6px;}
+  .funnel li::before,.funnel li::after{
+    content:"";position:absolute;top:18px;height:2px;background:rgba(255,255,255,0.12);}
+  .funnel li::before{left:0;right:50%;}
+  .funnel li::after{left:50%;right:0;}
+  .funnel li:first-child::before,.funnel li:last-child::after{display:none;}
+  .fn-step{position:relative;z-index:1;width:38px;height:38px;border-radius:50%;
+           background:var(--sky-blue);color:var(--white);font-size:15px;font-weight:700;
+           display:inline-flex;align-items:center;justify-content:center;}
+  .funnel li:last-child .fn-step{background:#3fbf6f;}
+  .fn-num{display:block;font-weight:700;font-size:26px;line-height:1.1;margin-top:12px;}
+  .fn-pct{display:block;color:var(--muted);font-size:12px;margin-top:2px;}
+  .fn-label{display:block;font-weight:700;font-size:14px;margin-top:8px;}
+  .fn-hint{display:block;color:var(--muted);font-size:12px;margin-top:2px;}
+  .fn-note{color:var(--muted);font-size:13px;margin:22px 0 0;}
+  @media (max-width:860px){
+    .funnel{grid-template-columns:repeat(2,minmax(0,1fr));gap:22px 0;}
+    .funnel li::before,.funnel li::after{display:none;}
+  }
 
   .empty{padding:80px 24px;text-align:center;}
   .empty h2{font-size:24px;margin-bottom:10px;}
@@ -487,8 +499,8 @@
            "</div>";
   }
 
-  // Horizontal stage timeline. Bars are scaled against the widest stage rather
-  // than the club total, so the later, smaller stages stay readable.
+  // Horizontal stage timeline: five numbered steps on one line, each with its
+  // count and description underneath.
   function funnelChart(f, totalClubs){
     var stages = [
       { key:"waiting",     label:"Waiting to be called", hint:"never rung" },
@@ -497,18 +509,15 @@
       { key:"second_call", label:"Second call",          hint:"a later round" },
       { key:"committed",   label:"Committed money",      hint:"agreed a package" }
     ];
-    var max = stages.reduce(function(m,st){ return Math.max(m, Number(f[st.key] || 0)); }, 0) || 1;
-
     return '<ol class="funnel">' + stages.map(function(st, i){
       var n = Number(f[st.key] || 0);
-      var pctOfMax = Math.max((n / max) * 100, n > 0 ? 3 : 0);
       var pctOfAll = totalClubs ? Math.round((n / totalClubs) * 100) : 0;
       return "<li>" +
-               '<div class="fn-head"><span class="fn-step">' + (i + 1) + "</span>" +
-                 '<span class="fn-label">' + esc(st.label) + "</span>" +
-                 '<span class="fn-hint">' + esc(st.hint) + "</span>" +
-                 '<span class="fn-num">' + n + '<span class="fn-pct">' + pctOfAll + "% of clubs</span></span></div>" +
-               '<div class="fn-track"><div class="fn-bar" style="width:' + pctOfMax.toFixed(1) + '%"></div></div>' +
+               '<span class="fn-step">' + (i + 1) + "</span>" +
+               '<span class="fn-num">' + n + "</span>" +
+               '<span class="fn-pct">' + pctOfAll + "% of clubs</span>" +
+               '<span class="fn-label">' + esc(st.label) + "</span>" +
+               '<span class="fn-hint">' + esc(st.hint) + "</span>" +
              "</li>";
     }).join("") + "</ol>";
   }
@@ -651,9 +660,11 @@
     });
   }
 
-  function fact(label, value){
+  // A div wrapping dt/dd inside a dl is valid HTML and is what lets each fact
+  // be a grid cell with its label stacked above the value.
+  function fact(label, value, cls){
     if (!value && value !== 0) return "";
-    return "<dt>" + esc(label) + "</dt><dd>" + esc(value) + "</dd>";
+    return '<div class="fact ' + (cls || "") + '"><dt>' + esc(label) + "</dt><dd>" + esc(value) + "</dd></div>";
   }
 
   function money(v){ return v ? String(v) : ""; }
@@ -664,6 +675,8 @@
     var firstName = (t.primary_person || "").split(" ")[0] || "";
 
     var websites = (t.websites || "").split(";")[0].trim();
+    var place = [t.suburb, t.state, t.postcode].filter(Boolean).join(" ");
+    if (t.distance_km) place += " (" + t.distance_km + " km from Sydney)";
 
     var historyHtml = "";
     if (history.length) {
@@ -685,9 +698,12 @@
       // -------------------------------------------------- left: who + script
       '<div class="pane pane-left">' +
         '<div class="club-head">' +
-          "<div>" +
+          '<div class="club-id">' +
             '<h2 class="club-name">' + esc(t.entity_name) + "</h2>" +
-            '<p class="club-sub">' + esc([t.suburb, t.state, t.postcode].filter(Boolean).join(" ")) + "</p>" +
+            '<p class="club-sub">' + esc(place) + "</p>" +
+            (websites
+              ? '<p class="club-web"><a href="' + esc(websites) + '" target="_blank" rel="noopener">' + esc(websites) + "</a></p>"
+              : "") +
           "</div>" +
           (phone
             ? '<a class="phone-cta" href="' + esc(telHref) + '">' + esc(phone) + "</a>"
@@ -695,14 +711,14 @@
         "</div>" +
 
         '<dl class="facts">' +
-          fact("Address", t.full_address) +
+          fact("Address", t.full_address, "wide") +
           fact("Contact on file", t.primary_person) +
           fact("Email on file", t.primary_email) +
+        "</dl>" +
+        '<dl class="facts facts-3">' +
           fact("Gaming machines", t.egm_count) +
           fact("Gaming revenue", money(t.gaming_revenue)) +
           fact("State profit rank", t.gaming_rank) +
-          fact("Distance from Sydney", t.distance_km ? t.distance_km + " km" : "") +
-          (websites ? "<dt>Website</dt><dd><a href='" + esc(websites) + "' target='_blank' rel='noopener'>" + esc(websites) + "</a></dd>" : "") +
         "</dl>" +
 
         // The script is deliberately plain HTML you can edit in this file.
@@ -759,22 +775,19 @@
             '<div class="field"><label for="f-phone">Their direct phone number</label>' +
               '<input type="tel" id="f-phone" autocomplete="off"></div>' +
           "</div>" +
+          '<div class="field"><label for="f-grants">Does the club participate in ClubGRANTS / community funding?</label>' +
+            '<input type="text" id="f-grants" autocomplete="off" placeholder="Yes / No / details"></div>' +
           '<div class="field-row">' +
-            '<div class="field"><label for="f-grants">Does the club participate in ClubGRANTS / community funding?</label>' +
-              '<input type="text" id="f-grants" autocomplete="off" placeholder="Yes / No / details"></div>' +
             '<div class="field"><label for="f-others">Who else is involved in the decision?</label>' +
               '<input type="text" id="f-others" autocomplete="off"></div>' +
+            '<div class="field"><label for="f-board">When does the relevant committee or board meet?</label>' +
+              '<input type="text" id="f-board" autocomplete="off" placeholder="e.g. third Tuesday monthly"></div>' +
           "</div>" +
-          '<div class="field"><label for="f-board">When does the relevant committee or board meet?</label>' +
-            '<input type="text" id="f-board" autocomplete="off" placeholder="e.g. third Tuesday monthly, next 18 Sept"></div>' +
 
           '<div class="field checkbox">' +
             '<input type="checkbox" id="f-wants">' +
             '<label for="f-wants">They want to receive more information &mdash; add them to Customer.io and send the partnership pack. Needs their email address above.</label>' +
           "</div>" +
-
-          '<div class="field" style="margin-top:18px;"><label for="f-notes">Any other notes on how the call went</label>' +
-            '<textarea id="f-notes" rows="4"></textarea></div>' +
 
           '<div class="field"><label for="f-outcome">Outcome <span class="req">*</span></label>' +
             '<select id="f-outcome" required>' +
@@ -792,6 +805,9 @@
             "</select>" +
             '<p style="color:var(--muted);font-size:13px;margin:6px 0 0;">No answer, reception and wrong number put the club back in the pool to try again later. Everything else marks it called.</p>' +
           "</div>" +
+
+          '<div class="field"><label for="f-notes">Any other notes on how the call went</label>' +
+            '<textarea id="f-notes" rows="4"></textarea></div>' +
 
           '<div class="actions">' +
             '<button type="submit" class="btn-primary" id="save-btn">Done &mdash; save and next</button>' +
