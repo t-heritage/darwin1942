@@ -64,6 +64,9 @@
   textarea{resize:vertical;min-height:80px;}
   select option{background:var(--card-dark);color:var(--white);}
   .field{margin-bottom:18px;}
+  /* Short, related fields pair up; long ones stay full width. */
+  .field-row{display:grid;grid-template-columns:1fr 1fr;gap:0 16px;}
+  @media (max-width:1200px){ .field-row{grid-template-columns:1fr;} }
   .btn-primary{background:var(--red);color:var(--white);padding:14px 28px;font-size:15px;width:100%;border-radius:6px;}
   .btn-primary:hover:not(:disabled){background:#a50d26;}
   .msg{margin-top:18px;padding:12px 16px;font-size:14px;display:none;border-radius:6px;}
@@ -100,11 +103,20 @@
   .phone-cta:hover{background:#1f6f9e;}
   .phone-cta.none{background:rgba(255,255,255,0.08);color:var(--muted);pointer-events:none;font-size:14px;font-weight:400;white-space:normal;max-width:230px;}
 
-  .facts{display:grid;grid-template-columns:auto 1fr;gap:6px 14px;font-size:14px;margin-bottom:22px;}
-  .facts dt{color:var(--muted);}
-  .facts dd{margin:0;}
+  /* Two label/value pairs per row. minmax(0,1fr) lets long values (the
+     address, the website) wrap instead of forcing the grid wider. */
+  .facts{display:grid;grid-template-columns:auto minmax(0,1fr) auto minmax(0,1fr);
+         gap:8px 14px;font-size:14px;margin-bottom:22px;align-items:baseline;}
+  .facts dt{color:var(--muted);white-space:nowrap;}
+  .facts dd{margin:0;min-width:0;overflow-wrap:anywhere;}
+  @media (max-width:1200px){
+    .facts{grid-template-columns:auto minmax(0,1fr);}
+  }
 
-  .script{background:var(--card-dark);border:1px solid var(--line);border-left:3px solid var(--sky-blue);padding:18px 20px;}
+  /* Full-bleed across the column: negative margins cancel the pane's padding
+     so the block runs edge to edge, with the padding put back inside. */
+  .script{background:var(--card-dark);border:0;
+          margin:0 -24px;padding:20px 24px;}
   .script h3{font-size:15px;margin-bottom:10px;color:var(--sky-blue);}
   .script .step{margin-bottom:14px;}
   .script .step:last-child{margin-bottom:0;}
@@ -126,31 +138,65 @@
   .btn-ghost:hover:not(:disabled){border-color:var(--sky-blue);color:var(--white);}
 
   /* ---------------------------------------------------------- admin view */
-  .tabs{display:flex;gap:8px;}
-  .tab{background:none;border:1px solid var(--line);color:var(--muted);padding:7px 16px;font-size:13px;border-radius:6px;}
-  .tab.on{background:var(--sky-blue);border-color:var(--sky-blue);color:var(--white);}
+  /* One segmented control, not two buttons: a single track with the active
+     half filled, so it reads as a state switch rather than two actions. */
+  .tabs{display:inline-flex;background:rgba(255,255,255,0.07);border-radius:999px;padding:3px;gap:0;}
+  .tab{background:none;border:0;color:var(--muted);padding:7px 20px;font-size:13px;
+       border-radius:999px;transition:background 0.15s,color 0.15s;}
+  .tab:hover:not(.on){color:var(--white);}
+  .tab.on{background:var(--sky-blue);color:var(--white);}
   .admin{padding:24px;max-width:1400px;}
   .admin h2{font-size:17px;margin:30px 0 12px;}
   .admin h2:first-child{margin-top:0;}
   .cards{display:grid;grid-template-columns:repeat(auto-fit,minmax(140px,1fr));gap:12px;}
-  .card{background:var(--card-dark);border:1px solid var(--line);padding:16px 18px;}
+  .card{background:var(--card-dark);border:0;border-radius:10px;padding:16px 18px;}
   .card b{display:block;font-family:var(--heading-font);font-weight:700;font-size:28px;line-height:1;margin-bottom:5px;}
   .card span{color:var(--muted);font-size:13px;}
-  .card.warn{border-color:var(--red);}
+  .card.warn{box-shadow:inset 0 0 0 1px var(--red);}
   .card.warn b{color:#e8a0a8;}
-  .card.good{border-color:rgba(43,140,196,0.6);}
+  .card.good{box-shadow:inset 0 0 0 1px rgba(43,140,196,0.6);}
   table{width:100%;border-collapse:collapse;font-size:14px;}
-  th,td{text-align:left;padding:9px 12px;border-bottom:1px solid var(--line);vertical-align:top;}
+  th,td{text-align:left;padding:10px 14px;border-bottom:1px solid var(--line);vertical-align:top;}
+  tbody tr:last-child td{border-bottom:0;}
   th{font-family:var(--heading-font);letter-spacing:normal;color:var(--muted);font-weight:700;font-size:13px;white-space:nowrap;}
   tbody tr:hover{background:rgba(255,255,255,0.03);}
-  .scroll{overflow-x:auto;border:1px solid var(--line);background:var(--card-dark);}
+  /* Rounded, borderless table shell. overflow:hidden clips the first and last
+     rows to the corner radius; the row separators are kept. */
+  .scroll{overflow-x:auto;border:0;border-radius:10px;background:var(--card-dark);}
   .pill{display:inline-block;padding:2px 9px;font-size:12px;background:rgba(255,255,255,0.09);white-space:nowrap;border-radius:20px;}
   .pill.ok{background:rgba(43,140,196,0.22);color:#c8dff0;}
   .pill.bad{background:rgba(200,16,46,0.22);color:#e8a0a8;}
-  .banner{padding:14px 18px;margin-bottom:16px;font-size:14px;}
+  .banner{padding:14px 18px;margin-bottom:16px;font-size:14px;border-radius:10px;}
   .banner.ok{background:rgba(43,140,196,0.12);border-left:3px solid var(--sky-blue);color:#c8dff0;}
   .banner.bad{background:rgba(200,16,46,0.12);border-left:3px solid var(--red);color:#e8a0a8;}
   .nowrap{white-space:nowrap;}
+
+  /* ------------------------------------------------------------- charts */
+  .panel{background:var(--card-dark);border-radius:10px;padding:22px 24px;}
+  .chart-empty{color:var(--muted);font-size:14px;}
+  .chart-row{display:flex;gap:34px;align-items:center;flex-wrap:wrap;}
+  .legend{list-style:none;margin:0;padding:0;flex:1 1 320px;min-width:280px;}
+  .legend li{display:flex;align-items:center;gap:10px;padding:5px 0;font-size:14px;}
+  .swatch{width:12px;height:12px;border-radius:3px;flex-shrink:0;}
+  .lg-label{flex:1 1 auto;}
+  .lg-val{font-weight:700;white-space:nowrap;}
+  .lg-pct{color:var(--muted);font-weight:400;margin-left:6px;}
+
+  .funnel{list-style:none;margin:0;padding:0;}
+  .funnel li{margin-bottom:18px;}
+  .funnel li:last-child{margin-bottom:0;}
+  .fn-head{display:flex;align-items:baseline;gap:10px;margin-bottom:7px;flex-wrap:wrap;}
+  .fn-step{width:21px;height:21px;border-radius:50%;background:rgba(255,255,255,0.1);
+           color:var(--muted);font-size:12px;display:inline-flex;align-items:center;
+           justify-content:center;flex-shrink:0;align-self:center;}
+  .fn-label{font-weight:700;}
+  .fn-hint{color:var(--muted);font-size:13px;flex:1 1 auto;}
+  .fn-num{font-weight:700;font-size:17px;white-space:nowrap;}
+  .fn-pct{color:var(--muted);font-weight:400;font-size:13px;margin-left:8px;}
+  .fn-track{background:rgba(255,255,255,0.07);border-radius:999px;height:9px;overflow:hidden;}
+  .fn-bar{background:var(--sky-blue);height:100%;border-radius:999px;min-width:0;}
+  .funnel li:last-child .fn-bar{background:#3fbf6f;}
+  .fn-note{color:var(--muted);font-size:13px;margin:18px 0 0;}
 
   .empty{padding:80px 24px;text-align:center;}
   .empty h2{font-size:24px;margin-bottom:10px;}
@@ -361,6 +407,112 @@
     });
   }
 
+  // Distinguishable on the dark ground and stable per outcome, so a slice keeps
+  // its colour as the numbers move. Sequential greens/ambers/reds roughly track
+  // good -> neutral -> dead, which makes the pie readable without the legend.
+  var OUTCOME_COLOURS = {
+    committed:           "#3fbf6f",
+    interested_followup: "#2b8cc4",
+    referred_to_board:   "#5fa8d8",
+    callback_scheduled:  "#7fc4e8",
+    wants_updates:       "#d8a33f",
+    wants_info_only:     "#c4883f",
+    not_interested:      "#c8102e",
+    no_answer:           "#6b7f8f",
+    gatekeeper:          "#55606b",
+    wrong_number:        "#3f4a54"
+  };
+  var OUTCOME_LABELS = {
+    committed:           "Committed",
+    interested_followup: "Interested \u2014 needs another call",
+    referred_to_board:   "Going to the board",
+    callback_scheduled:  "Callback scheduled",
+    wants_updates:       "Wants updates only",
+    wants_info_only:     "Wants information only",
+    not_interested:      "Not interested",
+    no_answer:           "No answer",
+    gatekeeper:          "Blocked at reception",
+    wrong_number:        "Wrong number"
+  };
+  function outcomeColour(k){ return OUTCOME_COLOURS[k] || "#8fa3b3"; }
+  function outcomeLabel(k){ return OUTCOME_LABELS[k] || String(k).replace(/_/g," "); }
+
+  // Hand-rolled SVG donut: no chart library, so nothing external to load.
+  function pieChart(byOutcome){
+    var keys = Object.keys(byOutcome || {}).filter(function(k){ return byOutcome[k] > 0; });
+    var total = keys.reduce(function(a,k){ return a + byOutcome[k]; }, 0);
+    if (!total) {
+      return '<div class="chart-empty">No calls recorded yet &mdash; the outcome mix will appear here.</div>';
+    }
+    keys.sort(function(a,b){ return byOutcome[b] - byOutcome[a]; });
+
+    var cx = 110, cy = 110, r = 100, inner = 58, angle = -Math.PI / 2, paths = "";
+    keys.forEach(function(k){
+      var frac = byOutcome[k] / total;
+      // A single slice covering everything cannot be drawn as an arc (start and
+      // end coincide), so draw it as a ring instead.
+      if (frac >= 0.9999) {
+        paths += '<circle cx="' + cx + '" cy="' + cy + '" r="' + ((r + inner) / 2) + '" fill="none" ' +
+                 'stroke="' + outcomeColour(k) + '" stroke-width="' + (r - inner) + '"></circle>';
+        return;
+      }
+      var end = angle + frac * Math.PI * 2;
+      var large = frac > 0.5 ? 1 : 0;
+      var x1 = cx + r * Math.cos(angle),     y1 = cy + r * Math.sin(angle);
+      var x2 = cx + r * Math.cos(end),       y2 = cy + r * Math.sin(end);
+      var x3 = cx + inner * Math.cos(end),   y3 = cy + inner * Math.sin(end);
+      var x4 = cx + inner * Math.cos(angle), y4 = cy + inner * Math.sin(angle);
+      paths += '<path d="M' + x1.toFixed(2) + ' ' + y1.toFixed(2) +
+               ' A' + r + ' ' + r + ' 0 ' + large + ' 1 ' + x2.toFixed(2) + ' ' + y2.toFixed(2) +
+               ' L' + x3.toFixed(2) + ' ' + y3.toFixed(2) +
+               ' A' + inner + ' ' + inner + ' 0 ' + large + ' 0 ' + x4.toFixed(2) + ' ' + y4.toFixed(2) +
+               ' Z" fill="' + outcomeColour(k) + '"></path>';
+      angle = end;
+    });
+
+    var legend = keys.map(function(k){
+      var n = byOutcome[k], pct = Math.round((n / total) * 100);
+      return '<li><span class="swatch" style="background:' + outcomeColour(k) + '"></span>' +
+             '<span class="lg-label">' + esc(outcomeLabel(k)) + "</span>" +
+             '<span class="lg-val">' + n + ' <span class="lg-pct">' + pct + "%</span></span></li>";
+    }).join("");
+
+    return '<div class="chart-row">' +
+             '<svg viewBox="0 0 220 220" width="200" height="200" role="img" ' +
+                  'aria-label="Call outcomes as a proportion of all calls">' + paths +
+               '<text x="110" y="104" text-anchor="middle" fill="#ffffff" font-size="30" font-family="Arial" font-weight="bold">' + total + "</text>" +
+               '<text x="110" y="126" text-anchor="middle" fill="#a8c4d8" font-size="12" font-family="Arial">calls</text>' +
+             "</svg>" +
+             '<ul class="legend">' + legend + "</ul>" +
+           "</div>";
+  }
+
+  // Horizontal stage timeline. Bars are scaled against the widest stage rather
+  // than the club total, so the later, smaller stages stay readable.
+  function funnelChart(f, totalClubs){
+    var stages = [
+      { key:"waiting",     label:"Waiting to be called", hint:"never rung" },
+      { key:"called_once", label:"Called",               hint:"spoke to someone" },
+      { key:"into_cio",    label:"Into Customer.io",     hint:"sent the pack" },
+      { key:"second_call", label:"Second call",          hint:"a later round" },
+      { key:"committed",   label:"Committed money",      hint:"agreed a package" }
+    ];
+    var max = stages.reduce(function(m,st){ return Math.max(m, Number(f[st.key] || 0)); }, 0) || 1;
+
+    return '<ol class="funnel">' + stages.map(function(st, i){
+      var n = Number(f[st.key] || 0);
+      var pctOfMax = Math.max((n / max) * 100, n > 0 ? 3 : 0);
+      var pctOfAll = totalClubs ? Math.round((n / totalClubs) * 100) : 0;
+      return "<li>" +
+               '<div class="fn-head"><span class="fn-step">' + (i + 1) + "</span>" +
+                 '<span class="fn-label">' + esc(st.label) + "</span>" +
+                 '<span class="fn-hint">' + esc(st.hint) + "</span>" +
+                 '<span class="fn-num">' + n + '<span class="fn-pct">' + pctOfAll + "% of clubs</span></span></div>" +
+               '<div class="fn-track"><div class="fn-bar" style="width:' + pctOfMax.toFixed(1) + '%"></div></div>' +
+             "</li>";
+    }).join("") + "</ol>";
+  }
+
   function card(value, label, cls){
     return '<div class="card ' + (cls || "") + '"><b>' + esc(value) + "</b><span>" + esc(label) + "</span></div>";
   }
@@ -395,12 +547,14 @@
         }).join("") + "</tbody></table></div>";
     }
 
-    var outcomes = Object.keys(d.by_outcome || {});
-    var outcomeHtml = outcomes.length
-      ? '<h2>Outcomes</h2><div class="cards">' +
-        outcomes.sort(function(a,b){ return d.by_outcome[b]-d.by_outcome[a]; })
-          .map(function(k){ return card(d.by_outcome[k], k.replace(/_/g," ")); }).join("") + "</div>"
-      : "";
+    var outcomeHtml =
+      '<h2>Outcome of every call</h2><div class="panel">' + pieChart(d.by_outcome) + "</div>" +
+      '<h2>Where the clubs are up to</h2><div class="panel">' +
+        funnelChart(d.funnel || {}, c.total) +
+        '<p class="fn-note">Every club counted once, at each stage it has reached. ' +
+        'Attempts that reached nobody (no answer, reception, wrong number) do not count as a call. ' +
+        esc(c.do_not_call) + ' club(s) are excluded as do-not-call.</p>' +
+      "</div>";
 
     el.innerHTML =
       '<div class="admin">' +
@@ -417,6 +571,8 @@
           card(c.wants_info, "asked for info") +
         "</div>" +
 
+        outcomeHtml +
+
         "<h2>Callers</h2><div class='scroll'><table><thead><tr>" +
           "<th>Name</th><th>Username</th><th>Calls</th><th>On a call</th><th>Password set</th><th>Last login</th>" +
         "</tr></thead><tbody>" +
@@ -430,8 +586,6 @@
             }).join("")
           : '<tr><td colspan="6">No callers set up yet.</td></tr>') +
         "</tbody></table></div>" +
-
-        outcomeHtml +
 
         "<h2>Recent calls</h2><div class='scroll'><table><thead><tr>" +
           "<th>When</th><th>Club</th><th>Caller</th><th>Outcome</th><th>Decision maker</th>" +
@@ -593,18 +747,24 @@
       '<div class="pane">' +
         '<div class="form-head"><h2>Record the call</h2></div>' +
         '<form id="call-form">' +
-          '<div class="field"><label for="f-dm">Who is the appropriate decision maker?</label>' +
-            '<input type="text" id="f-dm" autocomplete="off"></div>' +
-          '<div class="field"><label for="f-role">What is their role?</label>' +
-            '<input type="text" id="f-role" autocomplete="off"></div>' +
-          '<div class="field"><label for="f-email">Their direct email</label>' +
-            '<input type="email" id="f-email" autocomplete="off"></div>' +
-          '<div class="field"><label for="f-phone">Their direct phone number</label>' +
-            '<input type="tel" id="f-phone" autocomplete="off"></div>' +
-          '<div class="field"><label for="f-grants">Does the club participate in ClubGRANTS / community funding?</label>' +
-            '<input type="text" id="f-grants" autocomplete="off" placeholder="Yes / No / details"></div>' +
-          '<div class="field"><label for="f-others">Who else is involved in the decision?</label>' +
-            '<input type="text" id="f-others" autocomplete="off"></div>' +
+          '<div class="field-row">' +
+            '<div class="field"><label for="f-dm">Who is the appropriate decision maker?</label>' +
+              '<input type="text" id="f-dm" autocomplete="off"></div>' +
+            '<div class="field"><label for="f-role">What is their role?</label>' +
+              '<input type="text" id="f-role" autocomplete="off"></div>' +
+          "</div>" +
+          '<div class="field-row">' +
+            '<div class="field"><label for="f-email">Their direct email</label>' +
+              '<input type="email" id="f-email" autocomplete="off"></div>' +
+            '<div class="field"><label for="f-phone">Their direct phone number</label>' +
+              '<input type="tel" id="f-phone" autocomplete="off"></div>' +
+          "</div>" +
+          '<div class="field-row">' +
+            '<div class="field"><label for="f-grants">Does the club participate in ClubGRANTS / community funding?</label>' +
+              '<input type="text" id="f-grants" autocomplete="off" placeholder="Yes / No / details"></div>' +
+            '<div class="field"><label for="f-others">Who else is involved in the decision?</label>' +
+              '<input type="text" id="f-others" autocomplete="off"></div>' +
+          "</div>" +
           '<div class="field"><label for="f-board">When does the relevant committee or board meet?</label>' +
             '<input type="text" id="f-board" autocomplete="off" placeholder="e.g. third Tuesday monthly, next 18 Sept"></div>' +
 
@@ -624,6 +784,7 @@
               '<option value="callback_scheduled">Callback scheduled</option>' +
               '<option value="wants_updates">Not ready to commit financially &mdash; wants updates on the project</option>' +
               '<option value="wants_info_only">Wants information only</option>' +
+              '<option value="committed">Committed &mdash; agreed to a package</option>' +
               '<option value="not_interested">Not interested</option>' +
               '<option value="no_answer">No answer / voicemail</option>' +
               '<option value="gatekeeper">Could not get past reception</option>' +
