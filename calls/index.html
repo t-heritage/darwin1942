@@ -1021,7 +1021,14 @@
       wants_info:           wants,
       notes:                document.getElementById("f-notes").value,
       outcome:              document.getElementById("f-outcome").value
-    }).then(function(){
+    }).then(function(r){
+      // Rare: the claim expired mid-call and the club went to someone else. The
+      // call is still saved, but say so rather than moving on silently.
+      if (r && r.warning) {
+        msg("save-msg", r.warning, "ok");
+        setTimeout(loadNext, 3000);
+        return;
+      }
       loadNext();
     }).catch(function(err){
       msg("save-msg", err.message, "error");
