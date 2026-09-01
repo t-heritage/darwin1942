@@ -102,6 +102,7 @@
   .club-name{font-size:27px;line-height:1.15;margin-bottom:4px;}
   .club-id{min-width:0;flex:1 1 auto;}
   .club-sub{color:var(--muted);margin:0;font-size:14px;}
+  .club-dist{color:var(--muted);margin:2px 0 0;font-size:14px;}
   .club-web{margin:3px 0 0;font-size:14px;overflow-wrap:anywhere;}
   .phone-cta{
     display:inline-block;background:var(--sky-blue);color:var(--white);text-decoration:none;
@@ -122,9 +123,10 @@
     .facts{grid-template-columns:repeat(2,minmax(0,1fr));}
   }
 
-  /* Same ground as the form fields, so the script reads as an input surface. */
-  .script{background:rgba(255,255,255,0.07);border:0;margin:0;
-          padding:20px 22px;border-radius:6px;}
+  /* Same ground as the form fields. Negative margins cancel the pane's padding
+     so it meets the left, right and bottom edges of the column. */
+  .script{background:rgba(255,255,255,0.07);border:0;border-radius:0;
+          margin:0 -24px -24px;padding:20px 24px 24px;}
   .script h2{font-size:27px;line-height:1.15;margin-bottom:14px;color:var(--white);}
   .script .step{margin-bottom:18px;}
   .script .step:last-child{margin-bottom:0;}
@@ -192,13 +194,18 @@
   .panel{background:var(--card-dark);border-radius:10px;padding:22px 24px;position:relative;}
   .panel-title{font-size:15px;margin-bottom:16px;}
   /* Counters take the greater share; the pie needs less room to read. */
-  .progress-split{display:grid;grid-template-columns:6fr 4fr;gap:12px;align-items:start;}
+  /* stretch, not start: the chart panel matches the counter block's height
+     even before any calls exist, so the row does not look half-built. */
+  .progress-split{display:grid;grid-template-columns:6fr 4fr;gap:12px;align-items:stretch;}
+  .progress-split > .panel{display:flex;flex-direction:column;}
+  .progress-split > .panel .chart-row{flex:1 1 auto;}
   .cards-tight{grid-template-columns:repeat(3,minmax(0,1fr));}
   @media (max-width:1100px){
     .progress-split{grid-template-columns:1fr;}
     .cards-tight{grid-template-columns:repeat(auto-fit,minmax(140px,1fr));}
   }
-  .chart-empty{color:var(--muted);font-size:14px;}
+  .chart-empty{color:var(--muted);font-size:14px;flex:1 1 auto;
+               display:flex;align-items:center;}
   .chart-row{display:flex;gap:24px;align-items:center;flex-wrap:wrap;}
   .legend{list-style:none;margin:0;padding:0;flex:1 1 220px;min-width:200px;}
   .legend li{display:flex;align-items:center;gap:10px;padding:5px 0;font-size:14px;}
@@ -211,14 +218,17 @@
      the circles. Each step's detail sits under its own number. */
   .funnel{list-style:none;margin:0;padding:0;display:grid;
           grid-template-columns:repeat(5,minmax(0,1fr));}
-  /* --fn-line keeps the connector level with the middle of the circles, which
-     now sit below the stage label rather than at the top of the cell. */
-  .funnel li{position:relative;text-align:center;padding:0 6px;--fn-line:78px;}
-  .funnel li::before,.funnel li::after{
-    content:"";position:absolute;top:var(--fn-line);height:2px;background:rgba(255,255,255,0.12);}
-  .funnel li::before{left:0;right:50%;}
-  .funnel li::after{left:50%;right:0;}
-  .funnel li:first-child::before,.funnel li:last-child::after{display:none;}
+  .funnel li{position:relative;text-align:center;padding:0 6px;}
+  /* The rule is drawn on the wrapper around each circle and centred on it, so
+     it passes through the circles whatever height the label above takes. */
+  .fn-dot{position:relative;display:block;height:38px;}
+  .fn-dot::before,.fn-dot::after{
+    content:"";position:absolute;top:50%;height:2px;margin-top:-1px;
+    background:rgba(255,255,255,0.12);}
+  .fn-dot::before{left:-6px;right:50%;}
+  .fn-dot::after{left:50%;right:-6px;}
+  .funnel li:first-child .fn-dot::before,
+  .funnel li:last-child .fn-dot::after{display:none;}
   .fn-step{position:relative;z-index:1;width:38px;height:38px;border-radius:50%;
            background:var(--sky-blue);color:var(--white);font-size:15px;font-weight:700;
            display:inline-flex;align-items:center;justify-content:center;}
@@ -629,7 +639,7 @@
       var pctOfAll = totalClubs ? Math.round((n / totalClubs) * 100) : 0;
       return "<li>" +
                '<span class="fn-label">' + esc(st.label) + "</span>" +
-               '<span class="fn-step">' + (i + 1) + "</span>" +
+               '<span class="fn-dot"><span class="fn-step">' + (i + 1) + "</span></span>" +
                '<span class="fn-num">' + n + "</span>" +
                '<span class="fn-pct">' + pctOfAll + "% of clubs</span>" +
              "</li>";
@@ -811,7 +821,7 @@
     // Shown without the scheme or www, but the link still points at the full URL.
     var webLabel = websites.replace(/^https?:\/\//i, "").replace(/^www\./i, "").replace(/\/$/, "");
     var place = t.full_address || [t.suburb, t.state, t.postcode].filter(Boolean).join(" ");
-    if (t.distance_km) place += " (" + t.distance_km + " km from Sydney)";
+    var distance = t.distance_km ? t.distance_km + " km from Sydney" : "";
 
     var historyHtml = "";
     if (history.length) {
@@ -836,6 +846,7 @@
           '<div class="club-id">' +
             '<h2 class="club-name">' + esc(t.entity_name) + "</h2>" +
             '<p class="club-sub">' + esc(place) + "</p>" +
+            (distance ? '<p class="club-dist">' + esc(distance) + "</p>" : "") +
           "</div>" +
           (phone
             ? '<a class="phone-cta" href="' + esc(telHref) + '">' + esc(phone) + "</a>"
