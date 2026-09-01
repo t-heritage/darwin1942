@@ -446,6 +446,11 @@
         document.getElementById("signup-btn").disabled = true;
         return;
       }
+      // Say plainly what the link creates, so an admin link handed to the wrong
+      // person is obvious to them rather than silent.
+      document.getElementById("signup-sub").textContent = r.is_admin
+        ? "Darwin 1942 — this link creates an ADMIN account, with access to the full overview."
+        : "Darwin 1942 — RSL club outreach";
       if (r.remaining != null && r.remaining <= 3) {
         msg("signup-msg", r.remaining + " place(s) left on this link.", "ok");
       }
