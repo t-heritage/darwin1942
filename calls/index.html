@@ -113,6 +113,33 @@
   .btn-ghost{background:none;border:1px solid var(--line);color:var(--muted);padding:14px 20px;font-size:15px;}
   .btn-ghost:hover:not(:disabled){border-color:var(--sky-blue);color:var(--white);}
 
+  /* ---------------------------------------------------------- admin view */
+  .tabs{display:flex;gap:8px;}
+  .tab{background:none;border:1px solid var(--line);color:var(--muted);padding:7px 16px;font-size:14px;}
+  .tab.on{background:var(--sky-blue);border-color:var(--sky-blue);color:var(--white);}
+  .admin{padding:24px;max-width:1400px;}
+  .admin h2{font-size:24px;margin:28px 0 12px;}
+  .admin h2:first-child{margin-top:0;}
+  .cards{display:grid;grid-template-columns:repeat(auto-fit,minmax(140px,1fr));gap:12px;}
+  .card{background:var(--card-dark);border:1px solid var(--line);padding:16px 18px;}
+  .card b{display:block;font-family:var(--heading-font);font-size:34px;line-height:1;margin-bottom:4px;}
+  .card span{color:var(--muted);font-size:13px;}
+  .card.warn{border-color:var(--red);}
+  .card.warn b{color:#e8a0a8;}
+  .card.good{border-color:rgba(43,140,196,0.6);}
+  table{width:100%;border-collapse:collapse;font-size:14px;}
+  th,td{text-align:left;padding:9px 12px;border-bottom:1px solid var(--line);vertical-align:top;}
+  th{font-family:var(--heading-font);letter-spacing:1px;color:var(--muted);font-weight:400;white-space:nowrap;}
+  tbody tr:hover{background:rgba(255,255,255,0.03);}
+  .scroll{overflow-x:auto;border:1px solid var(--line);background:var(--card-dark);}
+  .pill{display:inline-block;padding:2px 9px;font-size:12px;background:rgba(255,255,255,0.09);white-space:nowrap;}
+  .pill.ok{background:rgba(43,140,196,0.22);color:#c8dff0;}
+  .pill.bad{background:rgba(200,16,46,0.22);color:#e8a0a8;}
+  .banner{padding:14px 18px;margin-bottom:16px;font-size:14px;}
+  .banner.ok{background:rgba(43,140,196,0.12);border-left:3px solid var(--sky-blue);color:#c8dff0;}
+  .banner.bad{background:rgba(200,16,46,0.12);border-left:3px solid var(--red);color:#e8a0a8;}
+  .nowrap{white-space:nowrap;}
+
   .empty{padding:80px 24px;text-align:center;}
   .empty h2{font-size:32px;margin-bottom:10px;}
   .empty p{color:var(--muted);}
@@ -169,6 +196,10 @@
       <h1>CALL WORKSHEET</h1>
       <div class="who"><span id="who-name"></span> &middot; <button class="linkbtn" id="logout-btn">log out</button></div>
     </div>
+    <div class="tabs hidden" id="admin-tabs">
+      <button class="tab on" id="tab-work">WORKSHEET</button>
+      <button class="tab" id="tab-admin">OVERVIEW</button>
+    </div>
     <div class="counters">
       <div><b id="c-mine">0</b> my calls</div>
       <div><b id="c-remaining">0</b> left to call</div>
@@ -178,6 +209,7 @@
   </div>
 
   <div id="work-body"></div>
+  <div id="admin-body" class="hidden"></div>
 </div>
 
 <script>
@@ -291,7 +323,138 @@
   function startWork(caller){
     document.getElementById("who-name").textContent = caller.name;
     show("view-work");
+    if (caller.is_admin) {
+      document.getElementById("admin-tabs").classList.remove("hidden");
+      document.getElementById("tab-work").addEventListener("click", function(){ switchTab("work"); });
+      document.getElementById("tab-admin").addEventListener("click", function(){ switchTab("admin"); });
+    }
     loadNext();
+  }
+
+  function switchTab(which){
+    var isAdmin = which === "admin";
+    document.getElementById("tab-work").classList.toggle("on", !isAdmin);
+    document.getElementById("tab-admin").classList.toggle("on", isAdmin);
+    document.getElementById("work-body").classList.toggle("hidden", isAdmin);
+    document.getElementById("admin-body").classList.toggle("hidden", !isAdmin);
+    if (isAdmin) loadOverview();
+  }
+
+  // --------------------------------------------------------------- overview
+  function loadOverview(){
+    var el = document.getElementById("admin-body");
+    el.innerHTML = '<div class="empty"><p>Loading overview...</p></div>';
+    api("overview", {}).then(function(d){ renderOverview(el, d); }).catch(function(e){
+      el.innerHTML = '<div class="empty"><h2>COULD NOT LOAD</h2><p>' + esc(e.message) + "</p></div>";
+    });
+  }
+
+  function card(value, label, cls){
+    return '<div class="card ' + (cls || "") + '"><b>' + esc(value) + "</b><span>" + esc(label) + "</span></div>";
+  }
+  function when(iso){
+    if (!iso) return "—";
+    var d = new Date(iso);
+    return d.toLocaleDateString("en-AU") + " " + d.toLocaleTimeString("en-AU", {hour:"2-digit", minute:"2-digit"});
+  }
+  function yesno(v){ return v ? '<span class="pill ok">yes</span>' : '<span class="pill">no</span>'; }
+
+  function renderOverview(el, d){
+    var c = d.counters, dl = d.delivery;
+    var undelivered = dl.unsynced_sheet + dl.unsynced_cio;
+
+    // Delivery is the guarantee that matters most, so it leads.
+    var banner = undelivered === 0
+      ? '<div class="banner ok">Every recorded call has reached the spreadsheet and Customer.io. Nothing is outstanding.</div>'
+      : '<div class="banner bad"><b>' + undelivered + ' call(s) not yet delivered.</b> ' +
+        'They are safely recorded in Supabase and the sweeper retries every 5 minutes — no data is lost. ' +
+        'Details below.</div>';
+
+    var failing = "";
+    if (d.failing && d.failing.length) {
+      failing =
+        "<h2>AWAITING DELIVERY</h2><div class='scroll'><table><thead><tr>" +
+        "<th>Club</th><th>Recorded</th><th>Sheet tries</th><th>Sheet error</th><th>CIO tries</th><th>CIO error</th>" +
+        "</tr></thead><tbody>" +
+        d.failing.map(function(f){
+          return "<tr><td>" + esc(f.club) + '</td><td class="nowrap">' + esc(when(f.created_at)) + "</td>" +
+                 "<td>" + esc(f.sheet_attempts) + "</td><td>" + esc(f.sheet_error || "—") + "</td>" +
+                 "<td>" + esc(f.cio_attempts) + "</td><td>" + esc(f.cio_error || "—") + "</td></tr>";
+        }).join("") + "</tbody></table></div>";
+    }
+
+    var outcomes = Object.keys(d.by_outcome || {});
+    var outcomeHtml = outcomes.length
+      ? '<h2>OUTCOMES</h2><div class="cards">' +
+        outcomes.sort(function(a,b){ return d.by_outcome[b]-d.by_outcome[a]; })
+          .map(function(k){ return card(d.by_outcome[k], k.replace(/_/g," ")); }).join("") + "</div>"
+      : "";
+
+    el.innerHTML =
+      '<div class="admin">' +
+        banner +
+
+        "<h2>PROGRESS</h2>" +
+        '<div class="cards">' +
+          card(c.total, "clubs on the list") +
+          card(c.done, "called", "good") +
+          card(c.pending, "still to call") +
+          card(c.in_progress, "on a call now") +
+          card(c.do_not_call, "do not call") +
+          card(c.calls, "calls recorded") +
+          card(c.wants_info, "asked for info") +
+        "</div>" +
+
+        "<h2>CALLERS</h2><div class='scroll'><table><thead><tr>" +
+          "<th>Name</th><th>Username</th><th>Calls</th><th>On a call</th><th>Password set</th><th>Last login</th>" +
+        "</tr></thead><tbody>" +
+        (d.callers.length
+          ? d.callers.map(function(x){
+              return "<tr><td>" + esc(x.name) + (x.is_admin ? ' <span class="pill">admin</span>' : "") + "</td>" +
+                     "<td>" + esc(x.username) + "</td><td>" + esc(x.calls) + "</td><td>" + esc(x.assigned_now) + "</td>" +
+                     "<td>" + (x.password_set ? '<span class="pill ok">yes</span>'
+                                              : '<span class="pill bad">setup link not used</span>') + "</td>" +
+                     '<td class="nowrap">' + esc(when(x.last_login_at)) + "</td></tr>";
+            }).join("")
+          : '<tr><td colspan="6">No callers set up yet.</td></tr>') +
+        "</tbody></table></div>" +
+
+        outcomeHtml +
+
+        "<h2>RECENT CALLS</h2><div class='scroll'><table><thead><tr>" +
+          "<th>When</th><th>Club</th><th>Caller</th><th>Outcome</th><th>Decision maker</th>" +
+          "<th>Wants info</th><th>In sheet</th><th>Notes</th>" +
+        "</tr></thead><tbody>" +
+        (d.recent.length
+          ? d.recent.map(function(r){
+              return '<tr><td class="nowrap">' + esc(when(r.created_at)) + "</td>" +
+                     "<td>" + esc(r.club) + "<br><span style='color:var(--muted)'>" + esc(r.where) + "</span></td>" +
+                     "<td>" + esc(r.caller) + "</td>" +
+                     "<td>" + esc((r.outcome||"").replace(/_/g," ")) + (r.round>1 ? " (call "+esc(r.round)+")" : "") + "</td>" +
+                     "<td>" + esc(r.decision_maker || "—") +
+                       (r.decision_maker_role ? "<br><span style='color:var(--muted)'>"+esc(r.decision_maker_role)+"</span>" : "") +
+                       (r.decision_maker_email ? "<br>"+esc(r.decision_maker_email) : "") + "</td>" +
+                     "<td>" + yesno(r.wants_info) + "</td>" +
+                     "<td>" + (r.sheet_synced ? '<span class="pill ok">yes</span>' : '<span class="pill bad">pending</span>') + "</td>" +
+                     "<td>" + esc(r.notes || "—") + "</td></tr>";
+            }).join("")
+          : '<tr><td colspan="8">No calls recorded yet.</td></tr>') +
+        "</tbody></table></div>" +
+
+        failing +
+
+        "<h2>DO NOT CALL &mdash; ALREADY CAME TO US</h2><div class='scroll'><table><thead><tr>" +
+          "<th>Club</th><th>Where</th><th>Why</th>" +
+        "</tr></thead><tbody>" +
+        (d.do_not_call.length
+          ? d.do_not_call.map(function(x){
+              return "<tr><td>" + esc(x.entity_name) + "</td><td>" +
+                     esc([x.suburb, x.state].filter(Boolean).join(" ")) + "</td><td>" +
+                     esc(x.do_not_call_reason || "—") + "</td></tr>";
+            }).join("")
+          : '<tr><td colspan="3">Nothing flagged yet.</td></tr>') +
+        "</tbody></table></div>" +
+      "</div>";
   }
 
   function setStats(s){
