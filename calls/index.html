@@ -52,12 +52,13 @@
   .auth{width:100%;max-width:400px;background:var(--card-dark);border:1px solid var(--line);padding:32px;}
   .auth h1{font-size:25px;margin-bottom:6px;}
   .auth p.sub{color:var(--muted);margin:0 0 24px;font-size:14px;}
+  .hint{color:var(--muted);font-size:13px;margin:6px 0 0;}
 
   label{display:block;font-family:var(--heading-font);font-weight:700;font-size:13px;letter-spacing:normal;margin-bottom:6px;color:#d6e6f2;}
   .req{color:var(--red);}
   input[type=text],input[type=password],input[type=email],input[type=tel],select,textarea{
-    width:100%;padding:11px 13px;background:rgba(255,255,255,0.06);
-    border:1px solid var(--line);color:var(--white);font-family:inherit;font-size:15px;
+    width:100%;padding:11px 13px;background:rgba(255,255,255,0.07);
+    border:0;color:var(--white);font-family:inherit;font-size:15px;
     border-radius:6px;
   }
   input:focus,select:focus,textarea:focus{outline:2px solid var(--sky-blue);outline-offset:-2px;}
@@ -78,7 +79,8 @@
      club you are calling and the form stay put while you read either side. */
   .work{display:grid;grid-template-columns:1fr 1fr;gap:0;height:100%;min-height:0;}
   .pane{padding:24px;height:100%;overflow-y:auto;overscroll-behavior:contain;}
-  .pane-left{border-right:1px solid var(--line);}
+  .pane-left{border-right:0;}
+  .pane-form{background:var(--card-dark);}
 
   /* Below the breakpoint the panes stack, where independent scrolling would
      trap the user in a short box — so the document scrolls normally again. */
@@ -88,7 +90,7 @@
     #work-body,#admin-body{overflow:visible;min-height:0;}
     .work{grid-template-columns:1fr;height:auto;}
     .pane{height:auto;overflow:visible;}
-    .pane-left{border-right:0;border-bottom:1px solid var(--line);}
+    .pane-left{border-right:0;border-bottom:0;}
     .topbar{position:sticky;top:0;}
   }
 
@@ -106,26 +108,27 @@
   .phone-cta.none{background:rgba(255,255,255,0.08);color:var(--muted);pointer-events:none;font-size:14px;font-weight:400;white-space:normal;max-width:230px;}
 
   /* Each fact is its own cell with the label stacked above the value. */
-  .facts{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));
-         gap:14px 20px;font-size:14px;margin:0 0 16px;}
-  .facts-3{grid-template-columns:repeat(3,minmax(0,1fr));margin-bottom:22px;}
+  .facts{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));
+         gap:14px 20px;font-size:14px;margin:0 0 22px;}
   .fact{min-width:0;}
   .fact.wide{grid-column:1 / -1;}
   .facts dt{color:var(--muted);font-size:12px;margin-bottom:2px;}
   .facts dd{margin:0;min-width:0;overflow-wrap:anywhere;}
   @media (max-width:1200px){
-    .facts,.facts-3{grid-template-columns:repeat(2,minmax(0,1fr));}
+    .facts{grid-template-columns:repeat(2,minmax(0,1fr));}
   }
 
-  /* Full-bleed across the column: negative margins cancel the pane's padding
-     so the block runs edge to edge, with the padding put back inside. */
-  .script{background:var(--card-dark);border:0;
-          margin:0 -24px;padding:20px 24px;}
+  /* Sits on the pane's own background rather than a panel of its own. */
+  .script{background:none;border:0;margin:0;padding:0;}
   .script h3{font-size:15px;margin-bottom:10px;color:var(--sky-blue);}
   .script .step{margin-bottom:14px;}
   .script .step:last-child{margin-bottom:0;}
   .script .step b{color:#d6e6f2;font-family:var(--heading-font);letter-spacing:normal;font-size:14px;display:block;}
-  .script em{color:var(--sky-blue);font-style:normal;}
+  .script em{color:var(--white);font-style:normal;font-weight:700;}
+  /* The things to actually ask, set apart from the words to say. */
+  .script-do{display:block;margin-top:8px;padding-left:14px;
+             border-left:2px solid rgba(255,255,255,0.14);color:var(--muted);}
+  .script-do span{display:block;margin-bottom:3px;}
 
   .history{margin-top:20px;background:rgba(255,255,255,0.04);border:1px solid var(--line);padding:14px 18px;font-size:14px;}
   .history h4{font-size:13px;margin-bottom:8px;color:var(--muted);}
@@ -177,9 +180,17 @@
 
   /* ------------------------------------------------------------- charts */
   .panel{background:var(--card-dark);border-radius:10px;padding:22px 24px;}
+  .panel-title{font-size:15px;margin-bottom:16px;}
+  /* Counters take the greater share; the pie needs less room to read. */
+  .progress-split{display:grid;grid-template-columns:6fr 4fr;gap:12px;align-items:start;}
+  .cards-tight{grid-template-columns:repeat(3,minmax(0,1fr));}
+  @media (max-width:1100px){
+    .progress-split{grid-template-columns:1fr;}
+    .cards-tight{grid-template-columns:repeat(auto-fit,minmax(140px,1fr));}
+  }
   .chart-empty{color:var(--muted);font-size:14px;}
-  .chart-row{display:flex;gap:34px;align-items:center;flex-wrap:wrap;}
-  .legend{list-style:none;margin:0;padding:0;flex:1 1 320px;min-width:280px;}
+  .chart-row{display:flex;gap:24px;align-items:center;flex-wrap:wrap;}
+  .legend{list-style:none;margin:0;padding:0;flex:1 1 220px;min-width:200px;}
   .legend li{display:flex;align-items:center;gap:10px;padding:5px 0;font-size:14px;}
   .swatch{width:12px;height:12px;border-radius:3px;flex-shrink:0;}
   .lg-label{flex:1 1 auto;}
@@ -190,9 +201,11 @@
      the circles. Each step's detail sits under its own number. */
   .funnel{list-style:none;margin:0;padding:0;display:grid;
           grid-template-columns:repeat(5,minmax(0,1fr));}
-  .funnel li{position:relative;text-align:center;padding:0 6px;}
+  /* --fn-line keeps the connector level with the middle of the circles, which
+     now sit below the stage label rather than at the top of the cell. */
+  .funnel li{position:relative;text-align:center;padding:0 6px;--fn-line:78px;}
   .funnel li::before,.funnel li::after{
-    content:"";position:absolute;top:18px;height:2px;background:rgba(255,255,255,0.12);}
+    content:"";position:absolute;top:var(--fn-line);height:2px;background:rgba(255,255,255,0.12);}
   .funnel li::before{left:0;right:50%;}
   .funnel li::after{left:50%;right:0;}
   .funnel li:first-child::before,.funnel li:last-child::after{display:none;}
@@ -200,10 +213,11 @@
            background:var(--sky-blue);color:var(--white);font-size:15px;font-weight:700;
            display:inline-flex;align-items:center;justify-content:center;}
   .funnel li:last-child .fn-step{background:#3fbf6f;}
+  .fn-label{display:block;font-weight:700;font-size:14px;}
+  .fn-hint{display:block;color:var(--muted);font-size:12px;margin:2px 0 12px;
+           min-height:2.4em;}
   .fn-num{display:block;font-weight:700;font-size:26px;line-height:1.1;margin-top:12px;}
   .fn-pct{display:block;color:var(--muted);font-size:12px;margin-top:2px;}
-  .fn-label{display:block;font-weight:700;font-size:14px;margin-top:8px;}
-  .fn-hint{display:block;color:var(--muted);font-size:12px;margin-top:2px;}
   .fn-note{color:var(--muted);font-size:13px;margin:22px 0 0;}
   @media (max-width:860px){
     .funnel{grid-template-columns:repeat(2,minmax(0,1fr));gap:22px 0;}
@@ -225,7 +239,7 @@
     <p class="sub">Darwin 1942 &mdash; RSL club outreach</p>
     <form id="login-form">
       <div class="field">
-        <label for="username">Username</label>
+        <label for="username">Username or email</label>
         <input type="text" id="username" autocomplete="username" autocapitalize="none" spellcheck="false" required>
       </div>
       <div class="field">
@@ -255,6 +269,36 @@
       </div>
       <button type="submit" class="btn-primary" id="setup-btn">Save password</button>
       <div class="msg" id="setup-msg"></div>
+    </form>
+  </div>
+</div>
+
+<!-- ============================================================= SIGNUP -->
+<div class="auth-wrap hidden" id="view-signup">
+  <div class="auth">
+    <h1>Create your account</h1>
+    <p class="sub" id="signup-sub">Darwin 1942 &mdash; RSL club outreach</p>
+    <form id="signup-form">
+      <div class="field">
+        <label for="su-name">Your name <span class="req">*</span></label>
+        <input type="text" id="su-name" autocomplete="name" required>
+        <p class="hint">This is what goes in the spreadsheet against every call you make.</p>
+      </div>
+      <div class="field">
+        <label for="su-email">Your email <span class="req">*</span></label>
+        <input type="email" id="su-email" autocomplete="email" autocapitalize="none" spellcheck="false" required>
+      </div>
+      <div class="field">
+        <label for="su-password">Choose a password <span class="req">*</span></label>
+        <input type="password" id="su-password" autocomplete="new-password" minlength="10" required>
+        <p class="hint">At least 10 characters. Nobody else ever sees this, including Taylor.</p>
+      </div>
+      <div class="field">
+        <label for="su-confirm">Confirm password <span class="req">*</span></label>
+        <input type="password" id="su-confirm" autocomplete="new-password" required>
+      </div>
+      <button type="submit" class="btn-primary" id="signup-btn">Create account</button>
+      <div class="msg" id="signup-msg"></div>
     </form>
   </div>
 </div>
@@ -291,7 +335,8 @@
 
   var token = null;
   try { token = localStorage.getItem(TOKEN_KEY); } catch(e){}
-  var current = null; // the club currently on screen
+  var current = null;   // the club currently on screen
+  var meCaller = null;  // the logged-in caller, used in the script
 
   function api(action, payload){
     var body = Object.assign({ action: action }, payload || {});
@@ -310,7 +355,7 @@
   }
 
   function show(id){
-    ["view-login","view-setup","view-work"].forEach(function(v){
+    ["view-login","view-setup","view-signup","view-work"].forEach(function(v){
       document.getElementById(v).classList.toggle("hidden", v !== id);
     });
   }
@@ -357,6 +402,52 @@
     return;
   }
 
+  // ---------------------------------------------------------- signup flow
+  var signupToken = new URLSearchParams(location.search).get("signup");
+
+  if (signupToken) {
+    show("view-signup");
+    api("signup_check", { signup_token: signupToken }).then(function(r){
+      if (!r.valid) {
+        msg("signup-msg", r.reason, "error");
+        document.getElementById("signup-btn").disabled = true;
+        return;
+      }
+      if (r.remaining != null && r.remaining <= 3) {
+        msg("signup-msg", r.remaining + " place(s) left on this link.", "ok");
+      }
+    }).catch(function(e){ msg("signup-msg", e.message, "error"); });
+
+    document.getElementById("signup-form").addEventListener("submit", function(e){
+      e.preventDefault();
+      clearMsg("signup-msg");
+      var pw = document.getElementById("su-password").value;
+      if (pw !== document.getElementById("su-confirm").value) {
+        msg("signup-msg", "Those two passwords do not match.", "error");
+        return;
+      }
+      var btn = document.getElementById("signup-btn");
+      btn.disabled = true; btn.textContent = "Creating...";
+      api("signup", {
+        signup_token: signupToken,
+        name: document.getElementById("su-name").value,
+        email: document.getElementById("su-email").value,
+        password: pw
+      }).then(function(r){
+        token = r.token;
+        try { localStorage.setItem(TOKEN_KEY, token); } catch(e){}
+        // Drop the token from the address bar so the link is not left sitting
+        // in history or shoulder-surfed off the screen.
+        history.replaceState(null, "", location.pathname);
+        startWork(r.caller);
+      }).catch(function(err){
+        msg("signup-msg", err.message, "error");
+        btn.disabled = false; btn.textContent = "Create account";
+      });
+    });
+    return;
+  }
+
   // ----------------------------------------------------------- login flow
   document.getElementById("login-form").addEventListener("submit", function(e){
     e.preventDefault();
@@ -391,6 +482,7 @@
   });
 
   function startWork(caller){
+    meCaller = caller;
     document.getElementById("who-name").textContent = caller.name;
     show("view-work");
     if (caller.is_admin) {
@@ -513,11 +605,11 @@
       var n = Number(f[st.key] || 0);
       var pctOfAll = totalClubs ? Math.round((n / totalClubs) * 100) : 0;
       return "<li>" +
+               '<span class="fn-label">' + esc(st.label) + "</span>" +
+               '<span class="fn-hint">' + esc(st.hint) + "</span>" +
                '<span class="fn-step">' + (i + 1) + "</span>" +
                '<span class="fn-num">' + n + "</span>" +
                '<span class="fn-pct">' + pctOfAll + "% of clubs</span>" +
-               '<span class="fn-label">' + esc(st.label) + "</span>" +
-               '<span class="fn-hint">' + esc(st.hint) + "</span>" +
              "</li>";
     }).join("") + "</ol>";
   }
@@ -557,7 +649,6 @@
     }
 
     var outcomeHtml =
-      '<h2>Outcome of every call</h2><div class="panel">' + pieChart(d.by_outcome) + "</div>" +
       '<h2>Where the clubs are up to</h2><div class="panel">' +
         funnelChart(d.funnel || {}, c.total) +
         '<p class="fn-note">Every club counted once, at each stage it has reached. ' +
@@ -570,14 +661,19 @@
         banner +
 
         "<h2>Progress</h2>" +
-        '<div class="cards">' +
-          card(c.total, "clubs on the list") +
-          card(c.done, "called", "good") +
-          card(c.pending, "still to call") +
-          card(c.in_progress, "on a call now") +
-          card(c.do_not_call, "do not call") +
-          card(c.calls, "calls recorded") +
-          card(c.wants_info, "asked for info") +
+        '<div class="progress-split">' +
+          '<div class="cards cards-tight">' +
+            card(c.total, "clubs on the list") +
+            card(c.done, "called", "good") +
+            card(c.pending, "still to call") +
+            card(c.in_progress, "on a call now") +
+            card(c.do_not_call, "do not call") +
+            card(c.calls, "calls recorded") +
+          "</div>" +
+          '<div class="panel">' +
+            '<h3 class="panel-title">Outcome of every call</h3>' +
+            pieChart(d.by_outcome) +
+          "</div>" +
         "</div>" +
 
         outcomeHtml +
@@ -675,7 +771,7 @@
     var firstName = (t.primary_person || "").split(" ")[0] || "";
 
     var websites = (t.websites || "").split(";")[0].trim();
-    var place = [t.suburb, t.state, t.postcode].filter(Boolean).join(" ");
+    var place = t.full_address || [t.suburb, t.state, t.postcode].filter(Boolean).join(" ");
     if (t.distance_km) place += " (" + t.distance_km + " km from Sydney)";
 
     var historyHtml = "";
@@ -701,9 +797,6 @@
           '<div class="club-id">' +
             '<h2 class="club-name">' + esc(t.entity_name) + "</h2>" +
             '<p class="club-sub">' + esc(place) + "</p>" +
-            (websites
-              ? '<p class="club-web"><a href="' + esc(websites) + '" target="_blank" rel="noopener">' + esc(websites) + "</a></p>"
-              : "") +
           "</div>" +
           (phone
             ? '<a class="phone-cta" href="' + esc(telHref) + '">' + esc(phone) + "</a>"
@@ -711,11 +804,12 @@
         "</div>" +
 
         '<dl class="facts">' +
-          fact("Address", t.full_address, "wide") +
           fact("Contact on file", t.primary_person) +
           fact("Email on file", t.primary_email) +
-        "</dl>" +
-        '<dl class="facts facts-3">' +
+          (websites
+            ? '<div class="fact"><dt>Website</dt><dd><a href="' + esc(websites) +
+              '" target="_blank" rel="noopener">' + esc(websites) + "</a></dd></div>"
+            : '<div class="fact"></div>') +
           fact("Gaming machines", t.egm_count) +
           fact("Gaming revenue", money(t.gaming_revenue)) +
           fact("State profit rank", t.gaming_rank) +
@@ -726,7 +820,7 @@
           "<h3>Call script</h3>" +
 
           '<div class="step"><b>1. Opening</b>' +
-            'Hi, it’s <em>[your name]</em> calling from the Darwin 1942 documentary team. ' +
+            "Hi, it’s <em>" + esc((meCaller && meCaller.name) || "[your name]") + "</em> calling from the Darwin 1942 documentary team. " +
             'Could I speak with ' + (firstName ? "<em>" + esc(firstName) + "</em>, or " : "") +
             'whoever looks after community partnerships or sponsorship at ' + esc(t.entity_name) + "?</div>" +
 
@@ -742,25 +836,29 @@
             'It’s designed to honour Veterans and bring people back through the doors.</div>' +
 
           '<div class="step"><b>4. Qualify &mdash; fill the form as you go</b>' +
-            'Who would be the right person to make a decision like this? &middot; ' +
-            'Does the club run ClubGRANTS or a community funding round? &middot; ' +
-            'Who else would be involved in a decision? &middot; ' +
-            'When does the board or committee next meet?</div>' +
+            '<span class="script-do">' +
+              "<span>Who would be the right person to make a decision like this?</span>" +
+              "<span>Does the club run ClubGRANTS or a community funding round?</span>" +
+              "<span>Who else would be involved in a decision?</span>" +
+              "<span>When does the committee next meet?</span>" +
+            "</span></div>" +
 
           '<div class="step"><b>5. Close</b>' +
-            'Can I email you the partnership presentation so you have it in front of you before ' +
-            'that meeting? &mdash; then tick <em>send more information</em> and take their email.</div>' +
+            "Can I email you the partnership presentation so you have it in front of you before " +
+            "that meeting?" +
+            '<span class="script-do"><span>Tick “they want to receive more information” and take their email.</span></span></div>' +
 
           '<div class="step"><b>If they push back on money</b>' +
-            'Completely understand — nothing has to be decided today. Can I keep you posted as ' +
-            'the film progresses? Choose the <em>wants updates</em> outcome.</div>' +
+            "Completely understand — nothing has to be decided today. Can I keep you posted as " +
+            "the film progresses?" +
+            '<span class="script-do"><span>Choose the “not ready to commit financially” outcome.</span></span></div>' +
         "</div>" +
 
         historyHtml +
       "</div>" +
 
       // ------------------------------------------------------- right: form
-      '<div class="pane">' +
+      '<div class="pane pane-form">' +
         '<div class="form-head"><h2>Record the call</h2></div>' +
         '<form id="call-form">' +
           '<div class="field-row">' +
@@ -780,7 +878,7 @@
           '<div class="field-row">' +
             '<div class="field"><label for="f-others">Who else is involved in the decision?</label>' +
               '<input type="text" id="f-others" autocomplete="off"></div>' +
-            '<div class="field"><label for="f-board">When does the relevant committee or board meet?</label>' +
+            '<div class="field"><label for="f-board">When does the relevant committee meet?</label>' +
               '<input type="text" id="f-board" autocomplete="off" placeholder="e.g. third Tuesday monthly"></div>' +
           "</div>" +
 
