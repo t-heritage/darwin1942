@@ -1,0 +1,535 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="robots" content="noindex, nofollow">
+<title>Call Worksheet | Darwin 1942</title>
+<link rel="icon" href="/favicon.ico">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --sky-blue:#2b8cc4;
+    --red:#c8102e;
+    --white:#ffffff;
+    --dark:#0b1c2c;
+    --card-dark:#081524;
+    --line:rgba(255,255,255,0.12);
+    --muted:#a8c4d8;
+    --heading-font:'Bebas Neue','Arial Narrow',Arial,sans-serif;
+  }
+  *{box-sizing:border-box;}
+  html,body{margin:0;padding:0;}
+  body{
+    background:var(--dark);
+    color:var(--white);
+    font-family:'Arial Narrow',Arial,sans-serif;
+    font-size:15px;
+    line-height:1.6;
+    min-height:100vh;
+  }
+  h1,h2,h3,h4{font-family:var(--heading-font);font-weight:400;margin:0;letter-spacing:1px;}
+  a{color:var(--sky-blue);}
+  button{font-family:var(--heading-font);letter-spacing:1.5px;cursor:pointer;border:0;}
+  button:disabled{opacity:0.5;cursor:not-allowed;}
+
+  /* ---------------------------------------------------------------- shell */
+  .topbar{
+    display:flex;align-items:center;justify-content:space-between;gap:16px;
+    padding:12px 20px;background:var(--card-dark);border-bottom:1px solid var(--line);
+    position:sticky;top:0;z-index:10;flex-wrap:wrap;
+  }
+  .topbar h1{font-size:24px;}
+  .topbar .who{color:var(--muted);font-size:14px;}
+  .counters{display:flex;gap:18px;flex-wrap:wrap;color:var(--muted);font-size:13px;}
+  .counters b{color:var(--white);font-family:var(--heading-font);font-size:19px;display:block;line-height:1;}
+  .linkbtn{background:none;color:var(--muted);text-decoration:underline;font-size:13px;font-family:inherit;letter-spacing:0;padding:0;}
+
+  /* ------------------------------------------------------------ auth card */
+  .auth-wrap{display:flex;align-items:center;justify-content:center;min-height:100vh;padding:24px;}
+  .auth{width:100%;max-width:400px;background:var(--card-dark);border:1px solid var(--line);padding:32px;}
+  .auth h1{font-size:34px;margin-bottom:4px;}
+  .auth p.sub{color:var(--muted);margin:0 0 24px;font-size:14px;}
+
+  label{display:block;font-family:var(--heading-font);font-size:15px;letter-spacing:1.2px;margin-bottom:6px;color:#d6e6f2;}
+  .req{color:var(--red);}
+  input[type=text],input[type=password],input[type=email],input[type=tel],select,textarea{
+    width:100%;padding:11px 13px;background:rgba(255,255,255,0.06);
+    border:1px solid var(--line);color:var(--white);font-family:inherit;font-size:15px;
+    border-radius:0;
+  }
+  input:focus,select:focus,textarea:focus{outline:2px solid var(--sky-blue);outline-offset:-2px;}
+  textarea{resize:vertical;min-height:80px;}
+  select option{background:var(--card-dark);color:var(--white);}
+  .field{margin-bottom:18px;}
+  .btn-primary{background:var(--red);color:var(--white);padding:14px 28px;font-size:17px;width:100%;}
+  .btn-primary:hover:not(:disabled){background:#a50d26;}
+  .msg{margin-top:18px;padding:12px 16px;font-size:14px;display:none;}
+  .msg.error{display:block;background:rgba(200,16,46,0.12);border-left:3px solid var(--red);color:#e8a0a8;}
+  .msg.ok{display:block;background:rgba(43,140,196,0.12);border-left:3px solid var(--sky-blue);color:#c8dff0;}
+
+  /* ------------------------------------------------------------ worksheet */
+  .work{display:grid;grid-template-columns:1fr 1fr;gap:0;align-items:start;}
+  .pane{padding:24px;}
+  .pane-left{border-right:1px solid var(--line);}
+  @media (max-width:980px){
+    .work{grid-template-columns:1fr;}
+    .pane-left{border-right:0;border-bottom:1px solid var(--line);}
+  }
+
+  .club-name{font-size:34px;line-height:1.05;margin-bottom:2px;}
+  .club-sub{color:var(--muted);margin-bottom:18px;font-size:14px;}
+  .phone-cta{
+    display:inline-block;background:var(--sky-blue);color:var(--white);text-decoration:none;
+    font-family:var(--heading-font);font-size:26px;letter-spacing:1.5px;padding:10px 22px;margin-bottom:18px;
+  }
+  .phone-cta:hover{background:#1f6f9e;}
+  .phone-cta.none{background:rgba(255,255,255,0.08);color:var(--muted);pointer-events:none;font-size:17px;}
+
+  .facts{display:grid;grid-template-columns:auto 1fr;gap:6px 14px;font-size:14px;margin-bottom:22px;}
+  .facts dt{color:var(--muted);}
+  .facts dd{margin:0;}
+
+  .script{background:var(--card-dark);border:1px solid var(--line);border-left:3px solid var(--sky-blue);padding:18px 20px;}
+  .script h3{font-size:19px;margin-bottom:10px;color:var(--sky-blue);}
+  .script .step{margin-bottom:14px;}
+  .script .step:last-child{margin-bottom:0;}
+  .script .step b{color:#d6e6f2;font-family:var(--heading-font);letter-spacing:1px;font-size:15px;display:block;}
+  .script em{color:var(--sky-blue);font-style:normal;}
+
+  .history{margin-top:20px;background:rgba(255,255,255,0.04);border:1px solid var(--line);padding:14px 18px;font-size:14px;}
+  .history h4{font-size:16px;margin-bottom:8px;color:var(--muted);}
+  .history li{margin-bottom:6px;}
+
+  .form-head{display:flex;align-items:baseline;justify-content:space-between;gap:12px;margin-bottom:18px;}
+  .form-head h2{font-size:26px;}
+  .checkbox{display:flex;gap:10px;align-items:flex-start;background:rgba(43,140,196,0.1);border-left:3px solid var(--sky-blue);padding:12px 14px;}
+  .checkbox input{margin-top:3px;width:18px;height:18px;flex-shrink:0;accent-color:var(--sky-blue);}
+  .checkbox label{margin:0;font-family:inherit;letter-spacing:0;font-size:14px;color:#c8dff0;line-height:1.5;}
+  .actions{display:flex;gap:12px;margin-top:22px;flex-wrap:wrap;}
+  .actions .btn-primary{width:auto;flex:1;min-width:180px;}
+  .btn-ghost{background:none;border:1px solid var(--line);color:var(--muted);padding:14px 20px;font-size:15px;}
+  .btn-ghost:hover:not(:disabled){border-color:var(--sky-blue);color:var(--white);}
+
+  .empty{padding:80px 24px;text-align:center;}
+  .empty h2{font-size:32px;margin-bottom:10px;}
+  .empty p{color:var(--muted);}
+  .hidden{display:none !important;}
+</style>
+</head>
+<body>
+
+<!-- ============================================================== LOGIN -->
+<div class="auth-wrap" id="view-login">
+  <div class="auth">
+    <h1>CALL WORKSHEET</h1>
+    <p class="sub">Darwin 1942 &mdash; RSL club outreach</p>
+    <form id="login-form">
+      <div class="field">
+        <label for="username">Username</label>
+        <input type="text" id="username" autocomplete="username" autocapitalize="none" spellcheck="false" required>
+      </div>
+      <div class="field">
+        <label for="password">Password</label>
+        <input type="password" id="password" autocomplete="current-password" required>
+      </div>
+      <button type="submit" class="btn-primary" id="login-btn">LOG IN</button>
+      <div class="msg" id="login-msg"></div>
+    </form>
+  </div>
+</div>
+
+<!-- ============================================================== SETUP -->
+<div class="auth-wrap hidden" id="view-setup">
+  <div class="auth">
+    <h1>SET YOUR PASSWORD</h1>
+    <p class="sub" id="setup-sub">&nbsp;</p>
+    <form id="setup-form">
+      <div class="field">
+        <label for="new-password">New password <span class="req">*</span></label>
+        <input type="password" id="new-password" autocomplete="new-password" minlength="10" required>
+        <p style="color:var(--muted);font-size:13px;margin:6px 0 0;">At least 10 characters. Nobody else ever sees this, including Taylor.</p>
+      </div>
+      <div class="field">
+        <label for="confirm-password">Confirm password <span class="req">*</span></label>
+        <input type="password" id="confirm-password" autocomplete="new-password" required>
+      </div>
+      <button type="submit" class="btn-primary" id="setup-btn">SAVE PASSWORD</button>
+      <div class="msg" id="setup-msg"></div>
+    </form>
+  </div>
+</div>
+
+<!-- ========================================================== WORKSHEET -->
+<div class="hidden" id="view-work">
+  <div class="topbar">
+    <div>
+      <h1>CALL WORKSHEET</h1>
+      <div class="who"><span id="who-name"></span> &middot; <button class="linkbtn" id="logout-btn">log out</button></div>
+    </div>
+    <div class="counters">
+      <div><b id="c-mine">0</b> my calls</div>
+      <div><b id="c-remaining">0</b> left to call</div>
+      <div><b id="c-done">0</b> done</div>
+      <div><b id="c-dnc">0</b> do not call</div>
+    </div>
+  </div>
+
+  <div id="work-body"></div>
+</div>
+
+<script>
+(function(){
+  "use strict";
+
+  var API = "https://nwchcduhlhhppvyhxbpo.supabase.co/functions/v1/d1942-calls-api";
+  var TOKEN_KEY = "d1942_calls_token";
+
+  var token = null;
+  try { token = localStorage.getItem(TOKEN_KEY); } catch(e){}
+  var current = null; // the club currently on screen
+
+  function api(action, payload){
+    var body = Object.assign({ action: action }, payload || {});
+    if (token) body.token = token;
+    return fetch(API, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(body)
+    }).then(function(r){
+      return r.json().then(function(j){
+        if (r.status === 401) { signOut(); throw new Error("Your session expired. Please log in again."); }
+        if (j && j.error) throw new Error(j.error);
+        return j;
+      });
+    });
+  }
+
+  function show(id){
+    ["view-login","view-setup","view-work"].forEach(function(v){
+      document.getElementById(v).classList.toggle("hidden", v !== id);
+    });
+  }
+  function msg(el, text, kind){
+    var n = document.getElementById(el);
+    n.className = "msg " + (kind || "error");
+    n.textContent = text;
+  }
+  function clearMsg(el){ document.getElementById(el).className = "msg"; }
+  function esc(s){
+    return String(s == null ? "" : s).replace(/[&<>"']/g, function(c){
+      return { "&":"&amp;", "<":"&lt;", ">":"&gt;", '"':"&quot;", "'":"&#39;" }[c];
+    });
+  }
+
+  // ----------------------------------------------------------- setup flow
+  var setupToken = new URLSearchParams(location.search).get("setup");
+
+  if (setupToken) {
+    show("view-setup");
+    api("setup_check", { setup_token: setupToken }).then(function(r){
+      if (!r.valid) { msg("setup-msg", r.reason, "error"); document.getElementById("setup-btn").disabled = true; return; }
+      document.getElementById("setup-sub").textContent =
+        r.name + " — your username is " + r.username;
+      if (r.already_set) msg("setup-msg", "You already have a password. Saving here replaces it.", "ok");
+    }).catch(function(e){ msg("setup-msg", e.message, "error"); });
+
+    document.getElementById("setup-form").addEventListener("submit", function(e){
+      e.preventDefault();
+      clearMsg("setup-msg");
+      var pw = document.getElementById("new-password").value;
+      var cf = document.getElementById("confirm-password").value;
+      if (pw !== cf) { msg("setup-msg", "Those two passwords do not match.", "error"); return; }
+      var btn = document.getElementById("setup-btn");
+      btn.disabled = true; btn.textContent = "SAVING...";
+      api("setup", { setup_token: setupToken, password: pw }).then(function(){
+        msg("setup-msg", "Password saved. Taking you to the login screen...", "ok");
+        setTimeout(function(){ location.href = location.pathname; }, 1400);
+      }).catch(function(err){
+        msg("setup-msg", err.message, "error");
+        btn.disabled = false; btn.textContent = "SAVE PASSWORD";
+      });
+    });
+    return;
+  }
+
+  // ----------------------------------------------------------- login flow
+  document.getElementById("login-form").addEventListener("submit", function(e){
+    e.preventDefault();
+    clearMsg("login-msg");
+    var btn = document.getElementById("login-btn");
+    btn.disabled = true; btn.textContent = "LOGGING IN...";
+    api("login", {
+      username: document.getElementById("username").value,
+      password: document.getElementById("password").value
+    }).then(function(r){
+      if (r.error) throw new Error(r.error);
+      token = r.token;
+      try { localStorage.setItem(TOKEN_KEY, token); } catch(e){}
+      startWork(r.caller);
+    }).catch(function(err){
+      msg("login-msg", err.message, "error");
+      btn.disabled = false; btn.textContent = "LOG IN";
+    });
+  });
+
+  function signOut(){
+    token = null;
+    try { localStorage.removeItem(TOKEN_KEY); } catch(e){}
+    show("view-login");
+    var btn = document.getElementById("login-btn");
+    btn.disabled = false; btn.textContent = "LOG IN";
+  }
+
+  document.getElementById("logout-btn").addEventListener("click", function(){
+    api("logout", {}).catch(function(){});
+    signOut();
+  });
+
+  function startWork(caller){
+    document.getElementById("who-name").textContent = caller.name;
+    show("view-work");
+    loadNext();
+  }
+
+  function setStats(s){
+    if (!s) return;
+    document.getElementById("c-mine").textContent = s.my_calls;
+    document.getElementById("c-remaining").textContent = s.remaining;
+    document.getElementById("c-done").textContent = s.done;
+    document.getElementById("c-dnc").textContent = s.do_not_call;
+  }
+
+  // ------------------------------------------------------------ worksheet
+  function loadNext(){
+    document.getElementById("work-body").innerHTML =
+      '<div class="empty"><p>Finding your next club...</p></div>';
+    api("next", {}).then(function(r){
+      setStats(r.stats);
+      current = r.target;
+      if (!r.target) {
+        document.getElementById("work-body").innerHTML =
+          '<div class="empty"><h2>NOTHING LEFT TO CALL</h2>' +
+          '<p>Every club in your queue has been called. Check back after the next round opens.</p></div>';
+        return;
+      }
+      render(r.target, r.history || []);
+    }).catch(function(e){
+      document.getElementById("work-body").innerHTML =
+        '<div class="empty"><h2>SOMETHING WENT WRONG</h2><p>' + esc(e.message) + '</p></div>';
+    });
+  }
+
+  function fact(label, value){
+    if (!value && value !== 0) return "";
+    return "<dt>" + esc(label) + "</dt><dd>" + esc(value) + "</dd>";
+  }
+
+  function money(v){ return v ? String(v) : ""; }
+
+  function render(t, history){
+    var phone = (t.primary_phone || "").trim();
+    var telHref = phone ? "tel:" + phone.replace(/[^0-9+]/g, "") : "";
+    var firstName = (t.primary_person || "").split(" ")[0] || "";
+
+    var websites = (t.websites || "").split(";")[0].trim();
+
+    var historyHtml = "";
+    if (history.length) {
+      historyHtml =
+        '<div class="history"><h4>PREVIOUS CONTACT</h4><ul>' +
+        history.map(function(h){
+          var when = h.created_at ? new Date(h.created_at).toLocaleDateString("en-AU") : "";
+          var who = (h.d1942_callers && h.d1942_callers.name) || "";
+          return "<li><b>" + esc(when) + "</b> " + esc(who) + " &mdash; " + esc(h.outcome || "") +
+                 (h.decision_maker_name ? " (spoke to " + esc(h.decision_maker_name) + ")" : "") +
+                 (h.notes ? "<br>" + esc(h.notes) : "") + "</li>";
+        }).join("") +
+        "</ul></div>";
+    }
+
+    var html =
+    '<div class="work">' +
+
+      // -------------------------------------------------- left: who + script
+      '<div class="pane pane-left">' +
+        '<h2 class="club-name">' + esc(t.entity_name) + "</h2>" +
+        '<p class="club-sub">' + esc([t.suburb, t.state, t.postcode].filter(Boolean).join(" ")) + "</p>" +
+        (phone
+          ? '<a class="phone-cta" href="' + esc(telHref) + '">' + esc(phone) + "</a>"
+          : '<span class="phone-cta none">No phone number on file &mdash; try the website</span>') +
+
+        '<dl class="facts">' +
+          fact("Address", t.full_address) +
+          fact("Contact on file", t.primary_person) +
+          fact("Email on file", t.primary_email) +
+          fact("Gaming machines", t.egm_count) +
+          fact("Gaming revenue", money(t.gaming_revenue)) +
+          fact("State profit rank", t.gaming_rank) +
+          fact("Distance from Sydney", t.distance_km ? t.distance_km + " km" : "") +
+          (websites ? "<dt>Website</dt><dd><a href='" + esc(websites) + "' target='_blank' rel='noopener'>" + esc(websites) + "</a></dd>" : "") +
+        "</dl>" +
+
+        // The script is deliberately plain HTML you can edit in this file.
+        '<div class="script">' +
+          "<h3>CALL SCRIPT</h3>" +
+
+          '<div class="step"><b>1. Opening</b>' +
+            'Hi, it’s <em>[your name]</em> calling from the Darwin 1942 documentary team. ' +
+            'Could I speak with ' + (firstName ? "<em>" + esc(firstName) + "</em>, or " : "") +
+            'whoever looks after community partnerships or sponsorship at ' + esc(t.entity_name) + "?</div>" +
+
+          '<div class="step"><b>2. Why we are calling</b>' +
+            'We’re making <em>Darwin 1942 &mdash; The Forgotten War That Reshaped Australia</em>, a commemorative ' +
+            'documentary about the bombing of Darwin and the Veterans who defended it. ' +
+            'We’re partnering with RSL clubs and sub branches around the country to bring it to their communities.</div>' +
+
+          '<div class="step"><b>3. What it means for the club</b>' +
+            'For clubs that come on board it’s unlimited community screenings for up to 10 years, ' +
+            'a digital watch-at-home gift for members, copies for local schools, and a member ' +
+            'engagement and growth campaign built around the film. ' +
+            'It’s designed to honour Veterans and bring people back through the doors.</div>' +
+
+          '<div class="step"><b>4. Qualify &mdash; fill the form as you go</b>' +
+            'Who would be the right person to make a decision like this? &middot; ' +
+            'Does the club run ClubGRANTS or a community funding round? &middot; ' +
+            'Who else would be involved in a decision? &middot; ' +
+            'When does the board or committee next meet?</div>' +
+
+          '<div class="step"><b>5. Close</b>' +
+            'Can I email you the partnership presentation so you have it in front of you before ' +
+            'that meeting? &mdash; then tick <em>send more information</em> and take their email.</div>' +
+
+          '<div class="step"><b>If they push back on money</b>' +
+            'Completely understand — nothing has to be decided today. Can I keep you posted as ' +
+            'the film progresses? Choose the <em>wants updates</em> outcome.</div>' +
+        "</div>" +
+
+        historyHtml +
+      "</div>" +
+
+      // ------------------------------------------------------- right: form
+      '<div class="pane">' +
+        '<div class="form-head"><h2>RECORD THE CALL</h2></div>' +
+        '<form id="call-form">' +
+          '<div class="field"><label for="f-dm">Who is the appropriate decision maker?</label>' +
+            '<input type="text" id="f-dm" autocomplete="off"></div>' +
+          '<div class="field"><label for="f-role">What is their role?</label>' +
+            '<input type="text" id="f-role" autocomplete="off"></div>' +
+          '<div class="field"><label for="f-email">Their direct email</label>' +
+            '<input type="email" id="f-email" autocomplete="off"></div>' +
+          '<div class="field"><label for="f-phone">Their direct phone number</label>' +
+            '<input type="tel" id="f-phone" autocomplete="off"></div>' +
+          '<div class="field"><label for="f-grants">Does the club participate in ClubGRANTS / community funding?</label>' +
+            '<input type="text" id="f-grants" autocomplete="off" placeholder="Yes / No / details"></div>' +
+          '<div class="field"><label for="f-others">Who else is involved in the decision?</label>' +
+            '<input type="text" id="f-others" autocomplete="off"></div>' +
+          '<div class="field"><label for="f-board">When does the relevant committee or board meet?</label>' +
+            '<input type="text" id="f-board" autocomplete="off" placeholder="e.g. third Tuesday monthly, next 18 Sept"></div>' +
+
+          '<div class="field checkbox">' +
+            '<input type="checkbox" id="f-wants">' +
+            '<label for="f-wants">They want to receive more information &mdash; add them to Customer.io and send the partnership pack. Needs their email address above.</label>' +
+          "</div>" +
+
+          '<div class="field" style="margin-top:18px;"><label for="f-notes">Any other notes on how the call went</label>' +
+            '<textarea id="f-notes" rows="4"></textarea></div>' +
+
+          '<div class="field"><label for="f-outcome">Outcome <span class="req">*</span></label>' +
+            '<select id="f-outcome" required>' +
+              '<option value="">Choose an outcome...</option>' +
+              '<option value="interested_followup">Seems interested &mdash; needs another call</option>' +
+              '<option value="referred_to_board">Going to the board / committee</option>' +
+              '<option value="callback_scheduled">Callback scheduled</option>' +
+              '<option value="wants_updates">Not ready to commit financially &mdash; wants updates on the project</option>' +
+              '<option value="wants_info_only">Wants information only</option>' +
+              '<option value="not_interested">Not interested</option>' +
+              '<option value="no_answer">No answer / voicemail</option>' +
+              '<option value="gatekeeper">Could not get past reception</option>' +
+              '<option value="wrong_number">Wrong number / bad contact details</option>' +
+            "</select>" +
+            '<p style="color:var(--muted);font-size:13px;margin:6px 0 0;">No answer, reception and wrong number put the club back in the pool to try again later. Everything else marks it called.</p>' +
+          "</div>" +
+
+          '<div class="actions">' +
+            '<button type="submit" class="btn-primary" id="save-btn">DONE &mdash; SAVE AND NEXT</button>' +
+            '<button type="button" class="btn-ghost" id="skip-btn">Skip for now</button>' +
+          "</div>" +
+          '<div class="msg" id="save-msg"></div>' +
+        "</form>" +
+      "</div>" +
+    "</div>";
+
+    document.getElementById("work-body").innerHTML = html;
+
+    document.getElementById("call-form").addEventListener("submit", onSave);
+    document.getElementById("skip-btn").addEventListener("click", function(){
+      if (!current) return;
+      var b = this; b.disabled = true;
+      api("skip", { target_id: current.id }).then(loadNext).catch(function(e){
+        msg("save-msg", e.message, "error"); b.disabled = false;
+      });
+    });
+  }
+
+  function onSave(e){
+    e.preventDefault();
+    if (!current) return;
+    clearMsg("save-msg");
+
+    var wants = document.getElementById("f-wants").checked;
+    var email = document.getElementById("f-email").value.trim();
+    if (wants && !email) {
+      msg("save-msg", "To send more information you need their email address.", "error");
+      document.getElementById("f-email").focus();
+      return;
+    }
+
+    var btn = document.getElementById("save-btn");
+    btn.disabled = true; btn.textContent = "SAVING...";
+
+    api("save", {
+      target_id: current.id,
+      decision_maker_name:  document.getElementById("f-dm").value,
+      decision_maker_role:  document.getElementById("f-role").value,
+      decision_maker_email: email,
+      decision_maker_phone: document.getElementById("f-phone").value,
+      clubgrants:           document.getElementById("f-grants").value,
+      others_involved:      document.getElementById("f-others").value,
+      board_meeting:        document.getElementById("f-board").value,
+      wants_info:           wants,
+      notes:                document.getElementById("f-notes").value,
+      outcome:              document.getElementById("f-outcome").value
+    }).then(function(){
+      loadNext();
+    }).catch(function(err){
+      msg("save-msg", err.message, "error");
+      btn.disabled = false; btn.textContent = "DONE — SAVE AND NEXT";
+    });
+  }
+
+  // Warn before losing anything typed into the form.
+  window.addEventListener("beforeunload", function(e){
+    if (!current) return;
+    var form = document.getElementById("call-form");
+    if (!form) return;
+    var dirty = ["f-dm","f-role","f-email","f-phone","f-grants","f-others","f-board","f-notes"]
+      .some(function(id){ var n = document.getElementById(id); return n && n.value.trim(); });
+    if (dirty) { e.preventDefault(); e.returnValue = ""; }
+  });
+
+  // ------------------------------------------------------- resume session
+  if (token) {
+    api("me", {}).then(function(r){
+      setStats(r.stats);
+      startWork(r.caller);
+    }).catch(function(){ signOut(); });
+  } else {
+    show("view-login");
+  }
+})();
+</script>
+</body>
+</html>
