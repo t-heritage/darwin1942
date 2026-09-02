@@ -1305,6 +1305,7 @@
         } catch (e) {}
         var current = null; // the club currently on screen
         var formRound = 1; // which round the on-screen form was built for
+        var formCarryEmail = ""; // DM email from an earlier call, reused on round-2 saves
         var meCaller = null; // the logged-in caller, used in the script
         var tabsWired = false;
         var drawerClub = null; // target_id currently open in the slide-out
@@ -2540,11 +2541,19 @@
               "</ul></div>";
           }
 
-          // First calls keep the flat outcome list. Second calls are recorded as
-          // one of three paths (plus "no conversation"), which map onto the same
-          // outcomes underneath so nothing downstream changes.
-          var outcomeHtml;
+          // First calls keep the full qualify form and flat outcome list. Second
+          // calls are leaner — who you spoke to, their role, then one of three
+          // paths (plus "no conversation") which map onto the same outcomes
+          // underneath, so nothing downstream changes.
+          var outcomeHtml, fieldsHtml;
           if (round >= 2) {
+            fieldsHtml =
+              '<div class="field-row">' +
+              '<div class="field"><label for="f-dm">Who did you speak to?</label>' +
+              '<input type="text" id="f-dm" autocomplete="off"></div>' +
+              '<div class="field"><label for="f-role">What is their role?</label>' +
+              '<input type="text" id="f-role" autocomplete="off"></div>' +
+              "</div>";
             outcomeHtml =
               '<div class="field"><label>Where did the call land? <span class="req">*</span></label>' +
               '<div class="paths">' +
@@ -2575,10 +2584,10 @@
               '<div class="field"><label for="f-a-level">Partnership level discussed</label>' +
               '<input type="text" id="f-a-level" autocomplete="off" placeholder="e.g. ClubGRANTS, sponsorship, screening host"></div>' +
               "</div>" +
-              '<p class="path-hint">While you have them: capture the other decision makers, the ClubGRANTS / board process and the committee timing in the fields above. Booking runs off Richard and Rod&rsquo;s availability &mdash; until the booking system exists, agree a time on the call and record it here.</p>' +
+              '<p class="path-hint">Booking runs off Richard and Rod&rsquo;s availability &mdash; until the booking system exists, agree a time on the call and record it here. Put anything else you learn (other decision makers, ClubGRANTS / board process, committee timing) in the notes below.</p>' +
               "</div>" +
               '<div class="path-extra" id="path-b" hidden>' +
-              '<p class="path-hint">They continue on the nurture journey. If you have their email, tick &ldquo;they want to receive more information&rdquo; above so the updates keep flowing.</p>' +
+              '<p class="path-hint">They continue on the nurture journey &mdash; nothing more to fill in. Add any colour (what they need, who they are talking to, timing) in the notes below.</p>' +
               "</div>" +
               '<div class="path-extra" id="path-c" hidden>' +
               '<div class="field"><label for="f-c-reason">Why not? <span class="req">*</span></label>' +
@@ -2602,6 +2611,31 @@
               "</div>" +
               "</div>";
           } else {
+            fieldsHtml =
+              '<div class="field-row">' +
+              '<div class="field"><label for="f-dm">Who is the appropriate decision maker?</label>' +
+              '<input type="text" id="f-dm" autocomplete="off"></div>' +
+              '<div class="field"><label for="f-role">What is their role?</label>' +
+              '<input type="text" id="f-role" autocomplete="off"></div>' +
+              "</div>" +
+              '<div class="field-row">' +
+              '<div class="field"><label for="f-email">Their direct email</label>' +
+              '<input type="email" id="f-email" autocomplete="off"></div>' +
+              '<div class="field"><label for="f-phone">Their direct phone number</label>' +
+              '<input type="tel" id="f-phone" autocomplete="off"></div>' +
+              "</div>" +
+              '<div class="field"><label for="f-grants">Does the club participate in ClubGRANTS / community funding?</label>' +
+              '<input type="text" id="f-grants" autocomplete="off" placeholder="Yes / No / details"></div>' +
+              '<div class="field-row">' +
+              '<div class="field"><label for="f-others">Who else is involved in the decision?</label>' +
+              '<input type="text" id="f-others" autocomplete="off"></div>' +
+              '<div class="field"><label for="f-board">When does the relevant committee meet?</label>' +
+              '<input type="text" id="f-board" autocomplete="off" placeholder="e.g. third Tuesday monthly"></div>' +
+              "</div>" +
+              '<div class="field checkbox">' +
+              '<input type="checkbox" id="f-wants">' +
+              '<label for="f-wants">They want to receive more information &mdash; add them to Customer.io and send the partnership pack. Needs their email address above.</label>' +
+              "</div>";
             outcomeHtml =
               '<div class="field"><label for="f-outcome">Outcome <span class="req">*</span></label>' +
               '<select id="f-outcome" required>' +
@@ -2703,30 +2737,7 @@
             '<div class="pane pane-form">' +
             '<div class="form-head"><h2>Record the call</h2></div>' +
             '<form id="call-form">' +
-            '<div class="field-row">' +
-            '<div class="field"><label for="f-dm">Who is the appropriate decision maker?</label>' +
-            '<input type="text" id="f-dm" autocomplete="off"></div>' +
-            '<div class="field"><label for="f-role">What is their role?</label>' +
-            '<input type="text" id="f-role" autocomplete="off"></div>' +
-            "</div>" +
-            '<div class="field-row">' +
-            '<div class="field"><label for="f-email">Their direct email</label>' +
-            '<input type="email" id="f-email" autocomplete="off"></div>' +
-            '<div class="field"><label for="f-phone">Their direct phone number</label>' +
-            '<input type="tel" id="f-phone" autocomplete="off"></div>' +
-            "</div>" +
-            '<div class="field"><label for="f-grants">Does the club participate in ClubGRANTS / community funding?</label>' +
-            '<input type="text" id="f-grants" autocomplete="off" placeholder="Yes / No / details"></div>' +
-            '<div class="field-row">' +
-            '<div class="field"><label for="f-others">Who else is involved in the decision?</label>' +
-            '<input type="text" id="f-others" autocomplete="off"></div>' +
-            '<div class="field"><label for="f-board">When does the relevant committee meet?</label>' +
-            '<input type="text" id="f-board" autocomplete="off" placeholder="e.g. third Tuesday monthly"></div>' +
-            "</div>" +
-            '<div class="field checkbox">' +
-            '<input type="checkbox" id="f-wants">' +
-            '<label for="f-wants">They want to receive more information &mdash; add them to Customer.io and send the partnership pack. Needs their email address above.</label>' +
-            "</div>" +
+            fieldsHtml +
             outcomeHtml +
             '<div class="field"><label for="f-notes">Any other notes on how the call went</label>' +
             '<textarea id="f-notes" rows="4"></textarea></div>' +
@@ -2741,6 +2752,18 @@
 
           document.getElementById("work-body").innerHTML = html;
           formRound = round;
+          // The lean second-call form doesn't re-ask for the email, but a saved
+          // call only reaches the Customer.io history when it carries one — so
+          // quietly reuse the address captured on an earlier call.
+          formCarryEmail = "";
+          if (round >= 2) {
+            for (var i = 0; i < history.length; i++) {
+              if (history[i].decision_maker_email) {
+                formCarryEmail = history[i].decision_maker_email;
+                break;
+              }
+            }
+          }
 
           if (round >= 2) {
             document
@@ -2778,8 +2801,15 @@
           if (!current) return;
           clearMsg("save-msg");
 
-          var wants = document.getElementById("f-wants").checked;
-          var email = document.getElementById("f-email").value.trim();
+          // The second-call form is leaner, so some fields only exist in round 1.
+          var val = function (id) {
+            var n = document.getElementById(id);
+            return n ? n.value : "";
+          };
+          var wantsEl = document.getElementById("f-wants");
+          var wants = !!(wantsEl && wantsEl.checked);
+          var email =
+            formRound >= 2 ? formCarryEmail : val("f-email").trim();
           if (wants && !email) {
             msg(
               "save-msg",
@@ -2843,13 +2873,13 @@
 
           api("save", {
             target_id: current.id,
-            decision_maker_name: document.getElementById("f-dm").value,
-            decision_maker_role: document.getElementById("f-role").value,
+            decision_maker_name: val("f-dm"),
+            decision_maker_role: val("f-role"),
             decision_maker_email: email,
-            decision_maker_phone: document.getElementById("f-phone").value,
-            clubgrants: document.getElementById("f-grants").value,
-            others_involved: document.getElementById("f-others").value,
-            board_meeting: document.getElementById("f-board").value,
+            decision_maker_phone: val("f-phone"),
+            clubgrants: val("f-grants"),
+            others_involved: val("f-others"),
+            board_meeting: val("f-board"),
             wants_info: wants,
             notes: notes,
             outcome: outcome,
