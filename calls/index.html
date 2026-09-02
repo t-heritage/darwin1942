@@ -257,6 +257,16 @@
     .funnel li::before,.funnel li::after{display:none;}
   }
 
+  /* ------------------------------------------------------- round switch */
+  .mid-controls{display:flex;align-items:center;gap:16px;flex-wrap:wrap;}
+  .round-switch{display:inline-flex;border:1px solid var(--line);border-radius:8px;overflow:hidden;}
+  .round-switch .round-btn{background:none;border:0;color:var(--muted);padding:8px 16px;
+                           font-size:13px;font-weight:400;letter-spacing:0;}
+  .round-switch .round-btn + .round-btn{border-left:1px solid var(--line);}
+  .round-switch .round-btn.on{background:rgba(43,140,196,0.18);color:var(--white);font-weight:700;
+                              box-shadow:inset 0 -2px 0 var(--sky-blue);}
+  .round-switch .round-btn:hover:not(.on){color:var(--white);}
+
   /* --------------------------------------------------------- pagination */
   .pager{display:flex;align-items:center;justify-content:flex-end;gap:14px;
          padding:10px 14px;color:var(--muted);font-size:13px;}
@@ -396,9 +406,12 @@
       <h1>Call worksheet</h1>
       <div class="who"><span id="who-name"></span> &middot; <button class="linkbtn" id="logout-btn">log out</button></div>
     </div>
-    <div class="tabs" id="admin-tabs">
-      <button class="tab on" id="tab-work">Worksheet</button>
-      <button class="tab" id="tab-admin">Overview</button>
+    <div class="mid-controls">
+      <div id="round-wrap"></div>
+      <div class="tabs" id="admin-tabs">
+        <button class="tab on" id="tab-work">Worksheet</button>
+        <button class="tab" id="tab-admin">Overview</button>
+      </div>
     </div>
     <div class="counters">
       <div><b id="c-mine">0</b> my calls</div>
@@ -589,6 +602,7 @@
     show("view-work");
     // Callers see their own numbers; the do-not-call figure is admin plumbing.
     document.getElementById("c-dnc-wrap").classList.toggle("hidden", !caller.is_admin);
+    renderRoundSwitch();
     // Everyone gets the overview now; non-admins are served a version scoped
     // to their own list and their own calls by the API.
     if (!tabsWired) {
@@ -1071,10 +1085,12 @@
   });
 
   // ------------------------------------------------------------ worksheet
-  function roundSwitchHtml(){
-    return '<div class="tabs round-switch" style="margin-bottom:18px">' +
-      '<button type="button" class="tab round-btn' + (roundMode === 1 ? " on" : "") + '" data-round="1">First round</button>' +
-      '<button type="button" class="tab round-btn' + (roundMode === 2 ? " on" : "") + '" data-round="2">Second round</button>' +
+  // Lives in the topbar, to the left of the Worksheet/Overview tabs.
+  function renderRoundSwitch(){
+    document.getElementById("round-wrap").innerHTML =
+      '<div class="round-switch">' +
+      '<button type="button" class="round-btn' + (roundMode === 1 ? " on" : "") + '" data-round="1">First round</button>' +
+      '<button type="button" class="round-btn' + (roundMode === 2 ? " on" : "") + '" data-round="2">Second round</button>' +
       "</div>";
   }
 
@@ -1094,6 +1110,8 @@
         !confirm("You have unsaved answers on this call. Switch rounds and lose them?")) return;
     roundMode = m;
     try { localStorage.setItem("d1942_round", String(m)); } catch(err){}
+    renderRoundSwitch();
+    switchTab("work"); // the switch drives the worksheet, so show it
     var prev = current;
     current = null;
     if (prev) api("unclaim", { target_id: prev.id }).catch(function(){});
@@ -1110,7 +1128,7 @@
         document.getElementById("work-body").innerHTML =
           '<div class="empty"><h2>' + (roundMode === 2 ? "No callbacks waiting" : "Nothing left to call") + "</h2>" +
           "<p>" + esc(r.message || "Every club in this queue has been called.") + "</p>" +
-          '<div style="margin-top:22px">' + roundSwitchHtml() + "</div></div>";
+          '<p style="color:var(--muted);font-size:14px">Use the round switch in the top bar to work the other queue.</p></div>';
         return;
       }
       render(r.target, r.history || [], r.round || roundMode);
@@ -1159,7 +1177,6 @@
 
       // -------------------------------------------------- left: who + script
       '<div class="pane pane-left">' +
-        roundSwitchHtml() +
         '<div class="club-head">' +
           '<div class="club-id">' +
             '<h2 class="club-name">' + esc(t.entity_name) +
