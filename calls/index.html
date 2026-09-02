@@ -430,6 +430,10 @@
   var tabsWired = false;
   var drawerClub = null; // target_id currently open in the slide-out
 
+  // Which queue the worksheet serves from: 1 = first calls, 2 = callbacks.
+  var roundMode = 1;
+  try { roundMode = parseInt(localStorage.getItem("d1942_round") || "1", 10) === 2 ? 2 : 1; } catch(e){}
+
   function api(action, payload){
     var body = Object.assign({ action: action }, payload || {});
     if (token) body.token = token;
@@ -1042,19 +1046,49 @@
   }
 
   // ------------------------------------------------------------ worksheet
+  function roundSwitchHtml(){
+    return '<div class="tabs round-switch" style="margin-bottom:18px">' +
+      '<button type="button" class="tab round-btn' + (roundMode === 1 ? " on" : "") + '" data-round="1">First round</button>' +
+      '<button type="button" class="tab round-btn' + (roundMode === 2 ? " on" : "") + '" data-round="2">Second round</button>' +
+      "</div>";
+  }
+
+  function isFormDirty(){
+    return ["f-dm","f-role","f-email","f-phone","f-grants","f-others","f-board","f-notes"]
+      .some(function(id){ var n = document.getElementById(id); return n && n.value.trim(); });
+  }
+
+  // Switching rounds hands the current club straight back to the pool (no
+  // penalty) and claims from the other queue.
+  document.addEventListener("click", function(e){
+    var b = e.target.closest && e.target.closest(".round-btn");
+    if (!b) return;
+    var m = parseInt(b.getAttribute("data-round"), 10) === 2 ? 2 : 1;
+    if (m === roundMode) return;
+    if (current && isFormDirty() &&
+        !confirm("You have unsaved answers on this call. Switch rounds and lose them?")) return;
+    roundMode = m;
+    try { localStorage.setItem("d1942_round", String(m)); } catch(err){}
+    var prev = current;
+    current = null;
+    if (prev) api("unclaim", { target_id: prev.id }).catch(function(){});
+    loadNext();
+  });
+
   function loadNext(){
     document.getElementById("work-body").innerHTML =
       '<div class="empty"><p>Finding your next club...</p></div>';
-    api("next", {}).then(function(r){
+    api("next", { round: roundMode }).then(function(r){
       setStats(r.stats);
       current = r.target;
       if (!r.target) {
         document.getElementById("work-body").innerHTML =
-          '<div class="empty"><h2>Nothing left to call</h2>' +
-          '<p>Every club in your queue has been called. Check back after the next round opens.</p></div>';
+          '<div class="empty"><h2>' + (roundMode === 2 ? "No callbacks waiting" : "Nothing left to call") + "</h2>" +
+          "<p>" + esc(r.message || "Every club in this queue has been called.") + "</p>" +
+          '<div style="margin-top:22px">' + roundSwitchHtml() + "</div></div>";
         return;
       }
-      render(r.target, r.history || []);
+      render(r.target, r.history || [], r.round || roundMode);
     }).catch(function(e){
       document.getElementById("work-body").innerHTML =
         '<div class="empty"><h2>Something went wrong</h2><p>' + esc(e.message) + '</p></div>';
@@ -1070,7 +1104,7 @@
 
   function money(v){ return v ? String(v) : ""; }
 
-  function render(t, history){
+  function render(t, history, round){
     var phone = (t.primary_phone || "").trim();
     var telHref = phone ? "tel:" + phone.replace(/[^0-9+]/g, "") : "";
     var firstName = (t.primary_person || "").split(" ")[0] || "";
@@ -1100,9 +1134,11 @@
 
       // -------------------------------------------------- left: who + script
       '<div class="pane pane-left">' +
+        roundSwitchHtml() +
         '<div class="club-head">' +
           '<div class="club-id">' +
-            '<h2 class="club-name">' + esc(t.entity_name) + "</h2>" +
+            '<h2 class="club-name">' + esc(t.entity_name) +
+              (round >= 2 ? ' <span class="pill hot">call back</span>' : "") + "</h2>" +
             '<p class="club-sub">' + esc(place) + "</p>" +
             (distance ? '<p class="club-dist">' + esc(distance) + "</p>" : "") +
           "</div>" +
