@@ -287,6 +287,9 @@
   .call-item .ci-head{display:flex;justify-content:space-between;gap:10px;flex-wrap:wrap;margin-bottom:6px;}
   .call-item .ci-when{color:var(--muted);font-size:13px;}
   .call-item .ci-notes{color:var(--muted);margin-top:6px;white-space:pre-wrap;}
+  .email-msg{background:rgba(255,255,255,0.05);border-radius:10px;padding:12px 16px;margin-bottom:10px;font-size:14px;}
+  .email-msg .em-head b{font-weight:700;}
+  .email-msg .em-chips{margin:7px 0 5px;display:flex;gap:6px;flex-wrap:wrap;}
   .email-ev{display:flex;gap:12px;align-items:baseline;padding:7px 0;border-bottom:1px solid var(--line);font-size:14px;}
   .email-ev:last-child{border-bottom:0;}
   .email-ev .ev-when{color:var(--muted);font-size:13px;white-space:nowrap;}
@@ -1289,10 +1292,36 @@
 
     var em = d.emails || {};
     var emailsHtml;
+    // Unix seconds -> short date; a chip only appears when its stage happened.
+    function emChip(kind, label, ts){
+      if (!ts) return "";
+      return '<span class="ev-pill ' + kind + '">' + label + " " +
+             esc(new Date(ts * 1000).toLocaleDateString("en-AU")) + "</span>";
+    }
     if (!em.available) {
       emailsHtml = '<p class="list-note">Email history could not be loaded: ' + esc(em.reason || "unknown") + "</p>";
     } else if (!(em.addresses || []).length) {
       emailsHtml = '<p class="list-note">No email address has been captured for this club yet, so there is no email history to show.</p>';
+    } else if ((em.deliveries || []).length) {
+      // Preferred shape: one card per email, subject first, then what happened to it.
+      emailsHtml =
+        '<p class="list-note">Tracking ' + esc(em.addresses.join(", ")) + "</p>" +
+        em.deliveries.map(function(m){
+          var chips =
+            emChip("sent", "Sent", m.sent) +
+            emChip("delivered", "Delivered", m.delivered) +
+            emChip("opened", "Opened", m.opened) +
+            emChip("clicked", "Clicked", m.clicked) +
+            emChip("bounced", "Bounced", m.bounced) +
+            emChip("spam", "Marked as spam", m.spammed) +
+            emChip("unsubscribed", "Unsubscribed", m.unsubscribed) +
+            (m.failure ? '<span class="ev-pill failed">Failed</span>' : "");
+          return '<div class="email-msg">' +
+                 '<div class="em-head"><b>' + esc(m.subject || m.campaign || "(no subject)") + "</b></div>" +
+                 '<div class="em-chips">' + chips + "</div>" +
+                 '<div class="ev-addr">' + esc(m.email) + "</div>" +
+                 "</div>";
+        }).join("");
     } else if (!(em.events || []).length) {
       emailsHtml = '<p class="list-note">Nothing sent yet to ' + esc(em.addresses.join(", ")) + ".</p>";
     } else {
