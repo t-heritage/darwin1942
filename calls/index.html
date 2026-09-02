@@ -68,12 +68,14 @@
         height: 100%;
       }
       #work-body,
-      #admin-body {
+      #admin-body,
+      #training-body {
         flex: 1 1 auto;
         min-height: 0;
         overflow: hidden;
       }
-      #admin-body {
+      #admin-body,
+      #training-body {
         overflow-y: auto;
       }
       .topbar {
@@ -546,6 +548,108 @@
         font-size: 13px;
         line-height: 1.5;
         margin: 0 0 10px;
+      }
+      /* ------------------------------------------------------------ training */
+      .train-wrap {
+        max-width: 760px;
+        margin: 0 auto;
+        padding: 28px 20px 60px;
+      }
+      .train-progress {
+        display: flex;
+        align-items: center;
+        gap: 14px;
+        margin-bottom: 18px;
+        color: var(--muted);
+        font-size: 13px;
+        white-space: nowrap;
+      }
+      .train-bar {
+        flex: 1 1 auto;
+        height: 6px;
+        border-radius: 3px;
+        background: rgba(255, 255, 255, 0.1);
+        overflow: hidden;
+      }
+      .train-bar span {
+        display: block;
+        height: 100%;
+        background: var(--sky-blue);
+        transition: width 0.2s;
+      }
+      .train-card {
+        background: var(--card-dark);
+        border: 1px solid var(--line);
+        border-radius: var(--radius);
+        padding: 26px 30px 30px;
+      }
+      .train-card h2 {
+        font-size: 22px;
+        margin-bottom: 4px;
+      }
+      .train-kicker {
+        color: var(--muted);
+        font-size: 13px;
+        margin: 0 0 16px;
+      }
+      .train-card h3 {
+        font-size: 15px;
+        margin: 22px 0 6px;
+      }
+      .train-card p {
+        margin: 0 0 12px;
+        font-size: 15px;
+        line-height: 1.65;
+      }
+      .train-card ul {
+        margin: 0 0 12px;
+        padding-left: 22px;
+      }
+      .train-card li {
+        margin-bottom: 5px;
+        font-size: 15px;
+        line-height: 1.55;
+      }
+      .train-say {
+        border-left: 3px solid var(--sky-blue);
+        background: rgba(43, 140, 196, 0.1);
+        padding: 12px 16px;
+        border-radius: 0 8px 8px 0;
+        margin: 0 0 12px;
+        font-size: 15px;
+        line-height: 1.6;
+      }
+      .train-dont {
+        border-left: 3px solid var(--red);
+        background: rgba(200, 16, 46, 0.1);
+        padding: 12px 16px;
+        border-radius: 0 8px 8px 0;
+        margin: 0 0 12px;
+        font-size: 15px;
+        line-height: 1.6;
+      }
+      .train-say b,
+      .train-dont b {
+        display: block;
+        font-size: 12px;
+        color: var(--muted);
+        margin-bottom: 4px;
+      }
+      .train-nav {
+        display: flex;
+        justify-content: space-between;
+        gap: 12px;
+        margin-top: 22px;
+      }
+      .train-nav .btn-primary {
+        width: auto;
+        padding: 14px 26px;
+      }
+      .train-note {
+        color: var(--muted);
+        font-size: 13px;
+        margin-top: 14px;
+        text-align: center;
       }
       .actions {
         display: flex;
@@ -1271,6 +1375,7 @@
         <div class="tabs" id="admin-tabs">
           <button class="tab on" id="tab-work">Worksheet</button>
           <button class="tab" id="tab-admin">Overview</button>
+          <button class="tab" id="tab-training">Training</button>
         </div>
         <div class="counters">
           <div><b id="c-mine">0</b> my calls</div>
@@ -1283,6 +1388,7 @@
 
       <div id="work-body"></div>
       <div id="admin-body" class="hidden"></div>
+      <div id="training-body" class="hidden"></div>
     </div>
 
     <!-- ======================================================== CLUB DRAWER -->
@@ -1537,6 +1643,13 @@
             signOut();
           });
 
+        // New callers must read the campaign training before their first call.
+        // Admins are never gated, and completion is stored on the caller row so
+        // it follows them across devices.
+        function needsTraining() {
+          return !!(meCaller && !meCaller.is_admin && !meCaller.onboarded_at);
+        }
+
         function startWork(caller) {
           meCaller = caller;
           document.getElementById("who-name").textContent =
@@ -1564,21 +1677,251 @@
               .addEventListener("click", function () {
                 switchTab("admin");
               });
+            document
+              .getElementById("tab-training")
+              .addEventListener("click", function () {
+                switchTab("training");
+              });
           }
-          loadNext();
+          if (needsTraining()) {
+            // Don't claim a club yet — the worksheet unlocks when they finish.
+            switchTab("training");
+          } else {
+            loadNext();
+          }
         }
 
         function switchTab(which) {
-          var isAdmin = which === "admin";
-          document.getElementById("tab-work").classList.toggle("on", !isAdmin);
-          document.getElementById("tab-admin").classList.toggle("on", isAdmin);
-          document
-            .getElementById("work-body")
-            .classList.toggle("hidden", isAdmin);
-          document
-            .getElementById("admin-body")
-            .classList.toggle("hidden", !isAdmin);
-          if (isAdmin) loadOverview();
+          if (needsTraining()) which = "training";
+          ["work", "admin", "training"].forEach(function (t) {
+            document
+              .getElementById("tab-" + t)
+              .classList.toggle("on", t === which);
+            document
+              .getElementById(
+                t === "work"
+                  ? "work-body"
+                  : t === "admin"
+                    ? "admin-body"
+                    : "training-body",
+              )
+              .classList.toggle("hidden", t !== which);
+          });
+          if (which === "admin") loadOverview();
+          if (which === "training") renderTraining();
+        }
+
+        // ------------------------------------------------------------- training
+        // The campaign briefing every caller reads before their first call,
+        // distilled from the team's strategy document, ending with a walkthrough
+        // of the worksheet itself. Edit the steps below as the strategy evolves.
+        var TRAIN_STEPS = [
+          {
+            t: "Welcome to the Darwin 1942 campaign",
+            h:
+              "<p><em>Darwin 1942</em> is a feature documentary telling the story of the largest military attack ever carried out on Australian soil, through the voices of the veterans who defended Australia. Heritage Films is producing it alongside Australian Television and Media Group, leading into the 85th anniversary of the Bombing of Darwin in February 2027.</p>" +
+              "<p>You are the first human voice most of these clubs will hear from the project. Your job on the phone is simple, and it is not selling:</p>" +
+              "<ul><li>find the right person at each club,</li>" +
+              "<li>earn permission to send them information, and</li>" +
+              "<li>open the door to a follow-up conversation.</li></ul>" +
+              "<p>This training takes about ten minutes. It covers what the campaign is, who we're calling, how we talk about it, and finishes with a walkthrough of this worksheet. Read it properly &mdash; the difference between a good call and a wasted one is almost always preparation.</p>",
+          },
+          {
+            t: "The goal",
+            h:
+              "<p>The campaign aims to raise at least <b>$1 million</b> through RSL Clubs and Sub-Branches, while creating nationwide ownership of Darwin 1942.</p>" +
+              "<p>But success is not measured in dollars alone. Every call also builds toward:</p>" +
+              "<ul><li>national awareness of the story</li>" +
+              "<li>local screenings in communities around Australia</li>" +
+              "<li>veteran engagement and storytelling</li>" +
+              "<li>schools receiving the film and education resources</li>" +
+              "<li>community participation</li>" +
+              "<li>a long-term legacy that outlasts the anniversary</li></ul>" +
+              "<p>A call that finds the right person and captures good intelligence is a success, even if that club never contributes a dollar.</p>",
+          },
+          {
+            t: "Who we're calling",
+            h:
+              "<h3>Tier one &mdash; RSL Clubs (the priority)</h3>" +
+              "<p>Of the 1,100+ RSL organisations nationally, around 200 are licensed gaming venues &mdash; and they are our initial focus. These clubs have gaming operations, community grant programs, marketing budgets and sponsorship capability. Typical partnerships are expected around $20,000 for regional clubs, up to $35,000 for metro clubs. They can contribute through sponsorship, venue support, screening events and local promotion.</p>" +
+              "<h3>Tier two &mdash; RSL Sub-Branches</h3>" +
+              "<p>Smaller deals ($5,000&ndash;$10,000), and in metro areas most will lean on their local RSL Club for funding. Their real value is as advocates, storytellers, screening hosts, local champions and education partners. Every Sub-Branch receives a complimentary copy of the documentary.</p>" +
+              "<h3>Why clubs say yes</h3>" +
+              "<p>Not because they need another sponsorship &mdash; because this helps them deliver exactly what RSL Clubs already exist to do: support veterans, educate communities, strengthen remembrance and build local engagement.</p>" +
+              "<h3>Why some say no</h3>" +
+              "<p>No connection to the story, or they can't afford it &mdash; in which case a Sub-Branch will usually point to the local Club. Either way, understanding the reason is valuable. Record it.</p>",
+          },
+          {
+            t: "How we talk about it",
+            h:
+              '<div class="train-dont"><b>Never say</b>&ldquo;Please support our documentary&rdquo; &middot; &ldquo;We’re raising money for a film&rdquo;</div>' +
+              '<div class="train-say"><b>Instead</b>&ldquo;We’re inviting RSL Clubs to become founding partners in a national legacy project that will honour veterans, educate future generations, and ensure one of Australia’s most important wartime stories continues to be told.&rdquo;</div>' +
+              "<p>That shift moves the conversation from funding a film to participating in a mission &mdash; which is what RSL clubs actually exist for.</p>" +
+              "<h3>The three pillars</h3>" +
+              "<ul><li><b>Honour veterans.</b> Every dollar preserves veteran stories.</li>" +
+              "<li><b>Educate Australia.</b> Schools, study guides, community screenings, museums.</li>" +
+              "<li><b>Local community legacy.</b> Each club becomes the local home of Darwin 1942 in its own community.</li></ul>" +
+              "<h3>The biggest mistake</h3>" +
+              "<p>Trying to explain the whole project in three minutes. Don't. Leave them wanting to know more &mdash; the information pack and the follow-up call do the heavy lifting.</p>",
+          },
+          {
+            t: "ClubGRANTS, in two minutes",
+            h:
+              "<p>In NSW, registered clubs with more than $1 million in annual gaming machine profits fund community work through the <b>ClubGRANTS</b> scheme. Category 2 of that scheme covers community development and support &mdash; and specifically includes veteran welfare activities. This is the most natural funding avenue for Darwin 1942.</p>" +
+              "<p>So the proposition is never &ldquo;give us $20,000 to make a movie&rdquo;. A partnership funds a defined local community program: commemorative screenings, watch-at-home film gifts for members, the film and education resources delivered into local schools, and a community engagement campaign.</p>" +
+              '<div class="train-dont"><b>One important caution</b>Never tell a club their partnership <em>is</em> eligible for ClubGRANTS funding. Eligibility depends on the category, the purpose and the club’s own process. If it comes up, the most you can say is that it <em>may be eligible to be supported</em> through their ClubGRANTS program.</div>' +
+              "<p>On the call, simply ask whether the club runs ClubGRANTS or a community funding round, and when the relevant committee meets. Those two answers shape everything that follows.</p>",
+          },
+          {
+            t: "The first call",
+            h:
+              "<p>One objective: <b>identify the decision maker and earn permission to send information.</b> We are not trying to secure funding on this call.</p>" +
+              '<div class="train-say"><b>The mindset</b>&ldquo;I’m simply trying to identify the right person&rdquo; &mdash; not &ldquo;I’m trying to sell something.&rdquo;</div>' +
+              "<p>The right person is usually one of: the CEO, club general manager, community grants manager, marketing manager, board chair, or Sub-Branch president.</p>" +
+              "<h3>Use the script</h3>" +
+              "<p>The full script sits on the left of the worksheet on every call, with the club's details beside it. Two technique notes that make it work:</p>" +
+              "<ul><li>After you ask reception who oversees community grants and sponsorships &mdash; <b>stop talking</b>. People naturally help when asked for direction.</li>" +
+              "<li>After the founding-partner invitation &mdash; <b>pause</b>. Don't keep talking. Let them respond.</li></ul>" +
+              "<h3>Discovery questions</h3>" +
+              "<p>Ask naturally; don't interrogate. Priority: does the club have a community grants program? Should anyone else receive the information? Have they supported documentary or education projects before? If the door is open: is there a committee that reviews funding, and when does it meet?</p>" +
+              "<p>Every call should finish with more intelligence than it started with &mdash; names, roles, direct contacts, grant deadlines, board dates, and the agreed next step. That's what the form beside the script captures.</p>",
+          },
+          {
+            t: "If they push back",
+            h:
+              '<h3>&ldquo;We’re not interested.&rdquo;</h3>' +
+              '<div class="train-say"><b>Say</b>&ldquo;No problem at all. May I ask whether it’s simply not the right timing, or whether these kinds of projects generally aren’t something the club supports?&rdquo;</div>' +
+              '<h3>&ldquo;Just send some information.&rdquo;</h3>' +
+              '<div class="train-say"><b>Say</b>&ldquo;Perfect &mdash; I’d be delighted to. Is there anything in particular you’d like me to include?&rdquo; <em>(That question often creates another conversation.)</em></div>' +
+              '<h3>&ldquo;We already have too many requests.&rdquo;</h3>' +
+              '<div class="train-say"><b>Say</b>&ldquo;I completely understand &mdash; that’s exactly why we’re starting with a brief introduction rather than asking for a decision. We think this is a little different because it’s centred on preserving Australian military history through your own local community.&rdquo;</div>' +
+              '<h3>&ldquo;We’re not the right people.&rdquo;</h3>' +
+              '<div class="train-say"><b>Say</b>&ldquo;Would you mind pointing me toward whoever oversees community partnerships or grant funding?&rdquo;</div>' +
+              '<h3>If they push back on money</h3>' +
+              '<div class="train-say"><b>Say</b>&ldquo;Completely understand &mdash; nothing has to be decided today. Can I keep you posted as the film progresses?&rdquo;</div>' +
+              "<p>Whatever the pushback, record the reason in your notes. Intelligence beats persistence.</p>",
+          },
+          {
+            t: "What happens after you hang up",
+            h:
+              "<p>The worksheet is wired into the campaign's email journey, which is why filling it in properly matters:</p>" +
+              "<ul><li>When you tick <b>&ldquo;they want to receive more information&rdquo;</b> with an email address, the introduction email goes out automatically within minutes &mdash; the overview, the poster, the teaser and the proposal, exactly as promised on the call. You never send anything yourself.</li>" +
+              "<li>From there a nurture sequence continues automatically over the following weeks. Replies come back to a central inbox and are handled by the core team.</li>" +
+              "<li>A few days later the club appears in the <b>call-back queue</b> for the second call: &ldquo;I sent through the information &mdash; I was just interested to hear what you thought.&rdquo; Then stop, and let them talk.</li></ul>" +
+              "<p>On that second call you're establishing which path they're on: <b>ready to explore</b> (book a 15&ndash;20 minute meeting), <b>interested but not ready</b> (the nurture journey continues), or <b>not interested</b> (find out why). The second-call form is built around exactly those paths.</p>" +
+              "<p>If a club mentions a committee or board date, write it down &mdash; the follow-up gets timed around it rather than sending generic chasers.</p>",
+          },
+          {
+            t: "How to use this worksheet",
+            h:
+              "<p>Everything you've just read is wired into the tool you're looking at.</p>" +
+              "<h3>Getting a club</h3>" +
+              "<p>The worksheet hands you one club at a time from your own list &mdash; it's yours for an hour, and nobody else will be offered it. <b>Skip for now</b> hands it back for later. The switch in the top-right corner flips between <b>1</b> (first calls) and <b>2</b> (call-backs).</p>" +
+              "<h3>On a call</h3>" +
+              "<ul><li>The left pane has the club's details and the full script. Clicking the phone number copies it on a computer, or dials on a phone.</li>" +
+              "<li>Start the form with <b>who you spoke to</b>. If you only reached reception, choose gatekeeper &mdash; record whatever they told you about the right person, and the club automatically comes back around in the queue.</li>" +
+              "<li>Fill the form as you go: decision maker, role, direct email and phone, ClubGRANTS, who else is involved, when the committee meets.</li></ul>" +
+              "<h3>Outcomes</h3>" +
+              "<ul><li><b>Wants information &mdash; partnership pack</b>: the pack is emailed automatically. It needs their email address.</li>" +
+              "<li><b>Could not get to the decision maker</b>, <b>no answer</b> and <b>wrong number</b> put the club back in the pool to try again later.</li>" +
+              "<li><b>Not interested</b> closes the club out &mdash; note down why.</li>" +
+              "<li><b>Other</b>: explain what happened in the notes.</li></ul>" +
+              "<h3>Everything else</h3>" +
+              "<p>The <b>Overview</b> tab shows your numbers, your to-call and call-back lists, and your recent calls &mdash; click any club to see its full history, every call and every email it's been sent. And write rich notes: committee dates, names, objections. Notes are gold for whoever makes the next call.</p>" +
+              "<p>You can reopen this training any time from the Training tab.</p>",
+          },
+        ];
+
+        var trainStep = 0;
+        try {
+          trainStep =
+            parseInt(localStorage.getItem("d1942_train_step") || "0", 10) || 0;
+        } catch (e) {}
+
+        function renderTraining() {
+          if (trainStep < 0 || trainStep >= TRAIN_STEPS.length) trainStep = 0;
+          var s = TRAIN_STEPS[trainStep];
+          var last = trainStep === TRAIN_STEPS.length - 1;
+          var pct = Math.round(((trainStep + 1) / TRAIN_STEPS.length) * 100);
+
+          document.getElementById("training-body").innerHTML =
+            '<div class="train-wrap">' +
+            '<div class="train-progress"><span>Step ' +
+            (trainStep + 1) +
+            " of " +
+            TRAIN_STEPS.length +
+            '</span><div class="train-bar"><span style="width:' +
+            pct +
+            '%"></span></div></div>' +
+            '<div class="train-card">' +
+            "<h2>" +
+            s.t +
+            "</h2>" +
+            '<p class="train-kicker">Darwin 1942 caller training</p>' +
+            s.h +
+            '<div class="train-nav">' +
+            (trainStep > 0
+              ? '<button type="button" class="btn-ghost" id="train-back">&#8592; Back</button>'
+              : "<span></span>") +
+            (last
+              ? '<button type="button" class="btn-primary" id="train-done">' +
+                (needsTraining()
+                  ? "I&rsquo;ve read everything &mdash; unlock the worksheet"
+                  : "Done &mdash; back to the worksheet") +
+                "</button>"
+              : '<button type="button" class="btn-primary" id="train-next">Next &#8594;</button>') +
+            "</div>" +
+            (needsTraining()
+              ? '<p class="train-note">The worksheet unlocks when you finish reading &mdash; your place is saved if you come back later.</p>'
+              : "") +
+            "</div></div>";
+
+          var body = document.getElementById("training-body");
+          body.scrollTop = 0;
+
+          var back = document.getElementById("train-back");
+          if (back)
+            back.addEventListener("click", function () {
+              trainStep--;
+              saveTrainStep();
+              renderTraining();
+            });
+          var next = document.getElementById("train-next");
+          if (next)
+            next.addEventListener("click", function () {
+              trainStep++;
+              saveTrainStep();
+              renderTraining();
+            });
+          var done = document.getElementById("train-done");
+          if (done)
+            done.addEventListener("click", function () {
+              if (!needsTraining()) {
+                switchTab("work");
+                if (!current) loadNext();
+                return;
+              }
+              done.disabled = true;
+              done.textContent = "Unlocking...";
+              api("complete_onboarding", {})
+                .then(function (r) {
+                  meCaller.onboarded_at = r.onboarded_at || "done";
+                  switchTab("work");
+                  loadNext();
+                })
+                .catch(function (e) {
+                  done.disabled = false;
+                  done.textContent =
+                    "I’ve read everything — unlock the worksheet";
+                  alert(e.message);
+                });
+            });
+        }
+
+        function saveTrainStep() {
+          try {
+            localStorage.setItem("d1942_train_step", String(trainStep));
+          } catch (e) {}
         }
 
         // --------------------------------------------------------------- overview
@@ -1612,6 +1955,7 @@
           no_answer: "#5aa6d1",
           gatekeeper: "#4399cb",
           wrong_number: "#2b8cc4",
+          other: "#8fa3b3",
         };
         var OUTCOME_LABELS = {
           committed: "Committed",
@@ -1619,11 +1963,12 @@
           referred_to_board: "Going to the board",
           callback_scheduled: "Callback scheduled",
           wants_updates: "Wants updates only",
-          wants_info_only: "Wants information only",
+          wants_info_only: "Wants information — partnership pack",
           not_interested: "Not interested",
           no_answer: "No answer",
-          gatekeeper: "Blocked at reception",
+          gatekeeper: "Could not get to the decision maker",
           wrong_number: "Wrong number",
+          other: "Other — see notes",
         };
         function outcomeColour(k) {
           return OUTCOME_COLOURS[k] || "#8fa3b3";
@@ -1639,11 +1984,12 @@
           referred_to_board: "To the board",
           callback_scheduled: "Callback",
           wants_updates: "Wants updates",
-          wants_info_only: "Info only",
+          wants_info_only: "Wants info",
           not_interested: "Not interested",
           no_answer: "No answer",
-          gatekeeper: "Reception",
+          gatekeeper: "No decision maker",
           wrong_number: "Wrong number",
+          other: "Other",
         };
 
         // Hand-rolled SVG donut with labels either side, joined to their slices by
@@ -2230,7 +2576,7 @@
             listsHtml(d.lists) +
             "<h2>Callers</h2><div class='scroll'><table><thead><tr>" +
             "<th>Name</th><th>Username</th><th>List</th><th>Calls</th><th>Left / all</th>" +
-            "<th>On a call</th><th>Password set</th><th>Last login</th>" +
+            "<th>On a call</th><th>Trained</th><th>Password set</th><th>Last login</th>" +
             "</tr></thead><tbody>" +
             (d.callers.length
               ? d.callers
@@ -2260,6 +2606,13 @@
                       esc(x.assigned_now) +
                       "</td>" +
                       "<td>" +
+                      (x.onboarded
+                        ? '<span class="pill ok">yes</span>'
+                        : x.is_admin
+                          ? '<span class="pill">n/a</span>'
+                          : '<span class="pill bad">not yet</span>') +
+                      "</td>" +
+                      "<td>" +
                       (x.password_set
                         ? '<span class="pill ok">yes</span>'
                         : '<span class="pill bad">setup link not used</span>') +
@@ -2270,7 +2623,7 @@
                     );
                   })
                   .join("")
-              : '<tr><td colspan="8">No callers set up yet.</td></tr>') +
+              : '<tr><td colspan="9">No callers set up yet.</td></tr>') +
             "</tbody></table></div>" +
             "<h2>Recent calls</h2>" +
             pagedTable(
@@ -2450,6 +2803,7 @@
         });
 
         function loadNext() {
+          if (needsTraining()) return; // no clubs are claimed until training is done
           document.getElementById("work-body").innerHTML =
             '<div class="empty"><p>Finding your next club...</p></div>';
           api("next", { round: roundMode })
@@ -2605,7 +2959,7 @@
               '<div class="field"><label for="f-x-outcome">What happened? <span class="req">*</span></label>' +
               '<select id="f-x-outcome">' +
               '<option value="no_answer">No answer / voicemail</option>' +
-              '<option value="gatekeeper">Could not get past reception</option>' +
+              '<option value="gatekeeper">Could not get to the decision maker</option>' +
               '<option value="wrong_number">Wrong number / bad contact details</option>' +
               "</select>" +
               '<p style="color:var(--muted);font-size:13px;margin:6px 0 0;">These put the club back in the callback pool to try again later.</p>' +
@@ -2629,7 +2983,7 @@
               '<div class="path-extra" id="gk-extra" hidden>' +
               '<div class="field"><label for="f-gk-name">Gatekeeper&rsquo;s name (if you got it)</label>' +
               '<input type="text" id="f-gk-name" autocomplete="off" placeholder="e.g. Sharon at reception"></div>' +
-              '<p class="path-hint">Record whatever they told you about the right person below &mdash; a name, role or email from reception is a win. The call saves as &ldquo;could not get past reception&rdquo; and the club comes back around in the queue to try again. If they gave you an email for the pack, tick the more-information box too.</p>' +
+              '<p class="path-hint">Record whatever they told you about the right person below &mdash; a name, role or email from reception is a win. The call saves as &ldquo;could not get to the decision maker&rdquo; and the club comes back around in the queue to try again. If they gave you an email for the pack, tick the more-information box too.</p>' +
               "</div>" +
               '<div class="field-row">' +
               '<div class="field"><label for="f-dm">Who is the appropriate decision maker?</label>' +
@@ -2659,18 +3013,14 @@
               '<div class="field" id="outcome-wrap"><label for="f-outcome">Outcome <span class="req">*</span></label>' +
               '<select id="f-outcome" required>' +
               '<option value="">Choose an outcome...</option>' +
-              '<option value="interested_followup">Seems interested &mdash; needs another call</option>' +
-              '<option value="referred_to_board">Going to the board / committee</option>' +
-              '<option value="callback_scheduled">Callback scheduled</option>' +
-              '<option value="wants_updates">Not ready to commit financially &mdash; wants updates on the project</option>' +
-              '<option value="wants_info_only">Wants information only</option>' +
-              '<option value="committed">Committed &mdash; agreed to a package</option>' +
+              '<option value="wants_info_only">Wants information &mdash; partnership pack</option>' +
+              '<option value="gatekeeper">Could not get to the decision maker</option>' +
               '<option value="not_interested">Not interested</option>' +
               '<option value="no_answer">No answer / voicemail</option>' +
-              '<option value="gatekeeper">Could not get past reception</option>' +
               '<option value="wrong_number">Wrong number / bad contact details</option>' +
+              '<option value="other">Other &mdash; see notes</option>' +
               "</select>" +
-              '<p style="color:var(--muted);font-size:13px;margin:6px 0 0;">No answer, reception and wrong number put the club back in the pool to try again later. Everything else marks it called.</p>' +
+              '<p style="color:var(--muted);font-size:13px;margin:6px 0 0;">No answer, could not get to the decision maker, and wrong number put the club back in the pool to try again later. Everything else marks it called.</p>' +
               "</div>";
           }
 
@@ -2808,6 +3158,14 @@
                   document.getElementById("f-outcome").required = !gk;
                 });
               });
+            // "Wants information" IS the partnership-pack outcome — picking it
+            // ticks the send box so the pack actually goes out.
+            document
+              .getElementById("f-outcome")
+              .addEventListener("change", function () {
+                if (this.value === "wants_info_only")
+                  document.getElementById("f-wants").checked = true;
+              });
           }
 
           document
@@ -2909,6 +3267,20 @@
               (notes ? "\n" + notes : "");
           } else {
             outcome = document.getElementById("f-outcome").value;
+          }
+
+          // The pack outcome always sends the pack, which needs an email.
+          if (outcome === "wants_info_only" && !wants) {
+            wants = true;
+            if (!email) {
+              msg(
+                "save-msg",
+                "To send the partnership pack you need their email address.",
+                "error",
+              );
+              document.getElementById("f-email").focus();
+              return;
+            }
           }
 
           var btn = document.getElementById("save-btn");
@@ -3231,16 +3603,12 @@
             '<div class="field"><label for="d-outcome">Outcome <span class="req">*</span></label>' +
             '<select id="d-outcome" required>' +
             '<option value="">Choose an outcome...</option>' +
-            '<option value="interested_followup">Seems interested &mdash; needs another call</option>' +
-            '<option value="referred_to_board">Going to the board / committee</option>' +
-            '<option value="callback_scheduled">Callback scheduled</option>' +
-            '<option value="wants_updates">Not ready to commit financially &mdash; wants updates</option>' +
-            '<option value="wants_info_only">Wants information only</option>' +
-            '<option value="committed">Committed &mdash; agreed to a package</option>' +
+            '<option value="wants_info_only">Wants information &mdash; partnership pack</option>' +
+            '<option value="gatekeeper">Could not get to the decision maker</option>' +
             '<option value="not_interested">Not interested</option>' +
             '<option value="no_answer">No answer / voicemail</option>' +
-            '<option value="gatekeeper">Could not get past reception</option>' +
             '<option value="wrong_number">Wrong number / bad contact details</option>' +
+            '<option value="other">Other &mdash; see notes</option>' +
             "</select></div>" +
             '<div class="field"><label for="d-notes">Notes</label><textarea id="d-notes" rows="3"></textarea></div>' +
             '<button type="submit" class="btn-primary" id="d-save-btn">Save this call</button>' +
@@ -3258,21 +3626,31 @@
             .addEventListener("click", closeDrawer);
 
           document
+            .getElementById("d-outcome")
+            .addEventListener("change", function () {
+              if (this.value === "wants_info_only")
+                document.getElementById("d-wants").checked = true;
+            });
+
+          document
             .getElementById("d-call-form")
             .addEventListener("submit", function (e) {
               e.preventDefault();
               clearMsg("d-save-msg");
-              var wants = document.getElementById("d-wants").checked;
+              var outcome = document.getElementById("d-outcome").value;
+              var wants =
+                document.getElementById("d-wants").checked ||
+                outcome === "wants_info_only";
               var email = document.getElementById("d-email").value.trim();
               if (wants && !email) {
                 msg(
                   "d-save-msg",
-                  "To send more information you need their email address.",
+                  "To send the partnership pack you need their email address.",
                   "error",
                 );
                 return;
               }
-              if (!document.getElementById("d-outcome").value) {
+              if (!outcome) {
                 msg("d-save-msg", "Choose an outcome before saving.", "error");
                 return;
               }
@@ -3287,7 +3665,7 @@
                 decision_maker_phone: document.getElementById("d-phone").value,
                 wants_info: wants,
                 notes: document.getElementById("d-notes").value,
-                outcome: document.getElementById("d-outcome").value,
+                outcome: outcome,
               })
                 .then(function () {
                   openClub(t.id); // reload the drawer with the new call in the timeline
