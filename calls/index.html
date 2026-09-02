@@ -2414,6 +2414,7 @@
             "f-notes",
             "f-a-meeting",
             "f-a-level",
+            "f-gk-name",
           ].some(function (id) {
             var n = document.getElementById(id);
             return n && n.value.trim();
@@ -2612,6 +2613,24 @@
               "</div>";
           } else {
             fieldsHtml =
+              // Not every first call reaches a decision maker — often it's
+              // reception. Saying so up front shapes the rest of the form:
+              // a gatekeeper call always saves as "could not get past
+              // reception", so the club comes back around in the queue.
+              '<div class="field"><label>Who did you speak to?</label>' +
+              '<div class="paths">' +
+              '<label class="path"><input type="radio" name="f-spoke" value="dm" checked>' +
+              "<b>A decision maker &mdash; or someone involved</b>" +
+              "<span>Manager, secretary, board member, grants officer.</span></label>" +
+              '<label class="path"><input type="radio" name="f-spoke" value="gk">' +
+              "<b>A gatekeeper &mdash; reception or office staff</b>" +
+              "<span>You didn&rsquo;t get through, but they may have pointed you to the right person.</span></label>" +
+              "</div></div>" +
+              '<div class="path-extra" id="gk-extra" hidden>' +
+              '<div class="field"><label for="f-gk-name">Gatekeeper&rsquo;s name (if you got it)</label>' +
+              '<input type="text" id="f-gk-name" autocomplete="off" placeholder="e.g. Sharon at reception"></div>' +
+              '<p class="path-hint">Record whatever they told you about the right person below &mdash; a name, role or email from reception is a win. The call saves as &ldquo;could not get past reception&rdquo; and the club comes back around in the queue to try again. If they gave you an email for the pack, tick the more-information box too.</p>' +
+              "</div>" +
               '<div class="field-row">' +
               '<div class="field"><label for="f-dm">Who is the appropriate decision maker?</label>' +
               '<input type="text" id="f-dm" autocomplete="off"></div>' +
@@ -2637,7 +2656,7 @@
               '<label for="f-wants">They want to receive more information &mdash; add them to Customer.io and send the partnership pack. Needs their email address above.</label>' +
               "</div>";
             outcomeHtml =
-              '<div class="field"><label for="f-outcome">Outcome <span class="req">*</span></label>' +
+              '<div class="field" id="outcome-wrap"><label for="f-outcome">Outcome <span class="req">*</span></label>' +
               '<select id="f-outcome" required>' +
               '<option value="">Choose an outcome...</option>' +
               '<option value="interested_followup">Seems interested &mdash; needs another call</option>' +
@@ -2776,6 +2795,19 @@
                   });
                 });
               });
+          } else {
+            // Gatekeeper mode fixes the outcome, so the select is hidden (and
+            // un-required, or the browser would block submitting the form).
+            document
+              .querySelectorAll('#call-form input[name="f-spoke"]')
+              .forEach(function (radio) {
+                radio.addEventListener("change", function () {
+                  var gk = radio.value === "gk";
+                  document.getElementById("gk-extra").hidden = !gk;
+                  document.getElementById("outcome-wrap").hidden = gk;
+                  document.getElementById("f-outcome").required = !gk;
+                });
+              });
           }
 
           document
@@ -2863,6 +2895,18 @@
             } else {
               outcome = document.getElementById("f-x-outcome").value;
             }
+          } else if (
+            document.querySelector(
+              '#call-form input[name="f-spoke"][value="gk"]:checked',
+            )
+          ) {
+            outcome = "gatekeeper";
+            var gkName = val("f-gk-name").trim();
+            notes =
+              "Spoke to gatekeeper" +
+              (gkName ? ": " + gkName : "") +
+              "." +
+              (notes ? "\n" + notes : "");
           } else {
             outcome = document.getElementById("f-outcome").value;
           }
