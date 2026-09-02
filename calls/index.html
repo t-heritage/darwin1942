@@ -257,6 +257,13 @@
     .funnel li::before,.funnel li::after{display:none;}
   }
 
+  /* --------------------------------------------------------- pagination */
+  .pager{display:flex;align-items:center;justify-content:flex-end;gap:14px;
+         padding:10px 14px;color:var(--muted);font-size:13px;}
+  .pg-btn{background:rgba(255,255,255,0.08);border:0;color:var(--white);
+          padding:6px 14px;border-radius:6px;font-size:13px;font-weight:400;}
+  .pg-btn:hover:not(:disabled){background:var(--sky-blue);}
+
   /* --------------------------------------------------------- round lists */
   tr.rowlink{cursor:pointer;}
   tr.rowlink:hover{background:rgba(43,140,196,0.10);}
@@ -397,7 +404,7 @@
       <div><b id="c-mine">0</b> my calls</div>
       <div><b id="c-remaining">0</b> left to call</div>
       <div><b id="c-done">0</b> done</div>
-      <div><b id="c-dnc">0</b> do not call</div>
+      <div id="c-dnc-wrap"><b id="c-dnc">0</b> do not call</div>
     </div>
   </div>
 
@@ -576,6 +583,8 @@
     document.getElementById("who-name").textContent =
       caller.name + (caller.call_group ? "  ·  list " + caller.call_group + " of 5" : "");
     show("view-work");
+    // Callers see their own numbers; the do-not-call figure is admin plumbing.
+    document.getElementById("c-dnc-wrap").classList.toggle("hidden", !caller.is_admin);
     // Everyone gets the overview now; non-admins are served a version scoped
     // to their own list and their own calls by the API.
     if (!tabsWired) {
@@ -637,7 +646,22 @@
   function outcomeColour(k){ return OUTCOME_COLOURS[k] || "#8fa3b3"; }
   function outcomeLabel(k){ return OUTCOME_LABELS[k] || String(k).replace(/_/g," "); }
 
-  // Hand-rolled SVG donut: no chart library, so nothing external to load.
+  // Short names for the chart, where the full outcome labels won't fit.
+  var OUTCOME_SHORT = {
+    committed:           "Committed",
+    interested_followup: "Interested",
+    referred_to_board:   "To the board",
+    callback_scheduled:  "Callback",
+    wants_updates:       "Wants updates",
+    wants_info_only:     "Info only",
+    not_interested:      "Not interested",
+    no_answer:           "No answer",
+    gatekeeper:          "Reception",
+    wrong_number:        "Wrong number"
+  };
+
+  // Hand-rolled SVG donut with labels either side, joined to their slices by
+  // leader lines. No chart library, so nothing external to load.
   function pieChart(byOutcome){
     var keys = Object.keys(byOutcome || {}).filter(function(k){ return byOutcome[k] > 0; });
     var total = keys.reduce(function(a,k){ return a + byOutcome[k]; }, 0);
@@ -646,46 +670,120 @@
     }
     keys.sort(function(a,b){ return byOutcome[b] - byOutcome[a]; });
 
-    var cx = 110, cy = 110, r = 100, inner = 58, angle = -Math.PI / 2, paths = "";
+    var W = 480, H = 264, cx = 240, cy = 132, r = 86, inner = 50;
+    var angle = -Math.PI / 2, paths = "", labels = [];
+
     keys.forEach(function(k){
       var frac = byOutcome[k] / total;
+      var end = angle + frac * Math.PI * 2;
+      var mid = (angle + end) / 2;
       // A single slice covering everything cannot be drawn as an arc (start and
       // end coincide), so draw it as a ring instead.
       if (frac >= 0.9999) {
         paths += '<circle cx="' + cx + '" cy="' + cy + '" r="' + ((r + inner) / 2) + '" fill="none" ' +
                  'stroke="' + outcomeColour(k) + '" stroke-width="' + (r - inner) + '"></circle>';
-        return;
+      } else {
+        var large = frac > 0.5 ? 1 : 0;
+        var x1 = cx + r * Math.cos(angle),     y1 = cy + r * Math.sin(angle);
+        var x2 = cx + r * Math.cos(end),       y2 = cy + r * Math.sin(end);
+        var x3 = cx + inner * Math.cos(end),   y3 = cy + inner * Math.sin(end);
+        var x4 = cx + inner * Math.cos(angle), y4 = cy + inner * Math.sin(angle);
+        paths += '<path d="M' + x1.toFixed(2) + ' ' + y1.toFixed(2) +
+                 ' A' + r + ' ' + r + ' 0 ' + large + ' 1 ' + x2.toFixed(2) + ' ' + y2.toFixed(2) +
+                 ' L' + x3.toFixed(2) + ' ' + y3.toFixed(2) +
+                 ' A' + inner + ' ' + inner + ' 0 ' + large + ' 0 ' + x4.toFixed(2) + ' ' + y4.toFixed(2) +
+                 ' Z" fill="' + outcomeColour(k) + '"></path>';
       }
-      var end = angle + frac * Math.PI * 2;
-      var large = frac > 0.5 ? 1 : 0;
-      var x1 = cx + r * Math.cos(angle),     y1 = cy + r * Math.sin(angle);
-      var x2 = cx + r * Math.cos(end),       y2 = cy + r * Math.sin(end);
-      var x3 = cx + inner * Math.cos(end),   y3 = cy + inner * Math.sin(end);
-      var x4 = cx + inner * Math.cos(angle), y4 = cy + inner * Math.sin(angle);
-      paths += '<path d="M' + x1.toFixed(2) + ' ' + y1.toFixed(2) +
-               ' A' + r + ' ' + r + ' 0 ' + large + ' 1 ' + x2.toFixed(2) + ' ' + y2.toFixed(2) +
-               ' L' + x3.toFixed(2) + ' ' + y3.toFixed(2) +
-               ' A' + inner + ' ' + inner + ' 0 ' + large + ' 0 ' + x4.toFixed(2) + ' ' + y4.toFixed(2) +
-               ' Z" fill="' + outcomeColour(k) + '"></path>';
+      labels.push({ k: k, n: byOutcome[k], pct: Math.round(frac * 100), mid: mid });
       angle = end;
     });
 
-    var legend = keys.map(function(k){
-      var n = byOutcome[k], pct = Math.round((n / total) * 100);
-      return '<li><span class="swatch" style="background:' + outcomeColour(k) + '"></span>' +
-             '<span class="lg-label">' + esc(outcomeLabel(k)) + "</span>" +
-             '<span class="lg-val">' + n + ' <span class="lg-pct">' + pct + "%</span></span></li>";
+    // Labels stack on whichever side their slice faces; nudged apart so they
+    // never overlap, then clamped to the panel.
+    function place(list){
+      list.sort(function(a,b){ return a.want - b.want; });
+      var y = -Infinity;
+      list.forEach(function(l){ l.y = Math.max(y + 20, l.want); y = l.y; });
+      var over = (list.length ? list[list.length - 1].y : 0) - (H - 14);
+      if (over > 0) {
+        y = Infinity;
+        for (var i = list.length - 1; i >= 0; i--) {
+          list[i].y = Math.min(y - 20, list[i].y - over);
+          y = list[i].y;
+        }
+      }
+    }
+    labels.forEach(function(l){
+      l.side = Math.cos(l.mid) >= 0 ? "r" : "l";
+      l.want = cy + (r + 18) * Math.sin(l.mid);
+    });
+    place(labels.filter(function(l){ return l.side === "l"; }));
+    place(labels.filter(function(l){ return l.side === "r"; }));
+
+    var decor = labels.map(function(l){
+      var sx = cx + r * Math.cos(l.mid), sy = cy + r * Math.sin(l.mid);
+      var mx = cx + (r + 12) * Math.cos(l.mid), my = cy + (r + 12) * Math.sin(l.mid);
+      var ex = l.side === "r" ? cx + r + 30 : cx - r - 30;
+      var tx = l.side === "r" ? ex + 5 : ex - 5;
+      var anchor = l.side === "r" ? "start" : "end";
+      var name = OUTCOME_SHORT[l.k] || outcomeLabel(l.k);
+      return '<polyline points="' + sx.toFixed(1) + "," + sy.toFixed(1) + " " +
+               mx.toFixed(1) + "," + my.toFixed(1) + " " + ex + "," + l.y.toFixed(1) +
+             '" fill="none" stroke="rgba(255,255,255,0.35)" stroke-width="1"></polyline>' +
+             '<circle cx="' + sx.toFixed(1) + '" cy="' + sy.toFixed(1) + '" r="2" fill="' + outcomeColour(l.k) + '"></circle>' +
+             '<text x="' + tx + '" y="' + (l.y + 4).toFixed(1) + '" text-anchor="' + anchor +
+             '" font-family="Arial" font-size="12" fill="#a8c4d8">' + esc(name) +
+             ' <tspan fill="#ffffff" font-weight="bold">' + l.n + '</tspan>' +
+             ' <tspan fill="#7f97a8">(' + l.pct + '%)</tspan></text>';
     }).join("");
 
-    return '<div class="chart-row">' +
-             '<svg viewBox="0 0 220 220" width="200" height="200" role="img" ' +
-                  'aria-label="Call outcomes as a proportion of all calls">' + paths +
-               '<text x="110" y="104" text-anchor="middle" fill="#ffffff" font-size="30" font-family="Arial" font-weight="bold">' + total + "</text>" +
-               '<text x="110" y="126" text-anchor="middle" fill="#a8c4d8" font-size="12" font-family="Arial">calls</text>' +
-             "</svg>" +
-             '<ul class="legend">' + legend + "</ul>" +
-           "</div>";
+    return '<svg viewBox="0 0 ' + W + " " + H + '" style="width:100%;max-width:' + W + 'px;display:block;margin:0 auto" role="img" ' +
+                'aria-label="Call outcomes as a proportion of all calls">' + paths + decor +
+             '<text x="' + cx + '" y="' + (cy - 4) + '" text-anchor="middle" fill="#ffffff" font-size="28" font-family="Arial" font-weight="bold">' + total + "</text>" +
+             '<text x="' + cx + '" y="' + (cy + 16) + '" text-anchor="middle" fill="#a8c4d8" font-size="12" font-family="Arial">calls</text>' +
+           "</svg>";
   }
+
+  // -------------------------------------------------- client-side pagination
+  // Long tables render one page at a time; rows are kept in memory and the
+  // container re-renders on Prev/Next.
+  var PAGERS = {};
+  function pagedTable(key, head, rows, opts){
+    PAGERS[key] = {
+      head: head, rows: rows,
+      pageSize: (opts && opts.pageSize) || 10,
+      empty: (opts && opts.empty) || "Nothing here yet.",
+      page: 0
+    };
+    return '<div class="scroll" data-pager="' + key + '">' + pagedInner(key) + "</div>";
+  }
+  function pagedInner(key){
+    var o = PAGERS[key];
+    var total = o.rows.length;
+    var pages = Math.max(1, Math.ceil(total / o.pageSize));
+    if (o.page > pages - 1) o.page = pages - 1;
+    var s = o.page * o.pageSize;
+    return "<table><thead><tr>" + o.head + "</tr></thead><tbody>" +
+           (total ? o.rows.slice(s, s + o.pageSize).join("")
+                  : '<tr><td colspan="99">' + o.empty + "</td></tr>") +
+           "</tbody></table>" +
+           (pages > 1
+             ? '<div class="pager">' +
+               '<button type="button" class="pg-btn" data-pg="' + key + '" data-dir="-1"' + (o.page === 0 ? " disabled" : "") + ">&#8592; Prev</button>" +
+               "<span>" + (s + 1) + "&ndash;" + Math.min(s + o.pageSize, total) + " of " + total + "</span>" +
+               '<button type="button" class="pg-btn" data-pg="' + key + '" data-dir="1"' + (o.page >= pages - 1 ? " disabled" : "") + ">Next &#8594;</button>" +
+               "</div>"
+             : "");
+  }
+  document.addEventListener("click", function(e){
+    var b = e.target.closest && e.target.closest(".pg-btn");
+    if (!b || b.disabled) return;
+    var key = b.getAttribute("data-pg");
+    if (!PAGERS[key]) return;
+    PAGERS[key].page += parseInt(b.getAttribute("data-dir"), 10);
+    var host = document.querySelector('[data-pager="' + key + '"]');
+    if (host) host.innerHTML = pagedInner(key);
+  });
 
   // Horizontal stage timeline: five numbered steps on one line, each with its
   // count and description underneath.
@@ -742,43 +840,37 @@
     var round1 =
       "<h2>First round &mdash; to call (" + r1.length + ")</h2>" +
       '<p class="list-note">Clubs nobody has spoken to yet, biggest first. Click a club for its full record.</p>' +
-      "<div class='scroll'><table><thead><tr>" +
-      "<th>Club</th><th>Where</th><th>Rank</th><th>Phone</th><th>Attempts</th>" +
-      "</tr></thead><tbody>" +
-      (r1.length
-        ? r1.map(function(t){
-            return '<tr class="rowlink" data-club="' + esc(t.id) + '">' +
-                   "<td>" + esc(t.entity_name) + "</td>" +
-                   "<td>" + esc(t.where || "—") + "</td>" +
-                   "<td>" + esc(t.gaming_rank != null ? t.gaming_rank : "—") + "</td>" +
-                   '<td class="nowrap">' + esc(t.primary_phone || "—") + "</td>" +
-                   "<td>" + (t.attempts ? esc(t.attempts) + " tried" : "—") + "</td></tr>";
-          }).join("")
-        : '<tr><td colspan="5">Nothing left — every club has been spoken to.</td></tr>') +
-      "</tbody></table></div>";
+      pagedTable("r1",
+        "<th>Club</th><th>Where</th><th>Rank</th><th>Phone</th><th>Attempts</th>",
+        r1.map(function(t){
+          return '<tr class="rowlink" data-club="' + esc(t.id) + '">' +
+                 "<td>" + esc(t.entity_name) + "</td>" +
+                 "<td>" + esc(t.where || "—") + "</td>" +
+                 "<td>" + esc(t.gaming_rank != null ? t.gaming_rank : "—") + "</td>" +
+                 '<td class="nowrap">' + esc(t.primary_phone || "—") + "</td>" +
+                 "<td>" + (t.attempts ? esc(t.attempts) + " tried" : "—") + "</td></tr>";
+        }),
+        { empty: "Nothing left — every club has been spoken to." });
 
     var round2 =
       "<h2>Second round &mdash; call back (" + r2.length + ")</h2>" +
       '<p class="list-note">Already called, in priority order: clubs where the first call landed a direct ' +
       'contact come first, then everyone else. Not-interested clubs are left off.</p>' +
-      "<div class='scroll'><table><thead><tr>" +
-      "<th>Priority</th><th>Club</th><th>Where</th><th>Contact</th><th>Last outcome</th><th>Calls</th>" +
-      "</tr></thead><tbody>" +
-      (r2.length
-        ? r2.map(function(t){
-            return '<tr class="rowlink" data-club="' + esc(t.id) + '">' +
-                   "<td>" + (t.direct ? '<span class="pill hot">direct contact</span>'
-                                      : '<span class="pill">standard</span>') + "</td>" +
-                   "<td>" + esc(t.entity_name) + "</td>" +
-                   "<td>" + esc(t.where || "—") + "</td>" +
-                   "<td>" + esc(t.decision_maker || "—") +
-                     (t.decision_maker_phone ? "<br><span style='color:var(--muted)'>" + esc(t.decision_maker_phone) + "</span>" : "") + "</td>" +
-                   "<td>" + esc(outcomeLabel(t.last_outcome)) +
-                     (t.called_again ? ' <span class="pill ok">called again</span>' : "") + "</td>" +
-                   "<td>" + esc(t.calls) + "</td></tr>";
-          }).join("")
-        : '<tr><td colspan="6">No callbacks yet — they appear here after first calls are made.</td></tr>') +
-      "</tbody></table></div>";
+      pagedTable("r2",
+        "<th>Priority</th><th>Club</th><th>Where</th><th>Contact</th><th>Last outcome</th><th>Calls</th>",
+        r2.map(function(t){
+          return '<tr class="rowlink" data-club="' + esc(t.id) + '">' +
+                 "<td>" + (t.direct ? '<span class="pill hot">direct contact</span>'
+                                    : '<span class="pill">standard</span>') + "</td>" +
+                 "<td>" + esc(t.entity_name) + "</td>" +
+                 "<td>" + esc(t.where || "—") + "</td>" +
+                 "<td>" + esc(t.decision_maker || "—") +
+                   (t.decision_maker_phone ? "<br><span style='color:var(--muted)'>" + esc(t.decision_maker_phone) + "</span>" : "") + "</td>" +
+                 "<td>" + esc(outcomeLabel(t.last_outcome)) +
+                   (t.called_again ? ' <span class="pill ok">called again</span>' : "") + "</td>" +
+                 "<td>" + esc(t.calls) + "</td></tr>";
+        }),
+        { empty: "No callbacks yet — they appear here after first calls are made." });
 
     return round1 + round2;
   }
@@ -794,7 +886,6 @@
             card(s.my_calls, "calls you have made") +
             card(s.remaining, "left in your list") +
             card(s.done, "done in your list", "good") +
-            card(s.do_not_call, "do not call") +
             card(s.total, "clubs in your list") +
             card(s.call_group ? "list " + s.call_group + " of 5" : "all lists", "your list") +
           "</div>" +
@@ -806,22 +897,20 @@
 
         listsHtml(d.lists) +
 
-        "<h2>Your recent calls</h2><div class='scroll'><table><thead><tr>" +
-          "<th>When</th><th>Club</th><th>Outcome</th><th>Decision maker</th><th>Wants info</th><th>Notes</th>" +
-        "</tr></thead><tbody>" +
-        ((d.recent || []).length
-          ? d.recent.map(function(r){
-              return '<tr class="rowlink" data-club="' + esc(r.target_id || "") + '">' +
-                     '<td class="nowrap">' + esc(when(r.created_at)) + "</td>" +
-                     "<td>" + esc(r.club) + "<br><span style='color:var(--muted)'>" + esc(r.where) + "</span></td>" +
-                     "<td>" + esc(outcomeLabel(r.outcome)) + (r.round > 1 ? " (call " + esc(r.round) + ")" : "") + "</td>" +
-                     "<td>" + esc(r.decision_maker || "—") +
-                       (r.decision_maker_email ? "<br><span style='color:var(--muted)'>" + esc(r.decision_maker_email) + "</span>" : "") + "</td>" +
-                     "<td>" + yesno(r.wants_info) + "</td>" +
-                     "<td>" + esc(r.notes || "—") + "</td></tr>";
-            }).join("")
-          : '<tr><td colspan="6">No calls recorded yet.</td></tr>') +
-        "</tbody></table></div>" +
+        "<h2>Your recent calls</h2>" +
+        pagedTable("myrecent",
+          "<th>When</th><th>Club</th><th>Outcome</th><th>Decision maker</th><th>Wants info</th><th>Notes</th>",
+          (d.recent || []).map(function(r){
+            return '<tr class="rowlink" data-club="' + esc(r.target_id || "") + '">' +
+                   '<td class="nowrap">' + esc(when(r.created_at)) + "</td>" +
+                   "<td>" + esc(r.club) + "<br><span style='color:var(--muted)'>" + esc(r.where) + "</span></td>" +
+                   "<td>" + esc(outcomeLabel(r.outcome)) + (r.round > 1 ? " (call " + esc(r.round) + ")" : "") + "</td>" +
+                   "<td>" + esc(r.decision_maker || "—") +
+                     (r.decision_maker_email ? "<br><span style='color:var(--muted)'>" + esc(r.decision_maker_email) + "</span>" : "") + "</td>" +
+                   "<td>" + yesno(r.wants_info) + "</td>" +
+                   "<td>" + esc(r.notes || "—") + "</td></tr>";
+          }),
+          { empty: "No calls recorded yet." }) +
       "</div>";
   }
 
@@ -891,20 +980,8 @@
 
         listsHtml(d.lists) +
 
-        "<h2>The five lists</h2><div class='panel'>" +
-          infoIcon("The club list is split into five fixed groups, interleaved by club size so " +
-                   "each holds a comparable spread. A caller only ever sees their own group, so two " +
-                   "callers can never be offered the same club. Admins are unrestricted and can cover any group.") +
-          '<div class="cards cards-tight">' +
-            (d.groups || []).map(function(g){
-              return card(g.remaining + " / " + g.total, "list " + g.call_group + " left to call",
-                          g.remaining === 0 ? "good" : "");
-            }).join("") +
-          "</div>" +
-        "</div>" +
-
         "<h2>Callers</h2><div class='scroll'><table><thead><tr>" +
-          "<th>Name</th><th>Username</th><th>List</th><th>Calls</th><th>Left in list</th>" +
+          "<th>Name</th><th>Username</th><th>List</th><th>Calls</th><th>Left / all</th>" +
           "<th>On a call</th><th>Password set</th><th>Last login</th>" +
         "</tr></thead><tbody>" +
         (d.callers.length
@@ -914,7 +991,7 @@
                      "<td>" + (x.call_group ? esc(x.call_group) + " of 5"
                                             : '<span class="pill">any</span>') + "</td>" +
                      "<td>" + esc(x.calls) + "</td>" +
-                     "<td>" + (x.call_group ? esc(x.group_remaining) : "\u2014") + "</td>" +
+                     '<td class="nowrap">' + esc(x.group_remaining) + " / " + esc(x.group_total) + "</td>" +
                      "<td>" + esc(x.assigned_now) + "</td>" +
                      "<td>" + (x.password_set ? '<span class="pill ok">yes</span>'
                                               : '<span class="pill bad">setup link not used</span>') + "</td>" +
@@ -923,40 +1000,36 @@
           : '<tr><td colspan="8">No callers set up yet.</td></tr>') +
         "</tbody></table></div>" +
 
-        "<h2>Recent calls</h2><div class='scroll'><table><thead><tr>" +
+        "<h2>Recent calls</h2>" +
+        pagedTable("recent",
           "<th>When</th><th>Club</th><th>Caller</th><th>Outcome</th><th>Decision maker</th>" +
-          "<th>Wants info</th><th>In sheet</th><th>Notes</th>" +
-        "</tr></thead><tbody>" +
-        (d.recent.length
-          ? d.recent.map(function(r){
-              return '<tr class="rowlink" data-club="' + esc(r.target_id || "") + '">' +
-                     '<td class="nowrap">' + esc(when(r.created_at)) + "</td>" +
-                     "<td>" + esc(r.club) + "<br><span style='color:var(--muted)'>" + esc(r.where) + "</span></td>" +
-                     "<td>" + esc(r.caller) + "</td>" +
-                     "<td>" + esc((r.outcome||"").replace(/_/g," ")) + (r.round>1 ? " (call "+esc(r.round)+")" : "") + "</td>" +
-                     "<td>" + esc(r.decision_maker || "—") +
-                       (r.decision_maker_role ? "<br><span style='color:var(--muted)'>"+esc(r.decision_maker_role)+"</span>" : "") +
-                       (r.decision_maker_email ? "<br>"+esc(r.decision_maker_email) : "") + "</td>" +
-                     "<td>" + yesno(r.wants_info) + "</td>" +
-                     "<td>" + (r.sheet_synced ? '<span class="pill ok">yes</span>' : '<span class="pill bad">pending</span>') + "</td>" +
-                     "<td>" + esc(r.notes || "—") + "</td></tr>";
-            }).join("")
-          : '<tr><td colspan="8">No calls recorded yet.</td></tr>') +
-        "</tbody></table></div>" +
+          "<th>Wants info</th><th>In sheet</th><th>Notes</th>",
+          (d.recent || []).map(function(r){
+            return '<tr class="rowlink" data-club="' + esc(r.target_id || "") + '">' +
+                   '<td class="nowrap">' + esc(when(r.created_at)) + "</td>" +
+                   "<td>" + esc(r.club) + "<br><span style='color:var(--muted)'>" + esc(r.where) + "</span></td>" +
+                   "<td>" + esc(r.caller) + "</td>" +
+                   "<td>" + esc((r.outcome||"").replace(/_/g," ")) + (r.round>1 ? " (call "+esc(r.round)+")" : "") + "</td>" +
+                   "<td>" + esc(r.decision_maker || "—") +
+                     (r.decision_maker_role ? "<br><span style='color:var(--muted)'>"+esc(r.decision_maker_role)+"</span>" : "") +
+                     (r.decision_maker_email ? "<br>"+esc(r.decision_maker_email) : "") + "</td>" +
+                   "<td>" + yesno(r.wants_info) + "</td>" +
+                   "<td>" + (r.sheet_synced ? '<span class="pill ok">yes</span>' : '<span class="pill bad">pending</span>') + "</td>" +
+                   "<td>" + esc(r.notes || "—") + "</td></tr>";
+          }),
+          { empty: "No calls recorded yet." }) +
 
         failingHtml +
 
-        "<h2>Do not call &mdash; already came to us</h2><div class='scroll'><table><thead><tr>" +
-          "<th>Club</th><th>Where</th><th>Why</th>" +
-        "</tr></thead><tbody>" +
-        (d.do_not_call.length
-          ? d.do_not_call.map(function(x){
-              return "<tr><td>" + esc(x.entity_name) + "</td><td>" +
-                     esc([x.suburb, x.state].filter(Boolean).join(" ")) + "</td><td>" +
-                     esc(x.do_not_call_reason || "—") + "</td></tr>";
-            }).join("")
-          : '<tr><td colspan="3">Nothing flagged yet.</td></tr>') +
-        "</tbody></table></div>" +
+        "<h2>Do not call &mdash; already came to us</h2>" +
+        pagedTable("dnc",
+          "<th>Club</th><th>Where</th><th>Why</th>",
+          (d.do_not_call || []).map(function(x){
+            return "<tr><td>" + esc(x.entity_name) + "</td><td>" +
+                   esc([x.suburb, x.state].filter(Boolean).join(" ")) + "</td><td>" +
+                   esc(x.do_not_call_reason || "—") + "</td></tr>";
+          }),
+          { empty: "Nothing flagged yet." }) +
       "</div>";
   }
 
