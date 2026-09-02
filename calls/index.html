@@ -257,6 +257,49 @@
     .funnel li::before,.funnel li::after{display:none;}
   }
 
+  /* --------------------------------------------------------- round lists */
+  tr.rowlink{cursor:pointer;}
+  tr.rowlink:hover{background:rgba(43,140,196,0.10);}
+  .pill.hot{background:rgba(63,191,111,0.22);color:#9fe0bb;}
+  .list-note{color:var(--muted);font-size:13px;margin:6px 0 14px;}
+
+  /* ---------------------------------------------------------- club drawer */
+  #drawer-backdrop{position:fixed;inset:0;background:rgba(0,0,0,0.55);z-index:55;
+                   opacity:0;visibility:hidden;transition:opacity 0.2s;}
+  #drawer-backdrop.open{opacity:1;visibility:visible;}
+  #drawer{position:fixed;top:0;right:0;bottom:0;width:min(620px,100vw);z-index:60;
+          background:var(--card-dark);overflow-y:auto;overscroll-behavior:contain;
+          transform:translateX(100%);transition:transform 0.22s ease;
+          box-shadow:-16px 0 48px rgba(0,0,0,0.5);}
+  #drawer.open{transform:none;}
+  .drawer-inner{padding:24px;}
+  .drawer-top{display:flex;justify-content:space-between;align-items:flex-start;gap:16px;margin-bottom:6px;}
+  .drawer-top h2{font-size:23px;line-height:1.2;}
+  .drawer-close{background:none;color:var(--muted);font-size:26px;line-height:1;padding:2px 8px;border-radius:6px;}
+  .drawer-close:hover{color:var(--white);background:rgba(255,255,255,0.08);}
+  .drawer-sub{color:var(--muted);font-size:14px;margin:0 0 16px;}
+  .drawer h3{font-size:15px;margin:26px 0 10px;}
+  .drawer-phone{display:inline-block;background:var(--sky-blue);color:var(--white);text-decoration:none;
+                font-weight:700;font-size:17px;padding:9px 18px;border-radius:8px;margin-bottom:16px;}
+  .drawer-phone:hover{background:#1f6f9e;}
+  /* One call = one block in the timeline. */
+  .call-item{background:rgba(255,255,255,0.05);border-radius:10px;padding:14px 16px;margin-bottom:10px;font-size:14px;}
+  .call-item .ci-head{display:flex;justify-content:space-between;gap:10px;flex-wrap:wrap;margin-bottom:6px;}
+  .call-item .ci-when{color:var(--muted);font-size:13px;}
+  .call-item .ci-notes{color:var(--muted);margin-top:6px;white-space:pre-wrap;}
+  .email-ev{display:flex;gap:12px;align-items:baseline;padding:7px 0;border-bottom:1px solid var(--line);font-size:14px;}
+  .email-ev:last-child{border-bottom:0;}
+  .email-ev .ev-when{color:var(--muted);font-size:13px;white-space:nowrap;}
+  .email-ev .ev-addr{color:var(--muted);font-size:13px;overflow-wrap:anywhere;}
+  .ev-pill{display:inline-block;padding:1px 9px;font-size:12px;border-radius:20px;background:rgba(255,255,255,0.09);white-space:nowrap;}
+  .ev-pill.delivered,.ev-pill.sent{background:rgba(43,140,196,0.22);color:#c8dff0;}
+  .ev-pill.opened{background:rgba(216,163,63,0.22);color:#ecd2a0;}
+  .ev-pill.clicked,.ev-pill.converted{background:rgba(63,191,111,0.22);color:#9fe0bb;}
+  .ev-pill.bounced,.ev-pill.failed,.ev-pill.spam,.ev-pill.suppressed,.ev-pill.unsubscribed{background:rgba(200,16,46,0.22);color:#e8a0a8;}
+  .drawer .btn-primary{width:auto;background:var(--sky-blue);padding:11px 20px;}
+  .drawer .btn-primary:hover:not(:disabled){background:#1f6f9e;}
+  .drawer .field{margin-bottom:14px;}
+
   .empty{padding:80px 24px;text-align:center;}
   .empty h2{font-size:24px;margin-bottom:10px;}
   .empty p{color:var(--muted);}
@@ -343,7 +386,7 @@
       <h1>Call worksheet</h1>
       <div class="who"><span id="who-name"></span> &middot; <button class="linkbtn" id="logout-btn">log out</button></div>
     </div>
-    <div class="tabs hidden" id="admin-tabs">
+    <div class="tabs" id="admin-tabs">
       <button class="tab on" id="tab-work">Worksheet</button>
       <button class="tab" id="tab-admin">Overview</button>
     </div>
@@ -359,6 +402,10 @@
   <div id="admin-body" class="hidden"></div>
 </div>
 
+<!-- ======================================================== CLUB DRAWER -->
+<div id="drawer-backdrop"></div>
+<aside id="drawer" class="drawer" aria-label="Club details"><div class="drawer-inner" id="drawer-inner"></div></aside>
+
 <script>
 (function(){
   "use strict";
@@ -370,6 +417,8 @@
   try { token = localStorage.getItem(TOKEN_KEY); } catch(e){}
   var current = null;   // the club currently on screen
   var meCaller = null;  // the logged-in caller, used in the script
+  var tabsWired = false;
+  var drawerClub = null; // target_id currently open in the slide-out
 
   function api(action, payload){
     var body = Object.assign({ action: action }, payload || {});
@@ -524,8 +573,10 @@
     document.getElementById("who-name").textContent =
       caller.name + (caller.call_group ? "  ·  list " + caller.call_group + " of 5" : "");
     show("view-work");
-    if (caller.is_admin) {
-      document.getElementById("admin-tabs").classList.remove("hidden");
+    // Everyone gets the overview now; non-admins are served a version scoped
+    // to their own list and their own calls by the API.
+    if (!tabsWired) {
+      tabsWired = true;
       document.getElementById("tab-work").addEventListener("click", function(){ switchTab("work"); });
       document.getElementById("tab-admin").addEventListener("click", function(){ switchTab("admin"); });
     }
@@ -545,7 +596,10 @@
   function loadOverview(){
     var el = document.getElementById("admin-body");
     el.innerHTML = '<div class="empty"><p>Loading overview...</p></div>';
-    api("overview", {}).then(function(d){ renderOverview(el, d); }).catch(function(e){
+    api("overview", {}).then(function(d){
+      if (d.scope === "mine") renderMyOverview(el, d);
+      else renderOverview(el, d);
+    }).catch(function(e){
       el.innerHTML = '<div class="empty"><h2>Could not load</h2><p>' + esc(e.message) + "</p></div>";
     });
   }
@@ -677,6 +731,97 @@
   }
   function yesno(v){ return v ? '<span class="pill ok">yes</span>' : '<span class="pill">no</span>'; }
 
+  // The two working lists. Every row opens the club's slide-out panel.
+  function listsHtml(lists){
+    var r1 = (lists && lists.round1) || [];
+    var r2 = (lists && lists.round2) || [];
+
+    var round1 =
+      "<h2>First round &mdash; to call (" + r1.length + ")</h2>" +
+      '<p class="list-note">Clubs nobody has spoken to yet, biggest first. Click a club for its full record.</p>' +
+      "<div class='scroll'><table><thead><tr>" +
+      "<th>Club</th><th>Where</th><th>Rank</th><th>Phone</th><th>Attempts</th>" +
+      "</tr></thead><tbody>" +
+      (r1.length
+        ? r1.map(function(t){
+            return '<tr class="rowlink" data-club="' + esc(t.id) + '">' +
+                   "<td>" + esc(t.entity_name) + "</td>" +
+                   "<td>" + esc(t.where || "—") + "</td>" +
+                   "<td>" + esc(t.gaming_rank != null ? t.gaming_rank : "—") + "</td>" +
+                   '<td class="nowrap">' + esc(t.primary_phone || "—") + "</td>" +
+                   "<td>" + (t.attempts ? esc(t.attempts) + " tried" : "—") + "</td></tr>";
+          }).join("")
+        : '<tr><td colspan="5">Nothing left — every club has been spoken to.</td></tr>') +
+      "</tbody></table></div>";
+
+    var round2 =
+      "<h2>Second round &mdash; call back (" + r2.length + ")</h2>" +
+      '<p class="list-note">Already called, in priority order: clubs where the first call landed a direct ' +
+      'contact come first, then everyone else. Not-interested clubs are left off.</p>' +
+      "<div class='scroll'><table><thead><tr>" +
+      "<th>Priority</th><th>Club</th><th>Where</th><th>Contact</th><th>Last outcome</th><th>Calls</th>" +
+      "</tr></thead><tbody>" +
+      (r2.length
+        ? r2.map(function(t){
+            return '<tr class="rowlink" data-club="' + esc(t.id) + '">' +
+                   "<td>" + (t.direct ? '<span class="pill hot">direct contact</span>'
+                                      : '<span class="pill">standard</span>') + "</td>" +
+                   "<td>" + esc(t.entity_name) + "</td>" +
+                   "<td>" + esc(t.where || "—") + "</td>" +
+                   "<td>" + esc(t.decision_maker || "—") +
+                     (t.decision_maker_phone ? "<br><span style='color:var(--muted)'>" + esc(t.decision_maker_phone) + "</span>" : "") + "</td>" +
+                   "<td>" + esc(outcomeLabel(t.last_outcome)) +
+                     (t.called_again ? ' <span class="pill ok">called again</span>' : "") + "</td>" +
+                   "<td>" + esc(t.calls) + "</td></tr>";
+          }).join("")
+        : '<tr><td colspan="6">No callbacks yet — they appear here after first calls are made.</td></tr>') +
+      "</tbody></table></div>";
+
+    return round1 + round2;
+  }
+
+  // The caller's own overview: their numbers, their round lists, their calls.
+  function renderMyOverview(el, d){
+    var s = d.stats || {};
+    el.innerHTML =
+      '<div class="admin">' +
+        "<h2>Your progress</h2>" +
+        '<div class="progress-split">' +
+          '<div class="cards cards-tight">' +
+            card(s.my_calls, "calls you have made") +
+            card(s.remaining, "left in your list") +
+            card(s.done, "done in your list", "good") +
+            card(s.do_not_call, "do not call") +
+            card(s.total, "clubs in your list") +
+            card(s.call_group ? "list " + s.call_group + " of 5" : "all lists", "your list") +
+          "</div>" +
+          '<div class="panel">' +
+            '<h3 class="panel-title">Outcome of your calls</h3>' +
+            pieChart(d.by_outcome) +
+          "</div>" +
+        "</div>" +
+
+        listsHtml(d.lists) +
+
+        "<h2>Your recent calls</h2><div class='scroll'><table><thead><tr>" +
+          "<th>When</th><th>Club</th><th>Outcome</th><th>Decision maker</th><th>Wants info</th><th>Notes</th>" +
+        "</tr></thead><tbody>" +
+        ((d.recent || []).length
+          ? d.recent.map(function(r){
+              return '<tr class="rowlink" data-club="' + esc(r.target_id || "") + '">' +
+                     '<td class="nowrap">' + esc(when(r.created_at)) + "</td>" +
+                     "<td>" + esc(r.club) + "<br><span style='color:var(--muted)'>" + esc(r.where) + "</span></td>" +
+                     "<td>" + esc(outcomeLabel(r.outcome)) + (r.round > 1 ? " (call " + esc(r.round) + ")" : "") + "</td>" +
+                     "<td>" + esc(r.decision_maker || "—") +
+                       (r.decision_maker_email ? "<br><span style='color:var(--muted)'>" + esc(r.decision_maker_email) + "</span>" : "") + "</td>" +
+                     "<td>" + yesno(r.wants_info) + "</td>" +
+                     "<td>" + esc(r.notes || "—") + "</td></tr>";
+            }).join("")
+          : '<tr><td colspan="6">No calls recorded yet.</td></tr>') +
+        "</tbody></table></div>" +
+      "</div>";
+  }
+
   function renderOverview(el, d){
     var c = d.counters, dl = d.delivery || {};
     var waiting = Number(dl.waiting || 0);
@@ -741,6 +886,8 @@
 
         outcomeHtml +
 
+        listsHtml(d.lists) +
+
         "<h2>The five lists</h2><div class='panel'>" +
           infoIcon("The club list is split into five fixed groups, interleaved by club size so " +
                    "each holds a comparable spread. A caller only ever sees their own group, so two " +
@@ -779,7 +926,8 @@
         "</tr></thead><tbody>" +
         (d.recent.length
           ? d.recent.map(function(r){
-              return '<tr><td class="nowrap">' + esc(when(r.created_at)) + "</td>" +
+              return '<tr class="rowlink" data-club="' + esc(r.target_id || "") + '">' +
+                     '<td class="nowrap">' + esc(when(r.created_at)) + "</td>" +
                      "<td>" + esc(r.club) + "<br><span style='color:var(--muted)'>" + esc(r.where) + "</span></td>" +
                      "<td>" + esc(r.caller) + "</td>" +
                      "<td>" + esc((r.outcome||"").replace(/_/g," ")) + (r.round>1 ? " (call "+esc(r.round)+")" : "") + "</td>" +
@@ -1064,6 +1212,193 @@
       .some(function(id){ var n = document.getElementById(id); return n && n.value.trim(); });
     if (dirty) { e.preventDefault(); e.returnValue = ""; }
   });
+
+  // ------------------------------------------------------------ club drawer
+  var drawerEl = document.getElementById("drawer");
+  var backdropEl = document.getElementById("drawer-backdrop");
+
+  function closeDrawer(){
+    drawerEl.classList.remove("open");
+    backdropEl.classList.remove("open");
+    drawerClub = null;
+  }
+  backdropEl.addEventListener("click", closeDrawer);
+  document.addEventListener("keydown", function(e){
+    if (e.key === "Escape" && drawerClub) closeDrawer();
+  });
+
+  // Any element carrying data-club opens the panel — list rows, recent calls.
+  document.addEventListener("click", function(e){
+    if (e.target.closest && e.target.closest("a,button")) return;
+    var row = e.target.closest && e.target.closest("[data-club]");
+    if (row && row.getAttribute("data-club")) openClub(row.getAttribute("data-club"));
+  });
+
+  function openClub(targetId){
+    drawerClub = targetId;
+    drawerEl.classList.add("open");
+    backdropEl.classList.add("open");
+    document.getElementById("drawer-inner").innerHTML =
+      '<div class="empty"><p>Loading club...</p></div>';
+    api("club_detail", { target_id: targetId }).then(function(d){
+      if (drawerClub !== targetId) return; // another club was opened meanwhile
+      renderDrawer(d);
+    }).catch(function(e){
+      document.getElementById("drawer-inner").innerHTML =
+        '<div class="empty"><h2>Could not load</h2><p>' + esc(e.message) + "</p></div>";
+    });
+  }
+
+  function drawerFact(label, value){
+    if (!value && value !== 0) return "";
+    return '<div class="fact"><dt>' + esc(label) + "</dt><dd>" + esc(value) + "</dd></div>";
+  }
+
+  function evLabel(kind){
+    return { delivered:"Delivered", sent:"Sent", opened:"Opened", clicked:"Clicked link",
+             bounced:"Bounced", failed:"Failed", suppressed:"Suppressed", spam:"Marked as spam",
+             unsubscribed:"Unsubscribed", converted:"Converted" }[kind] || kind;
+  }
+
+  function renderDrawer(d){
+    var t = d.target;
+    var phone = (t.primary_phone || "").trim();
+    var place = t.full_address || [t.suburb, t.state, t.postcode].filter(Boolean).join(" ");
+    var websites = (t.websites || "").split(";")[0].trim();
+
+    var callsHtml = (d.calls || []).length
+      ? d.calls.map(function(c){
+          var who = (c.d1942_callers && c.d1942_callers.name) || "";
+          var bits = [];
+          if (c.decision_maker_name) bits.push("Spoke to " + c.decision_maker_name + (c.decision_maker_role ? " (" + c.decision_maker_role + ")" : ""));
+          if (c.decision_maker_email) bits.push(c.decision_maker_email);
+          if (c.decision_maker_phone) bits.push(c.decision_maker_phone);
+          if (c.clubgrants) bits.push("ClubGRANTS: " + c.clubgrants);
+          if (c.others_involved) bits.push("Also involved: " + c.others_involved);
+          if (c.board_meeting) bits.push("Committee meets: " + c.board_meeting);
+          return '<div class="call-item">' +
+                 '<div class="ci-head"><b>' + esc(outcomeLabel(c.outcome)) +
+                   (c.round > 1 ? " (call " + esc(c.round) + ")" : "") + "</b>" +
+                   '<span class="ci-when">' + esc(when(c.created_at)) + (who ? " · " + esc(who) : "") + "</span></div>" +
+                 (bits.length ? "<div>" + bits.map(esc).join("<br>") + "</div>" : "") +
+                 (c.wants_info ? '<div><span class="pill ok">wants more info</span></div>' : "") +
+                 (c.notes ? '<div class="ci-notes">' + esc(c.notes) + "</div>" : "") +
+                 "</div>";
+        }).join("")
+      : '<p class="list-note">No calls recorded for this club yet.</p>';
+
+    var em = d.emails || {};
+    var emailsHtml;
+    if (!em.available) {
+      emailsHtml = '<p class="list-note">Email history could not be loaded: ' + esc(em.reason || "unknown") + "</p>";
+    } else if (!(em.addresses || []).length) {
+      emailsHtml = '<p class="list-note">No email address has been captured for this club yet, so there is no email history to show.</p>';
+    } else if (!(em.events || []).length) {
+      emailsHtml = '<p class="list-note">Nothing sent yet to ' + esc(em.addresses.join(", ")) + ".</p>";
+    } else {
+      emailsHtml =
+        '<p class="list-note">Tracking ' + esc(em.addresses.join(", ")) + "</p>" +
+        em.events.map(function(ev){
+          return '<div class="email-ev">' +
+                 '<span class="ev-pill ' + esc(ev.kind) + '">' + esc(evLabel(ev.kind)) + "</span>" +
+                 '<span class="ev-addr">' + esc(ev.email) +
+                   (ev.subject ? " — " + esc(ev.subject) : (ev.campaign ? " — " + esc(ev.campaign) : "")) + "</span>" +
+                 '<span class="ev-when" style="margin-left:auto">' + esc(when(ev.at)) + "</span>" +
+                 "</div>";
+        }).join("");
+    }
+
+    document.getElementById("drawer-inner").innerHTML =
+      '<div class="drawer-top"><h2>' + esc(t.entity_name) + "</h2>" +
+        '<button class="drawer-close" id="drawer-close" aria-label="Close">&times;</button></div>' +
+      '<p class="drawer-sub">' + esc(place) +
+        (t.distance_km ? " · " + esc(t.distance_km) + " km from Sydney" : "") + "</p>" +
+      (phone ? '<a class="drawer-phone" href="tel:' + esc(phone.replace(/[^0-9+]/g, "")) + '">' + esc(phone) + "</a>" : "") +
+
+      '<dl class="facts">' +
+        drawerFact("Contact on file", t.primary_person) +
+        drawerFact("Email on file", t.primary_email) +
+        (websites ? '<div class="fact"><dt>Website</dt><dd><a href="' + esc(websites) + '" target="_blank" rel="noopener">' +
+          esc(websites.replace(/^https?:\/\//i, "").replace(/^www\./i, "").replace(/\/$/, "")) + "</a></dd></div>" : "") +
+        drawerFact("Gaming machines", t.egm_count) +
+        drawerFact("Gaming revenue", t.gaming_revenue) +
+        drawerFact("State profit rank", t.gaming_rank) +
+        drawerFact("Licence", t.licence_name) +
+        drawerFact("Status", (t.status || "").replace(/_/g, " ") + (t.do_not_call ? " · DO NOT CALL" : "")) +
+      "</dl>" +
+
+      "<h3>Record another call</h3>" +
+      '<form id="d-call-form">' +
+        '<div class="field-row">' +
+          '<div class="field"><label for="d-dm">Decision maker</label><input type="text" id="d-dm" autocomplete="off"></div>' +
+          '<div class="field"><label for="d-role">Their role</label><input type="text" id="d-role" autocomplete="off"></div>' +
+        "</div>" +
+        '<div class="field-row">' +
+          '<div class="field"><label for="d-email">Their direct email</label><input type="email" id="d-email" autocomplete="off"></div>' +
+          '<div class="field"><label for="d-phone">Their direct phone</label><input type="tel" id="d-phone" autocomplete="off"></div>' +
+        "</div>" +
+        '<div class="field checkbox">' +
+          '<input type="checkbox" id="d-wants">' +
+          '<label for="d-wants">They want to receive more information &mdash; needs their email above.</label>' +
+        "</div>" +
+        '<div class="field"><label for="d-outcome">Outcome <span class="req">*</span></label>' +
+          '<select id="d-outcome" required>' +
+            '<option value="">Choose an outcome...</option>' +
+            '<option value="interested_followup">Seems interested &mdash; needs another call</option>' +
+            '<option value="referred_to_board">Going to the board / committee</option>' +
+            '<option value="callback_scheduled">Callback scheduled</option>' +
+            '<option value="wants_updates">Not ready to commit financially &mdash; wants updates</option>' +
+            '<option value="wants_info_only">Wants information only</option>' +
+            '<option value="committed">Committed &mdash; agreed to a package</option>' +
+            '<option value="not_interested">Not interested</option>' +
+            '<option value="no_answer">No answer / voicemail</option>' +
+            '<option value="gatekeeper">Could not get past reception</option>' +
+            '<option value="wrong_number">Wrong number / bad contact details</option>' +
+          "</select></div>" +
+        '<div class="field"><label for="d-notes">Notes</label><textarea id="d-notes" rows="3"></textarea></div>' +
+        '<button type="submit" class="btn-primary" id="d-save-btn">Save this call</button>' +
+        '<div class="msg" id="d-save-msg"></div>' +
+      "</form>" +
+
+      "<h3>All calls to this club (" + (d.calls || []).length + ")</h3>" + callsHtml +
+      "<h3>Emails to this contact</h3>" + emailsHtml;
+
+    document.getElementById("drawer-close").addEventListener("click", closeDrawer);
+
+    document.getElementById("d-call-form").addEventListener("submit", function(e){
+      e.preventDefault();
+      clearMsg("d-save-msg");
+      var wants = document.getElementById("d-wants").checked;
+      var email = document.getElementById("d-email").value.trim();
+      if (wants && !email) {
+        msg("d-save-msg", "To send more information you need their email address.", "error");
+        return;
+      }
+      if (!document.getElementById("d-outcome").value) {
+        msg("d-save-msg", "Choose an outcome before saving.", "error");
+        return;
+      }
+      var btn = document.getElementById("d-save-btn");
+      btn.disabled = true; btn.textContent = "Saving...";
+      api("log_call", {
+        target_id: t.id,
+        decision_maker_name:  document.getElementById("d-dm").value,
+        decision_maker_role:  document.getElementById("d-role").value,
+        decision_maker_email: email,
+        decision_maker_phone: document.getElementById("d-phone").value,
+        wants_info:           wants,
+        notes:                document.getElementById("d-notes").value,
+        outcome:              document.getElementById("d-outcome").value
+      }).then(function(){
+        openClub(t.id); // reload the drawer with the new call in the timeline
+        // The lists behind the drawer have changed too.
+        if (!document.getElementById("admin-body").classList.contains("hidden")) loadOverview();
+      }).catch(function(err){
+        msg("d-save-msg", err.message, "error");
+        btn.disabled = false; btn.textContent = "Save this call";
+      });
+    });
+  }
 
   // ------------------------------------------------------- resume session
   if (token) {
