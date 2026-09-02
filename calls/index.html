@@ -1045,6 +1045,31 @@
     document.getElementById("c-dnc").textContent = s.do_not_call;
   }
 
+  // On a desktop there is nothing useful behind tel: — clicking the number
+  // copies it instead, for pasting into a softphone. Touch devices still
+  // place the call.
+  var TOUCH_CALLING = !!(window.matchMedia && window.matchMedia("(pointer: coarse)").matches);
+  document.addEventListener("click", function(e){
+    var a = e.target.closest && e.target.closest("a.phone-cta, a.drawer-phone");
+    if (!a || TOUCH_CALLING) return;
+    e.preventDefault();
+    var num = (a.textContent || "").replace(/Copied.*/, "").trim();
+    function done(){
+      a.setAttribute("data-restore", num);
+      a.textContent = "Copied ✓";
+      setTimeout(function(){ if (a.getAttribute("data-restore")) a.textContent = a.getAttribute("data-restore"); }, 1400);
+    }
+    if (navigator.clipboard && navigator.clipboard.writeText) {
+      navigator.clipboard.writeText(num).then(done, done);
+    } else {
+      try {
+        var ta = document.createElement("textarea");
+        ta.value = num; document.body.appendChild(ta); ta.select();
+        document.execCommand("copy"); document.body.removeChild(ta); done();
+      } catch(err){}
+    }
+  });
+
   // ------------------------------------------------------------ worksheet
   function roundSwitchHtml(){
     return '<div class="tabs round-switch" style="margin-bottom:18px">' +
