@@ -1,1269 +1,2610 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="en">
-<head>
-<meta charset="utf-8">
-<meta name="viewport" content="width=device-width, initial-scale=1">
-<meta name="robots" content="noindex, nofollow">
-<title>Call Worksheet | Darwin 1942</title>
-<link rel="icon" href="/favicon.ico">
-<style>
-  :root{
-    --sky-blue:#2b8cc4;
-    --red:#c8102e;
-    --white:#ffffff;
-    --dark:#0b1c2c;
-    --card-dark:#081524;
-    --line:rgba(255,255,255,0.12);
-    --muted:#a8c4d8;
-    --heading-font:Arial,Helvetica,sans-serif;
-  }
-  *{box-sizing:border-box;}
-  html,body{margin:0;padding:0;height:100%;overflow:hidden;}
-  body{
-    background:var(--dark);
-    color:var(--white);
-    font-family:Arial,Helvetica,sans-serif;
-    font-size:15px;
-    line-height:1.6;
-    min-height:100vh;
-  }
-  h1,h2,h3,h4{font-family:var(--heading-font);font-weight:700;margin:0;letter-spacing:normal;}
-  a{color:var(--sky-blue);}
-  button{font-family:var(--heading-font);font-weight:700;letter-spacing:0.3px;cursor:pointer;border:0;}
-  button:disabled{opacity:0.5;cursor:not-allowed;}
-
-  /* ---------------------------------------------------------------- shell */
-  #view-work{display:flex;flex-direction:column;height:100%;}
-  #work-body,#admin-body{flex:1 1 auto;min-height:0;overflow:hidden;}
-  #admin-body{overflow-y:auto;}
-  .topbar{
-    display:flex;align-items:center;justify-content:space-between;gap:16px;
-    padding:12px 20px;background:var(--card-dark);border-bottom:0;
-    flex:0 0 auto;z-index:10;flex-wrap:wrap;
-  }
-  .topbar h1{font-size:18px;}
-  .topbar .who{color:var(--muted);font-size:14px;}
-  .counters{display:flex;gap:18px;flex-wrap:wrap;color:var(--muted);font-size:13px;}
-  .counters b{color:var(--white);font-family:var(--heading-font);font-weight:700;font-size:17px;display:block;line-height:1;}
-  .linkbtn{background:none;color:var(--muted);text-decoration:underline;font-size:13px;font-family:inherit;letter-spacing:0;padding:0;}
-
-  /* ------------------------------------------------------------ auth card */
-  .auth-wrap{display:flex;align-items:center;justify-content:center;height:100%;overflow-y:auto;padding:24px;}
-  .auth{width:100%;max-width:400px;background:var(--card-dark);border:1px solid var(--line);padding:32px;}
-  .auth h1{font-size:25px;margin-bottom:6px;}
-  .auth p.sub{color:var(--muted);margin:0 0 24px;font-size:14px;}
-  .hint{color:var(--muted);font-size:13px;margin:6px 0 0;}
-
-  label{display:block;font-family:var(--heading-font);font-weight:700;font-size:13px;letter-spacing:normal;margin-bottom:6px;color:#d6e6f2;}
-  .req{color:var(--red);}
-  input[type=text],input[type=password],input[type=email],input[type=tel],select,textarea{
-    width:100%;padding:11px 13px;background:rgba(255,255,255,0.07);
-    border:0;color:var(--white);font-family:inherit;font-size:15px;
-    border-radius:6px;
-  }
-  input:focus,select:focus,textarea:focus{outline:2px solid var(--sky-blue);outline-offset:-2px;}
-  textarea{resize:vertical;min-height:80px;}
-  select option{background:var(--card-dark);color:var(--white);}
-  .field{margin-bottom:18px;}
-  /* Short, related fields pair up; long ones stay full width. */
-  .field-row{display:grid;grid-template-columns:1fr 1fr;gap:0 16px;}
-  @media (max-width:1200px){ .field-row{grid-template-columns:1fr;} }
-  .btn-primary{background:var(--red);color:var(--white);padding:14px 28px;font-size:15px;width:100%;border-radius:6px;}
-  .btn-primary:hover:not(:disabled){background:#a50d26;}
-  .msg{margin-top:18px;padding:12px 16px;font-size:14px;display:none;border-radius:6px;}
-  .msg.error{display:block;background:rgba(200,16,46,0.12);border-left:3px solid var(--red);color:#e8a0a8;}
-  .msg.ok{display:block;background:rgba(43,140,196,0.12);border-left:3px solid var(--sky-blue);color:#c8dff0;}
-
-  /* ------------------------------------------------------------ worksheet */
-  /* The two panes scroll independently so the page itself never does: the
-     club you are calling and the form stay put while you read either side. */
-  .work{display:grid;grid-template-columns:1fr 1fr;gap:0;height:100%;min-height:0;}
-  .pane{padding:24px;height:100%;overflow-y:auto;overscroll-behavior:contain;}
-  .pane-left{border-right:0;}
-  .pane-form{background:var(--card-dark);}
-
-  /* Below the breakpoint the panes stack, where independent scrolling would
-     trap the user in a short box — so the document scrolls normally again. */
-  @media (max-width:980px){
-    html,body{height:auto;overflow:auto;}
-    #view-work{height:auto;}
-    #work-body,#admin-body{overflow:visible;min-height:0;}
-    .work{grid-template-columns:1fr;height:auto;}
-    .pane{height:auto;overflow:visible;}
-    .pane-left{border-right:0;border-bottom:0;}
-    .topbar{position:sticky;top:0;}
-  }
-
-  /* nowrap + min-width:0 keeps the phone on the right and makes a long
-     address wrap onto a second line rather than shoving the button down. */
-  .club-head{display:flex;align-items:flex-start;justify-content:space-between;
-             gap:20px;flex-wrap:nowrap;margin-bottom:20px;}
-  @media (max-width:700px){ .club-head{flex-wrap:wrap;} }
-  .club-name{font-size:27px;line-height:1.15;margin-bottom:4px;}
-  .club-id{min-width:0;flex:1 1 auto;}
-  .club-sub{color:var(--muted);margin:0;font-size:14px;}
-  .club-dist{color:var(--muted);margin:2px 0 0;font-size:14px;}
-  .club-web{margin:3px 0 0;font-size:14px;overflow-wrap:anywhere;}
-  .phone-cta{
-    display:inline-block;background:var(--sky-blue);color:var(--white);text-decoration:none;
-    font-family:var(--heading-font);font-weight:700;font-size:21px;letter-spacing:normal;padding:11px 22px;
-    border-radius:8px;flex-shrink:0;white-space:nowrap;
-  }
-  .phone-cta:hover{background:#1f6f9e;}
-  .phone-cta.none{background:rgba(255,255,255,0.08);color:var(--muted);pointer-events:none;font-size:14px;font-weight:400;white-space:normal;max-width:230px;}
-
-  /* Each fact is its own cell with the label stacked above the value. */
-  .facts{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));
-         gap:14px 20px;font-size:14px;margin:0 0 22px;}
-  .fact{min-width:0;}
-  .fact.wide{grid-column:1 / -1;}
-  .facts dt{color:var(--muted);font-size:12px;margin-bottom:2px;}
-  .facts dd{margin:0;min-width:0;overflow-wrap:anywhere;}
-  @media (max-width:1200px){
-    .facts{grid-template-columns:repeat(2,minmax(0,1fr));}
-  }
-
-  /* Same ground as the form fields. Negative margins cancel the pane's padding
-     so it meets the left, right and bottom edges of the column. */
-  .script{background:rgba(255,255,255,0.07);border:0;border-radius:0;
-          margin:0 -24px -24px;padding:20px 24px 24px;}
-  .script h2{font-size:27px;line-height:1.15;margin-bottom:14px;color:var(--white);}
-  .script .step{margin-bottom:18px;}
-  .script .step:last-child{margin-bottom:0;}
-  /* Colour and weight separate the step title from the words to say,
-     without resorting to uppercase. */
-  .script .step b{display:block;margin-bottom:5px;color:var(--sky-blue);
-                  font-family:var(--heading-font);font-size:15px;font-weight:700;}
-  .script em{color:var(--white);font-style:normal;font-weight:700;}
-  /* The things to actually ask, set apart from the words to say. */
-  .script-do{display:block;margin-top:8px;padding-left:14px;
-             border-left:2px solid rgba(255,255,255,0.14);color:var(--muted);}
-  .script-do span{display:block;margin-bottom:3px;}
-
-  .history{margin-top:20px;background:rgba(255,255,255,0.04);border:1px solid var(--line);padding:14px 18px;font-size:14px;}
-  .history h4{font-size:13px;margin-bottom:8px;color:var(--muted);}
-  .history li{margin-bottom:6px;}
-
-  .form-head{display:flex;align-items:baseline;justify-content:space-between;gap:12px;margin-bottom:18px;}
-  .form-head h2{font-size:20px;}
-  .checkbox{display:flex;gap:10px;align-items:flex-start;background:none;border:0;padding:0;}
-  .checkbox input{margin-top:3px;width:18px;height:18px;flex-shrink:0;accent-color:var(--sky-blue);}
-  .checkbox label{margin:0;font-family:inherit;font-weight:400;letter-spacing:0;font-size:14px;color:var(--muted);line-height:1.5;}
-  .actions{display:flex;gap:12px;margin-top:22px;flex-wrap:wrap;}
-  .actions .btn-primary{width:auto;flex:1;min-width:180px;
-                        background:var(--sky-blue);}
-  .actions .btn-primary:hover:not(:disabled){background:#1f6f9e;}
-  .btn-ghost{background:none;border:1px solid var(--line);color:var(--muted);padding:14px 20px;font-size:14px;font-weight:400;border-radius:6px;}
-  .btn-ghost:hover:not(:disabled){border-color:var(--sky-blue);color:var(--white);}
-
-  /* ---------------------------------------------------------- admin view */
-  /* One segmented control, not two buttons: a single track with the active
-     half filled, so it reads as a state switch rather than two actions. */
-  .tabs{display:inline-flex;background:rgba(255,255,255,0.07);border-radius:999px;padding:3px;gap:0;}
-  .tab{background:none;border:0;color:var(--muted);padding:7px 20px;font-size:13px;
-       font-weight:400;border-radius:999px;transition:background 0.15s,color 0.15s;}
-  .tab:hover:not(.on){color:var(--white);}
-  .tab.on{background:var(--sky-blue);color:var(--white);font-weight:700;}
-  .admin{padding:24px;max-width:1400px;}
-  .admin h2{font-size:17px;margin:30px 0 12px;}
-  .admin h2:first-child{margin-top:0;}
-  .cards{display:grid;grid-template-columns:repeat(auto-fit,minmax(140px,1fr));gap:12px;}
-  .card{background:var(--card-dark);border:0;border-radius:10px;padding:16px 18px;}
-  .card b{display:block;font-family:var(--heading-font);font-weight:700;font-size:28px;line-height:1;margin-bottom:5px;}
-  .card span{color:var(--muted);font-size:13px;}
-  .card.warn{box-shadow:inset 0 0 0 1px var(--red);}
-  .card.warn b{color:#e8a0a8;}
-  .card.good{box-shadow:inset 0 0 0 1px rgba(43,140,196,0.6);}
-  table{width:100%;border-collapse:collapse;font-size:14px;}
-  th,td{text-align:left;padding:10px 14px;border-bottom:1px solid var(--line);vertical-align:top;}
-  tbody tr:last-child td{border-bottom:0;}
-  th{font-family:var(--heading-font);letter-spacing:normal;color:var(--muted);font-weight:700;font-size:13px;white-space:nowrap;}
-  tbody tr:hover{background:rgba(255,255,255,0.03);}
-  /* Rounded, borderless table shell. overflow:hidden clips the first and last
-     rows to the corner radius; the row separators are kept. */
-  .scroll{overflow-x:auto;border:0;border-radius:10px;background:var(--card-dark);}
-  .pill{display:inline-block;padding:2px 9px;font-size:12px;background:rgba(255,255,255,0.09);white-space:nowrap;border-radius:20px;}
-  .pill.ok{background:rgba(43,140,196,0.22);color:#c8dff0;}
-  .pill.bad{background:rgba(200,16,46,0.22);color:#e8a0a8;}
-  .banner{padding:14px 18px;margin-bottom:16px;font-size:14px;border-radius:10px;}
-  .banner.ok{background:rgba(43,140,196,0.12);border-left:0;color:#c8dff0;}
-  .banner.bad{background:rgba(200,16,46,0.12);border-left:3px solid var(--red);color:#e8a0a8;}
-  .nowrap{white-space:nowrap;}
-
-  /* ------------------------------------------------------------- charts */
-  .panel{background:var(--card-dark);border-radius:10px;padding:22px 24px;position:relative;}
-  .panel-title{font-size:15px;margin-bottom:16px;}
-  /* Counters take the greater share; the pie needs less room to read. */
-  /* stretch, not start: the chart panel matches the counter block's height
-     even before any calls exist, so the row does not look half-built. */
-  .progress-split{display:grid;grid-template-columns:6fr 4fr;gap:12px;align-items:stretch;}
-  .progress-split > .panel{display:flex;flex-direction:column;}
-  .progress-split > .panel .chart-row{flex:1 1 auto;}
-  .cards-tight{grid-template-columns:repeat(3,minmax(0,1fr));}
-  @media (max-width:1100px){
-    .progress-split{grid-template-columns:1fr;}
-    .cards-tight{grid-template-columns:repeat(auto-fit,minmax(140px,1fr));}
-  }
-  .chart-empty{color:var(--muted);font-size:14px;flex:1 1 auto;
-               display:flex;align-items:center;}
-  .chart-row{display:flex;gap:24px;align-items:center;flex-wrap:wrap;}
-  .legend{list-style:none;margin:0;padding:0;flex:1 1 220px;min-width:200px;}
-  .legend li{display:flex;align-items:center;gap:10px;padding:5px 0;font-size:14px;}
-  .swatch{width:12px;height:12px;border-radius:3px;flex-shrink:0;}
-  .lg-label{flex:1 1 auto;}
-  .lg-val{font-weight:700;white-space:nowrap;}
-  .lg-pct{color:var(--muted);font-weight:400;margin-left:6px;}
-
-  /* Five numbered steps across one line, joined by a rule that runs behind
-     the circles. Each step's detail sits under its own number. */
-  .funnel{list-style:none;margin:0;padding:0;display:grid;
-          grid-template-columns:repeat(5,minmax(0,1fr));}
-  .funnel li{position:relative;text-align:center;padding:0 6px;}
-  /* The rule is drawn on the wrapper around each circle and centred on it, so
-     it passes through the circles whatever height the label above takes. */
-  .fn-dot{position:relative;display:block;height:38px;}
-  .fn-dot::before,.fn-dot::after{
-    content:"";position:absolute;top:50%;height:2px;margin-top:-1px;
-    background:rgba(255,255,255,0.12);}
-  .fn-dot::before{left:-6px;right:50%;}
-  .fn-dot::after{left:50%;right:-6px;}
-  .funnel li:first-child .fn-dot::before,
-  .funnel li:last-child .fn-dot::after{display:none;}
-  .fn-step{position:relative;z-index:1;width:38px;height:38px;border-radius:50%;
-           background:var(--sky-blue);color:var(--white);font-size:15px;font-weight:700;
-           display:inline-flex;align-items:center;justify-content:center;}
-  .funnel li:last-child .fn-step{background:#3fbf6f;}
-  .fn-label{display:block;color:var(--muted);font-size:12px;margin-bottom:12px;
-            min-height:2.4em;}
-  .fn-num{display:block;font-weight:700;font-size:26px;line-height:1.1;margin-top:12px;}
-  .fn-pct{display:block;color:var(--muted);font-size:12px;margin-top:2px;}
-  /* Explanatory note, tucked into the panel corner. Focusable so it is
-     reachable without a mouse. */
-  .info-i{position:absolute;top:14px;right:16px;width:20px;height:20px;border-radius:50%;
-          background:rgba(255,255,255,0.12);color:var(--muted);font-size:12px;font-weight:700;
-          display:inline-flex;align-items:center;justify-content:center;cursor:help;
-          font-style:italic;}
-  .info-i:hover,.info-i:focus,.info-i.open{background:var(--sky-blue);color:var(--white);outline:none;}
-  .info-i .tip{position:absolute;top:26px;right:0;width:270px;background:#0b1c2c;
-               color:var(--muted);font-size:12px;font-weight:400;font-style:normal;
-               line-height:1.5;padding:10px 12px;border-radius:8px;text-align:left;
-               box-shadow:0 6px 20px rgba(0,0,0,0.45);opacity:0;visibility:hidden;
-               transition:opacity 0.12s;z-index:5;}
-  /* .open covers touch, where hover never fires and the icon would
-     otherwise be dead. */
-  .info-i:hover .tip,.info-i:focus .tip,.info-i.open .tip{opacity:1;visibility:visible;}
-  @media (max-width:860px){
-    .funnel{grid-template-columns:repeat(2,minmax(0,1fr));gap:22px 0;}
-    .funnel li::before,.funnel li::after{display:none;}
-  }
-
-  /* --------------------------------------------------------- pagination */
-  .pager{display:flex;align-items:center;justify-content:flex-end;gap:14px;
-         padding:10px 14px;color:var(--muted);font-size:13px;}
-  .pg-btn{background:rgba(255,255,255,0.08);border:0;color:var(--white);
-          padding:6px 14px;border-radius:6px;font-size:13px;font-weight:400;}
-  .pg-btn:hover:not(:disabled){background:var(--sky-blue);}
-
-  /* --------------------------------------------------------- round lists */
-  tr.rowlink{cursor:pointer;}
-  tr.rowlink:hover{background:rgba(43,140,196,0.10);}
-  .pill.hot{background:rgba(63,191,111,0.22);color:#9fe0bb;}
-  .list-note{color:var(--muted);font-size:13px;margin:6px 0 14px;}
-
-  /* ---------------------------------------------------------- club drawer */
-  #drawer-backdrop{position:fixed;inset:0;background:rgba(0,0,0,0.55);z-index:55;
-                   opacity:0;visibility:hidden;transition:opacity 0.2s;}
-  #drawer-backdrop.open{opacity:1;visibility:visible;}
-  #drawer{position:fixed;top:0;right:0;bottom:0;width:min(620px,100vw);z-index:60;
-          background:var(--card-dark);overflow-y:auto;overscroll-behavior:contain;
-          transform:translateX(100%);transition:transform 0.22s ease;
-          box-shadow:-16px 0 48px rgba(0,0,0,0.5);}
-  #drawer.open{transform:none;}
-  .drawer-inner{padding:24px;}
-  .drawer-top{display:flex;justify-content:space-between;align-items:flex-start;gap:16px;margin-bottom:6px;}
-  .drawer-top h2{font-size:23px;line-height:1.2;}
-  .drawer-close{background:none;color:var(--muted);font-size:26px;line-height:1;padding:2px 8px;border-radius:6px;}
-  .drawer-close:hover{color:var(--white);background:rgba(255,255,255,0.08);}
-  .drawer-sub{color:var(--muted);font-size:14px;margin:0 0 16px;}
-  .drawer h3{font-size:15px;margin:26px 0 10px;}
-  .drawer-phone{display:inline-block;background:var(--sky-blue);color:var(--white);text-decoration:none;
-                font-weight:700;font-size:17px;padding:9px 18px;border-radius:8px;margin-bottom:16px;}
-  .drawer-phone:hover{background:#1f6f9e;}
-  /* One call = one block in the timeline. */
-  .call-item{background:rgba(255,255,255,0.05);border-radius:10px;padding:14px 16px;margin-bottom:10px;font-size:14px;}
-  .call-item .ci-head{display:flex;justify-content:space-between;gap:10px;flex-wrap:wrap;margin-bottom:6px;}
-  .call-item .ci-when{color:var(--muted);font-size:13px;}
-  .call-item .ci-notes{color:var(--muted);margin-top:6px;white-space:pre-wrap;}
-  .email-msg{background:rgba(255,255,255,0.05);border-radius:10px;padding:12px 16px;margin-bottom:10px;font-size:14px;}
-  .email-msg .em-head b{font-weight:700;}
-  .email-msg .em-chips{margin:7px 0 5px;display:flex;gap:6px;flex-wrap:wrap;}
-  .email-ev{display:flex;gap:12px;align-items:baseline;padding:7px 0;border-bottom:1px solid var(--line);font-size:14px;}
-  .email-ev:last-child{border-bottom:0;}
-  .email-ev .ev-when{color:var(--muted);font-size:13px;white-space:nowrap;}
-  .email-ev .ev-addr{color:var(--muted);font-size:13px;overflow-wrap:anywhere;}
-  .ev-pill{display:inline-block;padding:1px 9px;font-size:12px;border-radius:20px;background:rgba(255,255,255,0.09);white-space:nowrap;}
-  .ev-pill.delivered,.ev-pill.sent{background:rgba(43,140,196,0.22);color:#c8dff0;}
-  .ev-pill.opened{background:rgba(216,163,63,0.22);color:#ecd2a0;}
-  .ev-pill.clicked,.ev-pill.converted{background:rgba(63,191,111,0.22);color:#9fe0bb;}
-  .ev-pill.bounced,.ev-pill.failed,.ev-pill.spam,.ev-pill.suppressed,.ev-pill.unsubscribed{background:rgba(200,16,46,0.22);color:#e8a0a8;}
-  .drawer .btn-primary{width:auto;background:var(--sky-blue);padding:11px 20px;}
-  .drawer .btn-primary:hover:not(:disabled){background:#1f6f9e;}
-  .drawer .field{margin-bottom:14px;}
-
-  .empty{padding:80px 24px;text-align:center;}
-  .empty h2{font-size:24px;margin-bottom:10px;}
-  .empty p{color:var(--muted);}
-  .hidden{display:none !important;}
-</style>
-</head>
-<body>
-
-<!-- ============================================================== LOGIN -->
-<div class="auth-wrap" id="view-login">
-  <div class="auth">
-    <h1>Call worksheet</h1>
-    <p class="sub">Darwin 1942 &mdash; RSL club outreach</p>
-    <form id="login-form">
-      <div class="field">
-        <label for="username">Username or email</label>
-        <input type="text" id="username" autocomplete="username" autocapitalize="none" spellcheck="false" required>
-      </div>
-      <div class="field">
-        <label for="password">Password</label>
-        <input type="password" id="password" autocomplete="current-password" required>
-      </div>
-      <button type="submit" class="btn-primary" id="login-btn">Log in</button>
-      <div class="msg" id="login-msg"></div>
-    </form>
-  </div>
-</div>
-
-<!-- ============================================================== SETUP -->
-<div class="auth-wrap hidden" id="view-setup">
-  <div class="auth">
-    <h1>Set your password</h1>
-    <p class="sub" id="setup-sub">&nbsp;</p>
-    <form id="setup-form">
-      <div class="field">
-        <label for="new-password">New password <span class="req">*</span></label>
-        <input type="password" id="new-password" autocomplete="new-password" minlength="10" required>
-        <p style="color:var(--muted);font-size:13px;margin:6px 0 0;">At least 10 characters. Nobody else ever sees this, including Taylor.</p>
-      </div>
-      <div class="field">
-        <label for="confirm-password">Confirm password <span class="req">*</span></label>
-        <input type="password" id="confirm-password" autocomplete="new-password" required>
-      </div>
-      <button type="submit" class="btn-primary" id="setup-btn">Save password</button>
-      <div class="msg" id="setup-msg"></div>
-    </form>
-  </div>
-</div>
-
-<!-- ============================================================= SIGNUP -->
-<div class="auth-wrap hidden" id="view-signup">
-  <div class="auth">
-    <h1>Create your account</h1>
-    <p class="sub" id="signup-sub">Darwin 1942 &mdash; RSL club outreach</p>
-    <form id="signup-form">
-      <div class="field">
-        <label for="su-name">Your name <span class="req">*</span></label>
-        <input type="text" id="su-name" autocomplete="name" required>
-        <p class="hint">This is what goes in the spreadsheet against every call you make.</p>
-      </div>
-      <div class="field">
-        <label for="su-email">Your email <span class="req">*</span></label>
-        <input type="email" id="su-email" autocomplete="email" autocapitalize="none" spellcheck="false" required>
-      </div>
-      <div class="field">
-        <label for="su-password">Choose a password <span class="req">*</span></label>
-        <input type="password" id="su-password" autocomplete="new-password" minlength="10" required>
-        <p class="hint">At least 10 characters. Nobody else ever sees this, including Taylor.</p>
-      </div>
-      <div class="field">
-        <label for="su-confirm">Confirm password <span class="req">*</span></label>
-        <input type="password" id="su-confirm" autocomplete="new-password" required>
-      </div>
-      <button type="submit" class="btn-primary" id="signup-btn">Create account</button>
-      <div class="msg" id="signup-msg"></div>
-    </form>
-  </div>
-</div>
-
-<!-- ========================================================== WORKSHEET -->
-<div class="hidden" id="view-work">
-  <div class="topbar">
-    <div>
-      <h1>Call worksheet</h1>
-      <div class="who"><span id="who-name"></span> &middot; <button class="linkbtn" id="logout-btn">log out</button></div>
-    </div>
-    <div class="tabs" id="admin-tabs">
-      <button class="tab on" id="tab-work">Worksheet</button>
-      <button class="tab" id="tab-admin">Overview</button>
-    </div>
-    <div class="counters">
-      <div><b id="c-mine">0</b> my calls</div>
-      <div><b id="c-remaining">0</b> left to call</div>
-      <div><b id="c-done">0</b> done</div>
-      <div id="c-dnc-wrap"><b id="c-dnc">0</b> do not call</div>
-    </div>
-    <div id="round-wrap"></div>
-  </div>
-
-  <div id="work-body"></div>
-  <div id="admin-body" class="hidden"></div>
-</div>
-
-<!-- ======================================================== CLUB DRAWER -->
-<div id="drawer-backdrop"></div>
-<aside id="drawer" class="drawer" aria-label="Club details"><div class="drawer-inner" id="drawer-inner"></div></aside>
-
-<script>
-(function(){
-  "use strict";
-
-  var API = "https://nwchcduhlhhppvyhxbpo.supabase.co/functions/v1/d1942-calls-api";
-  var TOKEN_KEY = "d1942_calls_token";
-
-  var token = null;
-  try { token = localStorage.getItem(TOKEN_KEY); } catch(e){}
-  var current = null;   // the club currently on screen
-  var meCaller = null;  // the logged-in caller, used in the script
-  var tabsWired = false;
-  var drawerClub = null; // target_id currently open in the slide-out
-
-  // Which queue the worksheet serves from: 1 = first calls, 2 = callbacks.
-  var roundMode = 1;
-  try { roundMode = parseInt(localStorage.getItem("d1942_round") || "1", 10) === 2 ? 2 : 1; } catch(e){}
-
-  function api(action, payload){
-    var body = Object.assign({ action: action }, payload || {});
-    if (token) body.token = token;
-    return fetch(API, {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify(body)
-    }).then(function(r){
-      return r.json().then(function(j){
-        if (r.status === 401) { signOut(); throw new Error("Your session expired. Please log in again."); }
-        if (j && j.error) throw new Error(j.error);
-        return j;
-      });
-    });
-  }
-
-  function show(id){
-    ["view-login","view-setup","view-signup","view-work"].forEach(function(v){
-      document.getElementById(v).classList.toggle("hidden", v !== id);
-    });
-  }
-  function msg(el, text, kind){
-    var n = document.getElementById(el);
-    n.className = "msg " + (kind || "error");
-    n.textContent = text;
-  }
-  function clearMsg(el){ document.getElementById(el).className = "msg"; }
-  function esc(s){
-    return String(s == null ? "" : s).replace(/[&<>"']/g, function(c){
-      return { "&":"&amp;", "<":"&lt;", ">":"&gt;", '"':"&quot;", "'":"&#39;" }[c];
-    });
-  }
-
-  // ----------------------------------------------------------- setup flow
-  var setupToken = new URLSearchParams(location.search).get("setup");
-
-  if (setupToken) {
-    show("view-setup");
-    api("setup_check", { setup_token: setupToken }).then(function(r){
-      if (!r.valid) { msg("setup-msg", r.reason, "error"); document.getElementById("setup-btn").disabled = true; return; }
-      document.getElementById("setup-sub").textContent =
-        r.name + " — your username is " + r.username;
-      if (r.already_set) msg("setup-msg", "You already have a password. Saving here replaces it.", "ok");
-    }).catch(function(e){ msg("setup-msg", e.message, "error"); });
-
-    document.getElementById("setup-form").addEventListener("submit", function(e){
-      e.preventDefault();
-      clearMsg("setup-msg");
-      var pw = document.getElementById("new-password").value;
-      var cf = document.getElementById("confirm-password").value;
-      if (pw !== cf) { msg("setup-msg", "Those two passwords do not match.", "error"); return; }
-      var btn = document.getElementById("setup-btn");
-      btn.disabled = true; btn.textContent = "Saving...";
-      api("setup", { setup_token: setupToken, password: pw }).then(function(){
-        msg("setup-msg", "Password saved. Taking you to the login screen...", "ok");
-        setTimeout(function(){ location.href = location.pathname; }, 1400);
-      }).catch(function(err){
-        msg("setup-msg", err.message, "error");
-        btn.disabled = false; btn.textContent = "Save password";
-      });
-    });
-    return;
-  }
-
-  // ---------------------------------------------------------- signup flow
-  var signupToken = new URLSearchParams(location.search).get("signup");
-
-  if (signupToken) {
-    show("view-signup");
-    api("signup_check", { signup_token: signupToken }).then(function(r){
-      if (!r.valid) {
-        msg("signup-msg", r.reason, "error");
-        document.getElementById("signup-btn").disabled = true;
-        return;
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="robots" content="noindex, nofollow" />
+    <title>Call Worksheet | Darwin 1942</title>
+    <link rel="icon" href="/favicon.ico" />
+    <style>
+      :root {
+        --sky-blue: #2b8cc4;
+        --red: #c8102e;
+        --white: #ffffff;
+        --dark: #0b1c2c;
+        --card-dark: #081524;
+        --card-darkest: #001021;
+        --line: rgba(255, 255, 255, 0.12);
+        --muted: #a8c4d8;
+        --heading-font: Arial, Helvetica, sans-serif;
+        --radius: 1rem;
       }
-      // Say plainly what the link creates, so an admin link handed to the wrong
-      // person is obvious to them rather than silent.
-      document.getElementById("signup-sub").textContent = r.is_admin
-        ? "Darwin 1942 — this link creates an ADMIN account, with access to the full overview."
-        : "Darwin 1942 — RSL club outreach";
-      if (r.remaining != null && r.remaining <= 3) {
-        msg("signup-msg", r.remaining + " place(s) left on this link.", "ok");
+      * {
+        box-sizing: border-box;
       }
-    }).catch(function(e){ msg("signup-msg", e.message, "error"); });
-
-    document.getElementById("signup-form").addEventListener("submit", function(e){
-      e.preventDefault();
-      clearMsg("signup-msg");
-      var pw = document.getElementById("su-password").value;
-      if (pw !== document.getElementById("su-confirm").value) {
-        msg("signup-msg", "Those two passwords do not match.", "error");
-        return;
+      html,
+      body {
+        margin: 0;
+        padding: 0;
+        height: 100%;
+        overflow: hidden;
       }
-      var btn = document.getElementById("signup-btn");
-      btn.disabled = true; btn.textContent = "Creating...";
-      api("signup", {
-        signup_token: signupToken,
-        name: document.getElementById("su-name").value,
-        email: document.getElementById("su-email").value,
-        password: pw
-      }).then(function(r){
-        token = r.token;
-        try { localStorage.setItem(TOKEN_KEY, token); } catch(e){}
-        // Drop the token from the address bar so the link is not left sitting
-        // in history or shoulder-surfed off the screen.
-        history.replaceState(null, "", location.pathname);
-        startWork(r.caller);
-      }).catch(function(err){
-        msg("signup-msg", err.message, "error");
-        btn.disabled = false; btn.textContent = "Create account";
-      });
-    });
-    return;
-  }
-
-  // ----------------------------------------------------------- login flow
-  document.getElementById("login-form").addEventListener("submit", function(e){
-    e.preventDefault();
-    clearMsg("login-msg");
-    var btn = document.getElementById("login-btn");
-    btn.disabled = true; btn.textContent = "Logging in...";
-    api("login", {
-      username: document.getElementById("username").value,
-      password: document.getElementById("password").value
-    }).then(function(r){
-      if (r.error) throw new Error(r.error);
-      token = r.token;
-      try { localStorage.setItem(TOKEN_KEY, token); } catch(e){}
-      startWork(r.caller);
-    }).catch(function(err){
-      msg("login-msg", err.message, "error");
-      btn.disabled = false; btn.textContent = "Log in";
-    });
-  });
-
-  function signOut(){
-    token = null;
-    try { localStorage.removeItem(TOKEN_KEY); } catch(e){}
-    show("view-login");
-    var btn = document.getElementById("login-btn");
-    btn.disabled = false; btn.textContent = "Log in";
-  }
-
-  document.getElementById("logout-btn").addEventListener("click", function(){
-    api("logout", {}).catch(function(){});
-    signOut();
-  });
-
-  function startWork(caller){
-    meCaller = caller;
-    document.getElementById("who-name").textContent =
-      caller.name + (caller.call_group ? "  ·  list " + caller.call_group + " of 5" : "");
-    show("view-work");
-    // Callers see their own numbers; the do-not-call figure is admin plumbing.
-    document.getElementById("c-dnc-wrap").classList.toggle("hidden", !caller.is_admin);
-    renderRoundSwitch();
-    // Everyone gets the overview now; non-admins are served a version scoped
-    // to their own list and their own calls by the API.
-    if (!tabsWired) {
-      tabsWired = true;
-      document.getElementById("tab-work").addEventListener("click", function(){ switchTab("work"); });
-      document.getElementById("tab-admin").addEventListener("click", function(){ switchTab("admin"); });
-    }
-    loadNext();
-  }
-
-  function switchTab(which){
-    var isAdmin = which === "admin";
-    document.getElementById("tab-work").classList.toggle("on", !isAdmin);
-    document.getElementById("tab-admin").classList.toggle("on", isAdmin);
-    document.getElementById("work-body").classList.toggle("hidden", isAdmin);
-    document.getElementById("admin-body").classList.toggle("hidden", !isAdmin);
-    if (isAdmin) loadOverview();
-  }
-
-  // --------------------------------------------------------------- overview
-  function loadOverview(){
-    var el = document.getElementById("admin-body");
-    el.innerHTML = '<div class="empty"><p>Loading overview...</p></div>';
-    api("overview", {}).then(function(d){
-      if (d.scope === "mine") renderMyOverview(el, d);
-      else renderOverview(el, d);
-    }).catch(function(e){
-      el.innerHTML = '<div class="empty"><h2>Could not load</h2><p>' + esc(e.message) + "</p></div>";
-    });
-  }
-
-  // Distinguishable on the dark ground and stable per outcome, so a slice keeps
-  // its colour as the numbers move. Sequential greens/ambers/reds roughly track
-  // good -> neutral -> dead, which makes the pie readable without the legend.
-  var OUTCOME_COLOURS = {
-    committed:           "#3fbf6f",
-    interested_followup: "#2b8cc4",
-    referred_to_board:   "#5fa8d8",
-    callback_scheduled:  "#7fc4e8",
-    wants_updates:       "#d8a33f",
-    wants_info_only:     "#c4883f",
-    not_interested:      "#c8102e",
-    no_answer:           "#6b7f8f",
-    gatekeeper:          "#55606b",
-    wrong_number:        "#3f4a54"
-  };
-  var OUTCOME_LABELS = {
-    committed:           "Committed",
-    interested_followup: "Interested \u2014 needs another call",
-    referred_to_board:   "Going to the board",
-    callback_scheduled:  "Callback scheduled",
-    wants_updates:       "Wants updates only",
-    wants_info_only:     "Wants information only",
-    not_interested:      "Not interested",
-    no_answer:           "No answer",
-    gatekeeper:          "Blocked at reception",
-    wrong_number:        "Wrong number"
-  };
-  function outcomeColour(k){ return OUTCOME_COLOURS[k] || "#8fa3b3"; }
-  function outcomeLabel(k){ return OUTCOME_LABELS[k] || String(k).replace(/_/g," "); }
-
-  // Short names for the chart, where the full outcome labels won't fit.
-  var OUTCOME_SHORT = {
-    committed:           "Committed",
-    interested_followup: "Interested",
-    referred_to_board:   "To the board",
-    callback_scheduled:  "Callback",
-    wants_updates:       "Wants updates",
-    wants_info_only:     "Info only",
-    not_interested:      "Not interested",
-    no_answer:           "No answer",
-    gatekeeper:          "Reception",
-    wrong_number:        "Wrong number"
-  };
-
-  // Hand-rolled SVG donut with labels either side, joined to their slices by
-  // leader lines. No chart library, so nothing external to load.
-  function pieChart(byOutcome){
-    var keys = Object.keys(byOutcome || {}).filter(function(k){ return byOutcome[k] > 0; });
-    var total = keys.reduce(function(a,k){ return a + byOutcome[k]; }, 0);
-    if (!total) {
-      return '<div class="chart-empty">No calls recorded yet &mdash; the outcome mix will appear here.</div>';
-    }
-    keys.sort(function(a,b){ return byOutcome[b] - byOutcome[a]; });
-
-    var W = 480, H = 264, cx = 240, cy = 132, r = 86, inner = 50;
-    var angle = -Math.PI / 2, paths = "", labels = [];
-
-    keys.forEach(function(k){
-      var frac = byOutcome[k] / total;
-      var end = angle + frac * Math.PI * 2;
-      var mid = (angle + end) / 2;
-      // A single slice covering everything cannot be drawn as an arc (start and
-      // end coincide), so draw it as a ring instead.
-      if (frac >= 0.9999) {
-        paths += '<circle cx="' + cx + '" cy="' + cy + '" r="' + ((r + inner) / 2) + '" fill="none" ' +
-                 'stroke="' + outcomeColour(k) + '" stroke-width="' + (r - inner) + '"></circle>';
-      } else {
-        var large = frac > 0.5 ? 1 : 0;
-        var x1 = cx + r * Math.cos(angle),     y1 = cy + r * Math.sin(angle);
-        var x2 = cx + r * Math.cos(end),       y2 = cy + r * Math.sin(end);
-        var x3 = cx + inner * Math.cos(end),   y3 = cy + inner * Math.sin(end);
-        var x4 = cx + inner * Math.cos(angle), y4 = cy + inner * Math.sin(angle);
-        paths += '<path d="M' + x1.toFixed(2) + ' ' + y1.toFixed(2) +
-                 ' A' + r + ' ' + r + ' 0 ' + large + ' 1 ' + x2.toFixed(2) + ' ' + y2.toFixed(2) +
-                 ' L' + x3.toFixed(2) + ' ' + y3.toFixed(2) +
-                 ' A' + inner + ' ' + inner + ' 0 ' + large + ' 0 ' + x4.toFixed(2) + ' ' + y4.toFixed(2) +
-                 ' Z" fill="' + outcomeColour(k) + '"></path>';
+      body {
+        background: var(--dark);
+        color: var(--white);
+        font-family: Arial, Helvetica, sans-serif;
+        font-size: 15px;
+        line-height: 1.6;
+        min-height: 100vh;
       }
-      labels.push({ k: k, n: byOutcome[k], pct: Math.round(frac * 100), mid: mid });
-      angle = end;
-    });
+      h1,
+      h2,
+      h3,
+      h4 {
+        font-family: var(--heading-font);
+        font-weight: 700;
+        margin: 0;
+        letter-spacing: normal;
+      }
+      a {
+        color: var(--sky-blue);
+      }
+      button {
+        font-family: var(--heading-font);
+        font-weight: 700;
+        letter-spacing: 0.3px;
+        cursor: pointer;
+        border: 0;
+      }
+      button:disabled {
+        opacity: 0.5;
+        cursor: not-allowed;
+      }
 
-    // Labels stack on whichever side their slice faces; nudged apart so they
-    // never overlap, then clamped to the panel.
-    function place(list){
-      list.sort(function(a,b){ return a.want - b.want; });
-      var y = -Infinity;
-      list.forEach(function(l){ l.y = Math.max(y + 20, l.want); y = l.y; });
-      var over = (list.length ? list[list.length - 1].y : 0) - (H - 14);
-      if (over > 0) {
-        y = Infinity;
-        for (var i = list.length - 1; i >= 0; i--) {
-          list[i].y = Math.min(y - 20, list[i].y - over);
-          y = list[i].y;
+      /* ---------------------------------------------------------------- shell */
+      #view-work {
+        display: flex;
+        flex-direction: column;
+        height: 100%;
+      }
+      #work-body,
+      #admin-body {
+        flex: 1 1 auto;
+        min-height: 0;
+        overflow: hidden;
+      }
+      #admin-body {
+        overflow-y: auto;
+      }
+      .topbar {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 16px;
+        padding: 12px 20px;
+        background: var(--card-darkest);
+        border-bottom: 0;
+        flex: 0 0 auto;
+        z-index: 10;
+        flex-wrap: wrap;
+      }
+      .topbar h1 {
+        font-size: 18px;
+      }
+      .topbar .who {
+        color: var(--muted);
+        font-size: 14px;
+      }
+      .counters {
+        display: flex;
+        gap: 18px;
+        flex-wrap: wrap;
+        color: var(--muted);
+        font-size: 13px;
+      }
+      .counters b {
+        color: var(--white);
+        font-family: var(--heading-font);
+        font-weight: 700;
+        font-size: 17px;
+        display: block;
+        line-height: 1;
+      }
+      .linkbtn {
+        background: none;
+        color: var(--muted);
+        text-decoration: underline;
+        font-size: 13px;
+        font-family: inherit;
+        letter-spacing: 0;
+        padding: 0;
+      }
+
+      /* ------------------------------------------------------------ auth card */
+      .auth-wrap {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        height: 100%;
+        overflow-y: auto;
+        padding: 24px;
+      }
+      .auth {
+        width: 100%;
+        max-width: 400px;
+        background: var(--card-dark);
+        border-radius: var(--radius);
+        padding: 28px 32px 36px;
+      }
+      .auth h1 {
+        font-size: 25px;
+        margin-bottom: 6px;
+      }
+      .auth p.sub {
+        color: var(--muted);
+        margin: 0 0 24px;
+        font-size: 14px;
+      }
+      .hint {
+        color: var(--muted);
+        font-size: 13px;
+        margin: 6px 0 0;
+      }
+
+      label {
+        display: block;
+        font-family: var(--heading-font);
+        font-weight: 700;
+        font-size: 13px;
+        letter-spacing: normal;
+        margin-bottom: 6px;
+        color: #d6e6f2;
+      }
+      .req {
+        color: var(--red);
+      }
+      input[type="text"],
+      input[type="password"],
+      input[type="email"],
+      input[type="tel"],
+      select,
+      textarea {
+        width: 100%;
+        padding: 11px 13px;
+        background: rgba(255, 255, 255, 0.07);
+        border: 0;
+        color: var(--white);
+        font-family: inherit;
+        font-size: 15px;
+        border-radius: 0.7rem;
+      }
+      input:focus,
+      select:focus,
+      textarea:focus {
+        outline: 2px solid var(--sky-blue);
+        outline-offset: -2px;
+      }
+      textarea {
+        resize: vertical;
+        min-height: 80px;
+      }
+      select option {
+        background: var(--card-dark);
+        color: var(--white);
+      }
+      .field {
+        margin-bottom: 18px;
+      }
+      /* Short, related fields pair up; long ones stay full width. */
+      .field-row {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 0 16px;
+      }
+      @media (max-width: 1200px) {
+        .field-row {
+          grid-template-columns: 1fr;
         }
       }
-    }
-    labels.forEach(function(l){
-      l.side = Math.cos(l.mid) >= 0 ? "r" : "l";
-      l.want = cy + (r + 18) * Math.sin(l.mid);
-    });
-    place(labels.filter(function(l){ return l.side === "l"; }));
-    place(labels.filter(function(l){ return l.side === "r"; }));
+      .btn-primary {
+        background: var(--red);
+        color: var(--white);
+        padding: 14px 28px;
+        font-size: 15px;
+        width: 100%;
+        border-radius: var(--radius);
+      }
+      .btn-primary:hover:not(:disabled) {
+        background: #a50d26;
+      }
+      .msg {
+        margin-top: 18px;
+        padding: 12px 16px;
+        font-size: 14px;
+        display: none;
+        border-radius: var(--radius);
+      }
+      .msg.error {
+        display: block;
+        background: rgba(200, 16, 46, 0.12);
+        border-left: 3px solid var(--red);
+        color: #e8a0a8;
+      }
+      .msg.ok {
+        display: block;
+        background: rgba(43, 140, 196, 0.12);
+        border-left: 3px solid var(--sky-blue);
+        color: #c8dff0;
+      }
 
-    var decor = labels.map(function(l){
-      var sx = cx + r * Math.cos(l.mid), sy = cy + r * Math.sin(l.mid);
-      var mx = cx + (r + 12) * Math.cos(l.mid), my = cy + (r + 12) * Math.sin(l.mid);
-      var ex = l.side === "r" ? cx + r + 30 : cx - r - 30;
-      var tx = l.side === "r" ? ex + 5 : ex - 5;
-      var anchor = l.side === "r" ? "start" : "end";
-      var name = OUTCOME_SHORT[l.k] || outcomeLabel(l.k);
-      return '<polyline points="' + sx.toFixed(1) + "," + sy.toFixed(1) + " " +
-               mx.toFixed(1) + "," + my.toFixed(1) + " " + ex + "," + l.y.toFixed(1) +
-             '" fill="none" stroke="rgba(255,255,255,0.35)" stroke-width="1"></polyline>' +
-             '<circle cx="' + sx.toFixed(1) + '" cy="' + sy.toFixed(1) + '" r="2" fill="' + outcomeColour(l.k) + '"></circle>' +
-             '<text x="' + tx + '" y="' + (l.y + 4).toFixed(1) + '" text-anchor="' + anchor +
-             '" font-family="Arial" font-size="12" fill="#a8c4d8">' + esc(name) +
-             ' <tspan fill="#ffffff" font-weight="bold">' + l.n + '</tspan>' +
-             ' <tspan fill="#7f97a8">(' + l.pct + '%)</tspan></text>';
-    }).join("");
+      /* ------------------------------------------------------------ worksheet */
+      /* The two panes scroll independently so the page itself never does: the
+     club you are calling and the form stay put while you read either side. */
+      .work {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 0;
+        height: 100%;
+        min-height: 0;
+      }
+      .pane {
+        padding: 24px;
+        height: 100%;
+        overflow-y: auto;
+        overscroll-behavior: contain;
+      }
+      .pane-left {
+        border-right: 0;
+      }
+      .pane-form {
+        background: var(--card-dark);
+      }
 
-    return '<svg viewBox="0 0 ' + W + " " + H + '" style="width:100%;max-width:' + W + 'px;display:block;margin:0 auto" role="img" ' +
-                'aria-label="Call outcomes as a proportion of all calls">' + paths + decor +
-             '<text x="' + cx + '" y="' + (cy - 4) + '" text-anchor="middle" fill="#ffffff" font-size="28" font-family="Arial" font-weight="bold">' + total + "</text>" +
-             '<text x="' + cx + '" y="' + (cy + 16) + '" text-anchor="middle" fill="#a8c4d8" font-size="12" font-family="Arial">calls</text>' +
-           "</svg>";
-  }
+      /* Below the breakpoint the panes stack, where independent scrolling would
+     trap the user in a short box — so the document scrolls normally again. */
+      @media (max-width: 980px) {
+        html,
+        body {
+          height: auto;
+          overflow: auto;
+        }
+        #view-work {
+          height: auto;
+        }
+        #work-body,
+        #admin-body {
+          overflow: visible;
+          min-height: 0;
+        }
+        .work {
+          grid-template-columns: 1fr;
+          height: auto;
+        }
+        .pane {
+          height: auto;
+          overflow: visible;
+        }
+        .pane-left {
+          border-right: 0;
+          border-bottom: 0;
+        }
+        .topbar {
+          position: sticky;
+          top: 0;
+        }
+      }
 
-  // -------------------------------------------------- client-side pagination
-  // Long tables render one page at a time; rows are kept in memory and the
-  // container re-renders on Prev/Next.
-  var PAGERS = {};
-  function pagedTable(key, head, rows, opts){
-    PAGERS[key] = {
-      head: head, rows: rows,
-      pageSize: (opts && opts.pageSize) || 10,
-      empty: (opts && opts.empty) || "Nothing here yet.",
-      page: 0
-    };
-    return '<div class="scroll" data-pager="' + key + '">' + pagedInner(key) + "</div>";
-  }
-  function pagedInner(key){
-    var o = PAGERS[key];
-    var total = o.rows.length;
-    var pages = Math.max(1, Math.ceil(total / o.pageSize));
-    if (o.page > pages - 1) o.page = pages - 1;
-    var s = o.page * o.pageSize;
-    return "<table><thead><tr>" + o.head + "</tr></thead><tbody>" +
-           (total ? o.rows.slice(s, s + o.pageSize).join("")
-                  : '<tr><td colspan="99">' + o.empty + "</td></tr>") +
-           "</tbody></table>" +
-           (pages > 1
-             ? '<div class="pager">' +
-               '<button type="button" class="pg-btn" data-pg="' + key + '" data-dir="-1"' + (o.page === 0 ? " disabled" : "") + ">&#8592; Prev</button>" +
-               "<span>" + (s + 1) + "&ndash;" + Math.min(s + o.pageSize, total) + " of " + total + "</span>" +
-               '<button type="button" class="pg-btn" data-pg="' + key + '" data-dir="1"' + (o.page >= pages - 1 ? " disabled" : "") + ">Next &#8594;</button>" +
-               "</div>"
-             : "");
-  }
-  document.addEventListener("click", function(e){
-    var b = e.target.closest && e.target.closest(".pg-btn");
-    if (!b || b.disabled) return;
-    var key = b.getAttribute("data-pg");
-    if (!PAGERS[key]) return;
-    PAGERS[key].page += parseInt(b.getAttribute("data-dir"), 10);
-    var host = document.querySelector('[data-pager="' + key + '"]');
-    if (host) host.innerHTML = pagedInner(key);
-  });
+      /* nowrap + min-width:0 keeps the phone on the right and makes a long
+     address wrap onto a second line rather than shoving the button down. */
+      .club-head {
+        display: flex;
+        align-items: flex-start;
+        justify-content: space-between;
+        gap: 20px;
+        flex-wrap: nowrap;
+        margin-bottom: 20px;
+      }
+      @media (max-width: 700px) {
+        .club-head {
+          flex-wrap: wrap;
+        }
+      }
+      .club-name {
+        font-size: 27px;
+        line-height: 1.15;
+        margin-bottom: 4px;
+      }
+      .club-id {
+        min-width: 0;
+        flex: 1 1 auto;
+      }
+      .club-sub {
+        color: var(--muted);
+        margin: 0;
+        font-size: 14px;
+      }
+      .club-dist {
+        color: var(--muted);
+        margin: 2px 0 0;
+        font-size: 14px;
+      }
+      .club-web {
+        margin: 3px 0 0;
+        font-size: 14px;
+        overflow-wrap: anywhere;
+      }
+      .phone-cta {
+        display: inline-block;
+        background: var(--sky-blue);
+        color: var(--white);
+        text-decoration: none;
+        font-family: var(--heading-font);
+        font-weight: 700;
+        font-size: 21px;
+        letter-spacing: normal;
+        padding: 11px 22px;
+        border-radius: var(--radius);
+        flex-shrink: 0;
+        white-space: nowrap;
+      }
+      .phone-cta:hover {
+        background: #1f6f9e;
+      }
+      .phone-cta.none {
+        background: rgba(255, 255, 255, 0.08);
+        color: var(--muted);
+        pointer-events: none;
+        font-size: 14px;
+        font-weight: 400;
+        white-space: normal;
+        max-width: 230px;
+      }
 
-  // Horizontal stage timeline: five numbered steps on one line, each with its
-  // count and description underneath.
-  function funnelChart(f, totalClubs){
-    var stages = [
-      { key:"waiting",     label:"Waiting to be called" },
-      { key:"called_once", label:"Called" },
-      { key:"into_cio",    label:"Into Customer.io" },
-      { key:"second_call", label:"Second call" },
-      { key:"committed",   label:"Committed money" }
-    ];
-    return '<ol class="funnel">' + stages.map(function(st, i){
-      var n = Number(f[st.key] || 0);
-      var pctOfAll = totalClubs ? Math.round((n / totalClubs) * 100) : 0;
-      return "<li>" +
-               '<span class="fn-label">' + esc(st.label) + "</span>" +
-               '<span class="fn-dot"><span class="fn-step">' + (i + 1) + "</span></span>" +
-               '<span class="fn-num">' + n + "</span>" +
-               '<span class="fn-pct">' + pctOfAll + "% of clubs</span>" +
-             "</li>";
-    }).join("") + "</ol>";
-  }
+      /* Each fact is its own cell with the label stacked above the value. */
+      .facts {
+        display: grid;
+        grid-template-columns: repeat(3, minmax(0, 1fr));
+        gap: 14px 20px;
+        font-size: 14px;
+        margin: 0 0 22px;
+      }
+      .fact {
+        min-width: 0;
+      }
+      .fact.wide {
+        grid-column: 1 / -1;
+      }
+      .facts dt {
+        color: var(--muted);
+        font-size: 12px;
+        margin-bottom: 2px;
+      }
+      .facts dd {
+        margin: 0;
+        min-width: 0;
+        overflow-wrap: anywhere;
+      }
+      @media (max-width: 1200px) {
+        .facts {
+          grid-template-columns: repeat(2, minmax(0, 1fr));
+        }
+      }
 
-  // Tap to toggle, since hover does not exist on touch. Delegated so it keeps
-  // working after the overview re-renders.
-  document.addEventListener("click", function(e){
-    var icon = e.target.closest && e.target.closest(".info-i");
-    document.querySelectorAll(".info-i.open").forEach(function(n){
-      if (n !== icon) n.classList.remove("open");
-    });
-    if (icon) icon.classList.toggle("open");
-  });
+      /* Same ground as the form fields. Negative margins cancel the pane's padding
+     so it meets the left, right and bottom edges of the column. */
+      .script {
+        background: rgba(255, 255, 255, 0.07);
+        border: 0;
+        border-radius: 0;
+        margin: 0 -24px -24px;
+        padding: 20px 24px 24px;
+      }
+      .script h2 {
+        font-size: 27px;
+        line-height: 1.15;
+        margin-bottom: 14px;
+        color: var(--white);
+      }
+      .script .step {
+        margin-bottom: 18px;
+      }
+      .script .step:last-child {
+        margin-bottom: 0;
+      }
+      /* Colour and weight separate the step title from the words to say,
+     without resorting to uppercase. */
+      .script .step b {
+        display: block;
+        margin-bottom: 5px;
+        color: var(--sky-blue);
+        font-family: var(--heading-font);
+        font-size: 15px;
+        font-weight: 700;
+      }
+      .script em {
+        color: var(--white);
+        font-style: normal;
+        font-weight: 700;
+      }
+      /* The things to actually ask, set apart from the words to say. */
+      .script-do {
+        display: block;
+        margin-top: 8px;
+        padding-left: 14px;
+        border-left: 2px solid rgba(255, 255, 255, 0.14);
+        color: var(--muted);
+      }
+      .script-do span {
+        display: block;
+        margin-bottom: 3px;
+      }
 
-  function infoIcon(text){
-    return '<span class="info-i" tabindex="0" role="note" aria-label="' + esc(text) + '">i' +
-             '<span class="tip">' + esc(text) + "</span></span>";
-  }
+      .history {
+        margin-top: 20px;
+        background: rgba(255, 255, 255, 0.04);
+        border: 1px solid var(--line);
+        padding: 14px 18px;
+        font-size: 14px;
+      }
+      .history h4 {
+        font-size: 13px;
+        margin-bottom: 8px;
+        color: var(--muted);
+      }
+      .history li {
+        margin-bottom: 6px;
+      }
 
-  function card(value, label, cls){
-    return '<div class="card ' + (cls || "") + '"><b>' + esc(value) + "</b><span>" + esc(label) + "</span></div>";
-  }
-  function when(iso){
-    if (!iso) return "—";
-    var d = new Date(iso);
-    return d.toLocaleDateString("en-AU") + " " + d.toLocaleTimeString("en-AU", {hour:"2-digit", minute:"2-digit"});
-  }
-  function yesno(v){ return v ? '<span class="pill ok">yes</span>' : '<span class="pill">no</span>'; }
+      .form-head {
+        display: flex;
+        align-items: baseline;
+        justify-content: space-between;
+        gap: 12px;
+        margin-bottom: 18px;
+      }
+      .form-head h2 {
+        font-size: 20px;
+      }
+      .checkbox {
+        display: flex;
+        gap: 10px;
+        align-items: flex-start;
+        background: none;
+        border: 0;
+        padding: 0;
+      }
+      .checkbox input {
+        margin-top: 3px;
+        width: 18px;
+        height: 18px;
+        flex-shrink: 0;
+        accent-color: var(--sky-blue);
+      }
+      .checkbox label {
+        margin: 0;
+        font-family: inherit;
+        font-weight: 400;
+        letter-spacing: 0;
+        font-size: 14px;
+        color: var(--muted);
+        line-height: 1.5;
+      }
+      /* Second-call paths: one card per path, picked like a radio group. */
+      .paths {
+        display: flex;
+        flex-direction: column;
+        gap: 8px;
+      }
+      .path {
+        display: grid;
+        grid-template-columns: 18px 1fr;
+        column-gap: 10px;
+        align-items: start;
+        background: rgba(255, 255, 255, 0.05);
+        border: 1px solid var(--line);
+        border-radius: 10px;
+        padding: 10px 14px;
+        cursor: pointer;
+        margin: 0;
+        font-weight: 400;
+        letter-spacing: 0;
+      }
+      .path:hover {
+        border-color: var(--sky-blue);
+      }
+      .path:has(input:checked) {
+        border-color: var(--sky-blue);
+        background: rgba(43, 140, 196, 0.12);
+      }
+      .path input {
+        margin-top: 4px;
+        width: 16px;
+        height: 16px;
+        accent-color: var(--sky-blue);
+        grid-row: span 2;
+      }
+      .path b {
+        font-size: 14px;
+      }
+      .path span {
+        grid-column: 2;
+        color: var(--muted);
+        font-size: 13px;
+        line-height: 1.45;
+      }
+      .path-extra {
+        margin: -6px 0 18px;
+        padding: 14px 14px 4px;
+        border-left: 2px solid var(--sky-blue);
+        background: rgba(255, 255, 255, 0.03);
+      }
+      .path-extra .field {
+        margin-bottom: 14px;
+      }
+      .path-hint {
+        color: var(--muted);
+        font-size: 13px;
+        line-height: 1.5;
+        margin: 0 0 10px;
+      }
+      .actions {
+        display: flex;
+        gap: 12px;
+        margin-top: 22px;
+        flex-wrap: wrap;
+      }
+      .actions .btn-primary {
+        width: auto;
+        flex: 1;
+        min-width: 180px;
+        background: var(--sky-blue);
+      }
+      .actions .btn-primary:hover:not(:disabled) {
+        background: #1f6f9e;
+      }
+      .btn-ghost {
+        background: none;
+        border: 1px solid var(--line);
+        color: var(--muted);
+        padding: 14px 20px;
+        font-size: 14px;
+        font-weight: 400;
+        border-radius: var(--radius);
+      }
+      .btn-ghost:hover:not(:disabled) {
+        border-color: var(--sky-blue);
+        color: var(--white);
+      }
 
-  // The two working lists. Every row opens the club's slide-out panel.
-  function listsHtml(lists){
-    var r1 = (lists && lists.round1) || [];
-    var r2 = (lists && lists.round2) || [];
+      /* ---------------------------------------------------------- admin view */
+      /* One segmented control, not two buttons: a single track with the active
+     half filled, so it reads as a state switch rather than two actions. */
+      .tabs {
+        display: inline-flex;
+        background: rgba(255, 255, 255, 0.07);
+        border-radius: 999px;
+        padding: 3px;
+        gap: 0;
+      }
+      .tab {
+        background: none;
+        border: 0;
+        color: var(--muted);
+        padding: 7px 20px;
+        font-size: 13px;
+        font-weight: 400;
+        border-radius: 999px;
+        transition:
+          background 0.15s,
+          color 0.15s;
+      }
+      .tab:hover:not(.on) {
+        color: var(--white);
+      }
+      .tab.on {
+        background: var(--sky-blue);
+        color: var(--white);
+        font-weight: 700;
+      }
+      .admin {
+        padding: 24px;
+        max-width: 1400px;
+      }
+      .admin h2 {
+        font-size: 17px;
+        margin: 30px 0 12px;
+      }
+      .admin h2:first-child {
+        margin-top: 0;
+      }
+      .cards {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+        gap: 12px;
+      }
+      .card {
+        background: var(--card-dark);
+        border: 0;
+        border-radius: var(--radius);
+        padding: 16px 18px;
+      }
+      .card b {
+        display: block;
+        font-family: var(--heading-font);
+        font-weight: 700;
+        font-size: 28px;
+        line-height: 1;
+        margin-bottom: 5px;
+      }
+      .card span {
+        color: var(--muted);
+        font-size: 13px;
+      }
+      .card.warn {
+        box-shadow: inset 0 0 0 1px var(--red);
+      }
+      .card.warn b {
+        color: #e8a0a8;
+      }
+      .card.good {
+        box-shadow: inset 0 0 0 1px rgba(43, 140, 196, 0.6);
+      }
+      table {
+        width: 100%;
+        border-collapse: collapse;
+        font-size: 14px;
+      }
+      th,
+      td {
+        text-align: left;
+        padding: 10px 14px;
+        border-bottom: 1px solid var(--line);
+        vertical-align: top;
+      }
+      tbody tr:last-child td {
+        border-bottom: 0;
+      }
+      th {
+        font-family: var(--heading-font);
+        letter-spacing: normal;
+        color: var(--muted);
+        font-weight: 700;
+        font-size: 13px;
+        white-space: nowrap;
+      }
+      tbody tr:hover {
+        background: rgba(255, 255, 255, 0.03);
+      }
+      /* Rounded, borderless table shell. overflow:hidden clips the first and last
+     rows to the corner radius; the row separators are kept. */
+      .scroll {
+        overflow-x: auto;
+        border: 0;
+        border-radius: var(--radius);
+        background: var(--card-dark);
+      }
+      .pill {
+        display: inline-block;
+        padding: 2px 9px;
+        font-size: 12px;
+        background: rgba(255, 255, 255, 0.09);
+        white-space: nowrap;
+        border-radius: var(--radius);
+      }
+      .pill.ok {
+        background: rgba(43, 140, 196, 0.22);
+        color: #c8dff0;
+      }
+      .pill.bad {
+        background: rgba(200, 16, 46, 0.22);
+        color: #e8a0a8;
+      }
+      .banner {
+        padding: 14px 18px;
+        margin-bottom: 16px;
+        font-size: 14px;
+        border-radius: 10px;
+      }
+      .banner.ok {
+        background: rgba(43, 140, 196, 0.12);
+        border-left: 0;
+        color: #c8dff0;
+      }
+      .banner.bad {
+        background: rgba(200, 16, 46, 0.12);
+        border-left: 3px solid var(--red);
+        color: #e8a0a8;
+      }
+      .nowrap {
+        white-space: nowrap;
+      }
 
-    var round1 =
-      "<h2>First round &mdash; to call (" + r1.length + ")</h2>" +
-      '<p class="list-note">Clubs nobody has spoken to yet, biggest first. Click a club for its full record.</p>' +
-      pagedTable("r1",
-        "<th>Club</th><th>Where</th><th>Rank</th><th>Phone</th><th>Attempts</th>",
-        r1.map(function(t){
-          return '<tr class="rowlink" data-club="' + esc(t.id) + '">' +
-                 "<td>" + esc(t.entity_name) + "</td>" +
-                 "<td>" + esc(t.where || "—") + "</td>" +
-                 "<td>" + esc(t.gaming_rank != null ? t.gaming_rank : "—") + "</td>" +
-                 '<td class="nowrap">' + esc(t.primary_phone || "—") + "</td>" +
-                 "<td>" + (t.attempts ? esc(t.attempts) + " tried" : "—") + "</td></tr>";
-        }),
-        { empty: "Nothing left — every club has been spoken to." });
+      /* ------------------------------------------------------------- charts */
+      .panel {
+        background: var(--card-dark);
+        border-radius: var(--radius);
+        padding: 22px 24px;
+        position: relative;
+      }
+      .panel-title {
+        font-size: 15px;
+        margin-bottom: 16px;
+      }
+      /* Counters take the greater share; the pie needs less room to read. */
+      /* stretch, not start: the chart panel matches the counter block's height
+     even before any calls exist, so the row does not look half-built. */
+      .progress-split {
+        display: grid;
+        grid-template-columns: 6fr 4fr;
+        gap: 12px;
+        align-items: stretch;
+      }
+      .progress-split > .panel {
+        display: flex;
+        flex-direction: column;
+      }
+      .progress-split > .panel .chart-row {
+        flex: 1 1 auto;
+      }
+      .cards-tight {
+        grid-template-columns: repeat(3, minmax(0, 1fr));
+      }
+      @media (max-width: 1100px) {
+        .progress-split {
+          grid-template-columns: 1fr;
+        }
+        .cards-tight {
+          grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+        }
+      }
+      .chart-empty {
+        color: var(--muted);
+        font-size: 14px;
+        flex: 1 1 auto;
+        display: flex;
+        align-items: center;
+      }
+      .chart-row {
+        display: flex;
+        gap: 24px;
+        align-items: center;
+        flex-wrap: wrap;
+      }
+      /* Five stages across one line. Each stage's detail sits under its own
+     stretch of the coloured line. */
+      .funnel {
+        list-style: none;
+        margin: 0;
+        padding: 0;
+        display: grid;
+        grid-template-columns: repeat(5, minmax(0, 1fr));
+      }
+      .funnel li {
+        position: relative;
+        text-align: center;
+        padding: 0 6px;
+      }
+      /* One continuous line across the panel; each stage fills its stretch of it
+     with the next step of the white-to-blue ramp. */
+      .fn-seg {
+        display: block;
+        height: 6px;
+        margin: 0 -6px;
+      }
+      .funnel li:first-child .fn-seg {
+        margin-left: 0;
+        border-radius: 3px 0 0 3px;
+      }
+      .funnel li:last-child .fn-seg {
+        margin-right: 0;
+        border-radius: 0 3px 3px 0;
+      }
+      .fn-label {
+        display: block;
+        color: var(--muted);
+        font-size: 12px;
+        margin-bottom: 12px;
+        min-height: 2.4em;
+      }
+      .fn-num {
+        display: block;
+        font-weight: 700;
+        font-size: 26px;
+        line-height: 1.1;
+        margin-top: 12px;
+      }
+      .fn-pct {
+        display: block;
+        color: var(--muted);
+        font-size: 12px;
+        margin-top: 2px;
+      }
+      /* Explanatory note, tucked into the panel corner. Focusable so it is
+     reachable without a mouse. */
+      .info-i {
+        position: absolute;
+        top: 14px;
+        right: 16px;
+        width: 20px;
+        height: 20px;
+        border-radius: 50%;
+        background: rgba(255, 255, 255, 0.12);
+        color: var(--muted);
+        font-size: 12px;
+        font-weight: 700;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        cursor: help;
+        font-style: italic;
+      }
+      .info-i:hover,
+      .info-i:focus,
+      .info-i.open {
+        background: var(--sky-blue);
+        color: var(--white);
+        outline: none;
+      }
+      .info-i .tip {
+        position: absolute;
+        top: 26px;
+        right: 0;
+        width: 270px;
+        background: #0b1c2c;
+        color: var(--muted);
+        font-size: 12px;
+        font-weight: 400;
+        font-style: normal;
+        line-height: 1.5;
+        padding: 10px 12px;
+        border-radius: 8px;
+        text-align: left;
+        box-shadow: 0 6px 20px rgba(0, 0, 0, 0.45);
+        opacity: 0;
+        visibility: hidden;
+        transition: opacity 0.12s;
+        z-index: 5;
+      }
+      /* .open covers touch, where hover never fires and the icon would
+     otherwise be dead. */
+      .info-i:hover .tip,
+      .info-i:focus .tip,
+      .info-i.open .tip {
+        opacity: 1;
+        visibility: visible;
+      }
+      @media (max-width: 860px) {
+        .funnel {
+          grid-template-columns: repeat(2, minmax(0, 1fr));
+          gap: 22px 0;
+        }
+        .funnel li::before,
+        .funnel li::after {
+          display: none;
+        }
+      }
 
-    var round2 =
-      "<h2>Second round &mdash; call back (" + r2.length + ")</h2>" +
-      '<p class="list-note">Already called, in priority order: clubs where the first call landed a direct ' +
-      'contact come first, then everyone else. Not-interested clubs are left off.</p>' +
-      pagedTable("r2",
-        "<th>Priority</th><th>Club</th><th>Where</th><th>Contact</th><th>Last outcome</th><th>Calls</th>",
-        r2.map(function(t){
-          return '<tr class="rowlink" data-club="' + esc(t.id) + '">' +
-                 "<td>" + (t.direct ? '<span class="pill hot">direct contact</span>'
-                                    : '<span class="pill">standard</span>') + "</td>" +
-                 "<td>" + esc(t.entity_name) + "</td>" +
-                 "<td>" + esc(t.where || "—") + "</td>" +
-                 "<td>" + esc(t.decision_maker || "—") +
-                   (t.decision_maker_phone ? "<br><span style='color:var(--muted)'>" + esc(t.decision_maker_phone) + "</span>" : "") + "</td>" +
-                 "<td>" + esc(outcomeLabel(t.last_outcome)) +
-                   (t.called_again ? ' <span class="pill ok">called again</span>' : "") + "</td>" +
-                 "<td>" + esc(t.calls) + "</td></tr>";
-        }),
-        { empty: "No callbacks yet — they appear here after first calls are made." });
+      /* --------------------------------------------------------- pagination */
+      .pager {
+        display: flex;
+        align-items: center;
+        justify-content: flex-end;
+        gap: 14px;
+        padding: 10px 14px;
+        color: var(--muted);
+        font-size: 13px;
+      }
+      .pg-btn {
+        background: rgba(255, 255, 255, 0.08);
+        border: 0;
+        color: var(--white);
+        padding: 6px 14px;
+        border-radius: 6px;
+        font-size: 13px;
+        font-weight: 400;
+      }
+      .pg-btn:hover:not(:disabled) {
+        background: var(--sky-blue);
+      }
 
-    return round1 + round2;
-  }
+      /* --------------------------------------------------------- round lists */
+      tr.rowlink {
+        cursor: pointer;
+      }
+      tr.rowlink:hover {
+        background: rgba(43, 140, 196, 0.1);
+      }
+      .pill.hot {
+        background: rgba(63, 191, 111, 0.22);
+        color: #9fe0bb;
+      }
+      .list-note {
+        color: var(--muted);
+        font-size: 13px;
+        margin: 6px 0 14px;
+      }
 
-  // The caller's own overview: their numbers, their round lists, their calls.
-  function renderMyOverview(el, d){
-    var s = d.stats || {};
-    el.innerHTML =
-      '<div class="admin">' +
-        "<h2>Your progress</h2>" +
-        '<div class="progress-split">' +
-          '<div class="cards cards-tight">' +
+      /* ---------------------------------------------------------- club drawer */
+      #drawer-backdrop {
+        position: fixed;
+        inset: 0;
+        background: rgba(0, 0, 0, 0.55);
+        z-index: 55;
+        opacity: 0;
+        visibility: hidden;
+        transition: opacity 0.2s;
+      }
+      #drawer-backdrop.open {
+        opacity: 1;
+        visibility: visible;
+      }
+      #drawer {
+        position: fixed;
+        top: 0;
+        right: 0;
+        bottom: 0;
+        width: min(620px, 100vw);
+        z-index: 60;
+        background: var(--card-dark);
+        overflow-y: auto;
+        overscroll-behavior: contain;
+        transform: translateX(100%);
+        transition: transform 0.22s ease;
+        box-shadow: -16px 0 48px rgba(0, 0, 0, 0.5);
+      }
+      #drawer.open {
+        transform: none;
+      }
+      .drawer-inner {
+        padding: 24px;
+      }
+      .drawer-top {
+        display: flex;
+        justify-content: space-between;
+        align-items: flex-start;
+        gap: 16px;
+        margin-bottom: 6px;
+      }
+      .drawer-top h2 {
+        font-size: 23px;
+        line-height: 1.2;
+      }
+      .drawer-close {
+        background: none;
+        color: var(--muted);
+        font-size: 26px;
+        line-height: 1;
+        padding: 2px 8px;
+        border-radius: 6px;
+      }
+      .drawer-close:hover {
+        color: var(--white);
+        background: rgba(255, 255, 255, 0.08);
+      }
+      .drawer-sub {
+        color: var(--muted);
+        font-size: 14px;
+        margin: 0 0 16px;
+      }
+      .drawer h3 {
+        font-size: 15px;
+        margin: 26px 0 10px;
+      }
+      .drawer-phone {
+        display: inline-block;
+        background: var(--sky-blue);
+        color: var(--white);
+        text-decoration: none;
+        font-weight: 700;
+        font-size: 17px;
+        padding: 9px 18px;
+        border-radius: var(--radius);
+        margin-bottom: 16px;
+      }
+      .drawer-phone:hover {
+        background: #1f6f9e;
+      }
+      /* One call = one block in the timeline. */
+      .call-item {
+        background: rgba(255, 255, 255, 0.05);
+        border-radius: var(--radius);
+        padding: 14px 16px;
+        margin-bottom: 10px;
+        font-size: 14px;
+      }
+      .call-item .ci-head {
+        display: flex;
+        justify-content: space-between;
+        gap: 10px;
+        flex-wrap: wrap;
+        margin-bottom: 6px;
+      }
+      .call-item .ci-when {
+        color: var(--muted);
+        font-size: 13px;
+      }
+      .call-item .ci-notes {
+        color: var(--muted);
+        margin-top: 6px;
+        white-space: pre-wrap;
+      }
+      .email-msg {
+        background: rgba(255, 255, 255, 0.05);
+        border-radius: var(--radius);
+        padding: 12px 16px;
+        margin-bottom: 10px;
+        font-size: 14px;
+      }
+      .email-msg .em-head b {
+        font-weight: 700;
+      }
+      .email-msg .em-chips {
+        margin: 7px 0 5px;
+        display: flex;
+        gap: 6px;
+        flex-wrap: wrap;
+      }
+      .email-ev {
+        display: flex;
+        gap: 12px;
+        align-items: baseline;
+        padding: 7px 0;
+        border-bottom: 1px solid var(--line);
+        font-size: 14px;
+      }
+      .email-ev:last-child {
+        border-bottom: 0;
+      }
+      .email-ev .ev-when {
+        color: var(--muted);
+        font-size: 13px;
+        white-space: nowrap;
+      }
+      .email-ev .ev-addr {
+        color: var(--muted);
+        font-size: 13px;
+        overflow-wrap: anywhere;
+      }
+      .ev-pill {
+        display: inline-block;
+        padding: 1px 9px;
+        font-size: 12px;
+        border-radius: var(--radius);
+        background: rgba(255, 255, 255, 0.09);
+        white-space: nowrap;
+      }
+      .ev-pill.delivered,
+      .ev-pill.sent {
+        background: rgba(43, 140, 196, 0.22);
+        color: #c8dff0;
+      }
+      .ev-pill.opened {
+        background: rgba(216, 163, 63, 0.22);
+        color: #ecd2a0;
+      }
+      .ev-pill.clicked,
+      .ev-pill.converted {
+        background: rgba(63, 191, 111, 0.22);
+        color: #9fe0bb;
+      }
+      .ev-pill.bounced,
+      .ev-pill.failed,
+      .ev-pill.spam,
+      .ev-pill.suppressed,
+      .ev-pill.unsubscribed {
+        background: rgba(200, 16, 46, 0.22);
+        color: #e8a0a8;
+      }
+      .drawer .btn-primary {
+        width: auto;
+        background: var(--sky-blue);
+        padding: 11px 20px;
+      }
+      .drawer .btn-primary:hover:not(:disabled) {
+        background: #1f6f9e;
+      }
+      .drawer .field {
+        margin-bottom: 14px;
+      }
+
+      .empty {
+        padding: 80px 24px;
+        text-align: center;
+      }
+      .empty h2 {
+        font-size: 24px;
+        margin-bottom: 10px;
+      }
+      .empty p {
+        color: var(--muted);
+      }
+      .hidden {
+        display: none !important;
+      }
+    </style>
+  </head>
+  <body>
+    <!-- ============================================================== LOGIN -->
+    <div class="auth-wrap" id="view-login">
+      <div class="auth">
+        <h1>Call worksheet</h1>
+        <p class="sub">Darwin 1942 &mdash; RSL club outreach</p>
+        <form id="login-form">
+          <div class="field">
+            <label for="username">Username or email</label>
+            <input
+              type="text"
+              id="username"
+              autocomplete="username"
+              autocapitalize="none"
+              spellcheck="false"
+              required
+            />
+          </div>
+          <div class="field">
+            <label for="password">Password</label>
+            <input
+              type="password"
+              id="password"
+              autocomplete="current-password"
+              required
+            />
+          </div>
+          <button type="submit" class="btn-primary" id="login-btn">
+            Log in
+          </button>
+          <div class="msg" id="login-msg"></div>
+        </form>
+      </div>
+    </div>
+
+    <!-- ============================================================== SETUP -->
+    <div class="auth-wrap hidden" id="view-setup">
+      <div class="auth">
+        <h1>Set your password</h1>
+        <p class="sub" id="setup-sub">&nbsp;</p>
+        <form id="setup-form">
+          <div class="field">
+            <label for="new-password"
+              >New password <span class="req">*</span></label
+            >
+            <input
+              type="password"
+              id="new-password"
+              autocomplete="new-password"
+              minlength="10"
+              required
+            />
+            <p style="color: var(--muted); font-size: 13px; margin: 6px 0 0">
+              At least 10 characters. Nobody else ever sees this, including
+              Taylor.
+            </p>
+          </div>
+          <div class="field">
+            <label for="confirm-password"
+              >Confirm password <span class="req">*</span></label
+            >
+            <input
+              type="password"
+              id="confirm-password"
+              autocomplete="new-password"
+              required
+            />
+          </div>
+          <button type="submit" class="btn-primary" id="setup-btn">
+            Save password
+          </button>
+          <div class="msg" id="setup-msg"></div>
+        </form>
+      </div>
+    </div>
+
+    <!-- ============================================================= SIGNUP -->
+    <div class="auth-wrap hidden" id="view-signup">
+      <div class="auth">
+        <h1>Create your account</h1>
+        <p class="sub" id="signup-sub">Darwin 1942 &mdash; RSL club outreach</p>
+        <form id="signup-form">
+          <div class="field">
+            <label for="su-name">Your name <span class="req">*</span></label>
+            <input type="text" id="su-name" autocomplete="name" required />
+            <p class="hint">
+              This is what goes in the spreadsheet against every call you make.
+            </p>
+          </div>
+          <div class="field">
+            <label for="su-email">Your email <span class="req">*</span></label>
+            <input
+              type="email"
+              id="su-email"
+              autocomplete="email"
+              autocapitalize="none"
+              spellcheck="false"
+              required
+            />
+          </div>
+          <div class="field">
+            <label for="su-password"
+              >Choose a password <span class="req">*</span></label
+            >
+            <input
+              type="password"
+              id="su-password"
+              autocomplete="new-password"
+              minlength="10"
+              required
+            />
+            <p class="hint">
+              At least 10 characters. Nobody else ever sees this, including
+              Taylor.
+            </p>
+          </div>
+          <div class="field">
+            <label for="su-confirm"
+              >Confirm password <span class="req">*</span></label
+            >
+            <input
+              type="password"
+              id="su-confirm"
+              autocomplete="new-password"
+              required
+            />
+          </div>
+          <button type="submit" class="btn-primary" id="signup-btn">
+            Create account
+          </button>
+          <div class="msg" id="signup-msg"></div>
+        </form>
+      </div>
+    </div>
+
+    <!-- ========================================================== WORKSHEET -->
+    <div class="hidden" id="view-work">
+      <div class="topbar">
+        <div>
+          <h1>Call worksheet</h1>
+          <div class="who">
+            <span id="who-name"></span> &middot;
+            <button class="linkbtn" id="logout-btn">log out</button>
+          </div>
+        </div>
+        <div class="tabs" id="admin-tabs">
+          <button class="tab on" id="tab-work">Worksheet</button>
+          <button class="tab" id="tab-admin">Overview</button>
+        </div>
+        <div class="counters">
+          <div><b id="c-mine">0</b> my calls</div>
+          <div><b id="c-remaining">0</b> left to call</div>
+          <div><b id="c-done">0</b> done</div>
+          <div id="c-dnc-wrap"><b id="c-dnc">0</b> do not call</div>
+        </div>
+        <div id="round-wrap"></div>
+      </div>
+
+      <div id="work-body"></div>
+      <div id="admin-body" class="hidden"></div>
+    </div>
+
+    <!-- ======================================================== CLUB DRAWER -->
+    <div id="drawer-backdrop"></div>
+    <aside id="drawer" class="drawer" aria-label="Club details">
+      <div class="drawer-inner" id="drawer-inner"></div>
+    </aside>
+
+    <script>
+      (function () {
+        "use strict";
+
+        var API =
+          "https://nwchcduhlhhppvyhxbpo.supabase.co/functions/v1/d1942-calls-api";
+        var TOKEN_KEY = "d1942_calls_token";
+
+        var token = null;
+        try {
+          token = localStorage.getItem(TOKEN_KEY);
+        } catch (e) {}
+        var current = null; // the club currently on screen
+        var formRound = 1; // which round the on-screen form was built for
+        var meCaller = null; // the logged-in caller, used in the script
+        var tabsWired = false;
+        var drawerClub = null; // target_id currently open in the slide-out
+
+        // Which queue the worksheet serves from: 1 = first calls, 2 = callbacks.
+        var roundMode = 1;
+        try {
+          roundMode =
+            parseInt(localStorage.getItem("d1942_round") || "1", 10) === 2
+              ? 2
+              : 1;
+        } catch (e) {}
+
+        function api(action, payload) {
+          var body = Object.assign({ action: action }, payload || {});
+          if (token) body.token = token;
+          return fetch(API, {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify(body),
+          }).then(function (r) {
+            return r.json().then(function (j) {
+              if (r.status === 401) {
+                signOut();
+                throw new Error("Your session expired. Please log in again.");
+              }
+              if (j && j.error) throw new Error(j.error);
+              return j;
+            });
+          });
+        }
+
+        function show(id) {
+          ["view-login", "view-setup", "view-signup", "view-work"].forEach(
+            function (v) {
+              document.getElementById(v).classList.toggle("hidden", v !== id);
+            },
+          );
+        }
+        function msg(el, text, kind) {
+          var n = document.getElementById(el);
+          n.className = "msg " + (kind || "error");
+          n.textContent = text;
+        }
+        function clearMsg(el) {
+          document.getElementById(el).className = "msg";
+        }
+        function esc(s) {
+          return String(s == null ? "" : s).replace(/[&<>"']/g, function (c) {
+            return {
+              "&": "&amp;",
+              "<": "&lt;",
+              ">": "&gt;",
+              '"': "&quot;",
+              "'": "&#39;",
+            }[c];
+          });
+        }
+
+        // ----------------------------------------------------------- setup flow
+        var setupToken = new URLSearchParams(location.search).get("setup");
+
+        if (setupToken) {
+          show("view-setup");
+          api("setup_check", { setup_token: setupToken })
+            .then(function (r) {
+              if (!r.valid) {
+                msg("setup-msg", r.reason, "error");
+                document.getElementById("setup-btn").disabled = true;
+                return;
+              }
+              document.getElementById("setup-sub").textContent =
+                r.name + " — your username is " + r.username;
+              if (r.already_set)
+                msg(
+                  "setup-msg",
+                  "You already have a password. Saving here replaces it.",
+                  "ok",
+                );
+            })
+            .catch(function (e) {
+              msg("setup-msg", e.message, "error");
+            });
+
+          document
+            .getElementById("setup-form")
+            .addEventListener("submit", function (e) {
+              e.preventDefault();
+              clearMsg("setup-msg");
+              var pw = document.getElementById("new-password").value;
+              var cf = document.getElementById("confirm-password").value;
+              if (pw !== cf) {
+                msg("setup-msg", "Those two passwords do not match.", "error");
+                return;
+              }
+              var btn = document.getElementById("setup-btn");
+              btn.disabled = true;
+              btn.textContent = "Saving...";
+              api("setup", { setup_token: setupToken, password: pw })
+                .then(function () {
+                  msg(
+                    "setup-msg",
+                    "Password saved. Taking you to the login screen...",
+                    "ok",
+                  );
+                  setTimeout(function () {
+                    location.href = location.pathname;
+                  }, 1400);
+                })
+                .catch(function (err) {
+                  msg("setup-msg", err.message, "error");
+                  btn.disabled = false;
+                  btn.textContent = "Save password";
+                });
+            });
+          return;
+        }
+
+        // ---------------------------------------------------------- signup flow
+        var signupToken = new URLSearchParams(location.search).get("signup");
+
+        if (signupToken) {
+          show("view-signup");
+          api("signup_check", { signup_token: signupToken })
+            .then(function (r) {
+              if (!r.valid) {
+                msg("signup-msg", r.reason, "error");
+                document.getElementById("signup-btn").disabled = true;
+                return;
+              }
+              // Say plainly what the link creates, so an admin link handed to the wrong
+              // person is obvious to them rather than silent.
+              document.getElementById("signup-sub").textContent = r.is_admin
+                ? "Darwin 1942 — this link creates an ADMIN account, with access to the full overview."
+                : "Darwin 1942 — RSL club outreach";
+              if (r.remaining != null && r.remaining <= 3) {
+                msg(
+                  "signup-msg",
+                  r.remaining + " place(s) left on this link.",
+                  "ok",
+                );
+              }
+            })
+            .catch(function (e) {
+              msg("signup-msg", e.message, "error");
+            });
+
+          document
+            .getElementById("signup-form")
+            .addEventListener("submit", function (e) {
+              e.preventDefault();
+              clearMsg("signup-msg");
+              var pw = document.getElementById("su-password").value;
+              if (pw !== document.getElementById("su-confirm").value) {
+                msg("signup-msg", "Those two passwords do not match.", "error");
+                return;
+              }
+              var btn = document.getElementById("signup-btn");
+              btn.disabled = true;
+              btn.textContent = "Creating...";
+              api("signup", {
+                signup_token: signupToken,
+                name: document.getElementById("su-name").value,
+                email: document.getElementById("su-email").value,
+                password: pw,
+              })
+                .then(function (r) {
+                  token = r.token;
+                  try {
+                    localStorage.setItem(TOKEN_KEY, token);
+                  } catch (e) {}
+                  // Drop the token from the address bar so the link is not left sitting
+                  // in history or shoulder-surfed off the screen.
+                  history.replaceState(null, "", location.pathname);
+                  startWork(r.caller);
+                })
+                .catch(function (err) {
+                  msg("signup-msg", err.message, "error");
+                  btn.disabled = false;
+                  btn.textContent = "Create account";
+                });
+            });
+          return;
+        }
+
+        // ----------------------------------------------------------- login flow
+        document
+          .getElementById("login-form")
+          .addEventListener("submit", function (e) {
+            e.preventDefault();
+            clearMsg("login-msg");
+            var btn = document.getElementById("login-btn");
+            btn.disabled = true;
+            btn.textContent = "Logging in...";
+            api("login", {
+              username: document.getElementById("username").value,
+              password: document.getElementById("password").value,
+            })
+              .then(function (r) {
+                if (r.error) throw new Error(r.error);
+                token = r.token;
+                try {
+                  localStorage.setItem(TOKEN_KEY, token);
+                } catch (e) {}
+                startWork(r.caller);
+              })
+              .catch(function (err) {
+                msg("login-msg", err.message, "error");
+                btn.disabled = false;
+                btn.textContent = "Log in";
+              });
+          });
+
+        function signOut() {
+          token = null;
+          try {
+            localStorage.removeItem(TOKEN_KEY);
+          } catch (e) {}
+          show("view-login");
+          var btn = document.getElementById("login-btn");
+          btn.disabled = false;
+          btn.textContent = "Log in";
+        }
+
+        document
+          .getElementById("logout-btn")
+          .addEventListener("click", function () {
+            api("logout", {}).catch(function () {});
+            signOut();
+          });
+
+        function startWork(caller) {
+          meCaller = caller;
+          document.getElementById("who-name").textContent =
+            caller.name +
+            (caller.call_group
+              ? "  ·  list " + caller.call_group + " of 5"
+              : "");
+          show("view-work");
+          // Callers see their own numbers; the do-not-call figure is admin plumbing.
+          document
+            .getElementById("c-dnc-wrap")
+            .classList.toggle("hidden", !caller.is_admin);
+          renderRoundSwitch();
+          // Everyone gets the overview now; non-admins are served a version scoped
+          // to their own list and their own calls by the API.
+          if (!tabsWired) {
+            tabsWired = true;
+            document
+              .getElementById("tab-work")
+              .addEventListener("click", function () {
+                switchTab("work");
+              });
+            document
+              .getElementById("tab-admin")
+              .addEventListener("click", function () {
+                switchTab("admin");
+              });
+          }
+          loadNext();
+        }
+
+        function switchTab(which) {
+          var isAdmin = which === "admin";
+          document.getElementById("tab-work").classList.toggle("on", !isAdmin);
+          document.getElementById("tab-admin").classList.toggle("on", isAdmin);
+          document
+            .getElementById("work-body")
+            .classList.toggle("hidden", isAdmin);
+          document
+            .getElementById("admin-body")
+            .classList.toggle("hidden", !isAdmin);
+          if (isAdmin) loadOverview();
+        }
+
+        // --------------------------------------------------------------- overview
+        function loadOverview() {
+          var el = document.getElementById("admin-body");
+          el.innerHTML = '<div class="empty"><p>Loading overview...</p></div>';
+          api("overview", {})
+            .then(function (d) {
+              if (d.scope === "mine") renderMyOverview(el, d);
+              else renderOverview(el, d);
+            })
+            .catch(function (e) {
+              el.innerHTML =
+                '<div class="empty"><h2>Could not load</h2><p>' +
+                esc(e.message) +
+                "</p></div>";
+            });
+        }
+
+        // Monochrome ramp from white down to the site blue (--sky-blue), stable per
+        // outcome so a slice keeps its colour as the numbers move: the best outcomes
+        // are lightest, the dead ends sit at the blue end.
+        var OUTCOME_COLOURS = {
+          committed: "#ffffff",
+          interested_followup: "#e7f2f8",
+          referred_to_board: "#d0e5f2",
+          callback_scheduled: "#b8d9eb",
+          wants_updates: "#a1cce5",
+          wants_info_only: "#89bfde",
+          not_interested: "#72b2d8",
+          no_answer: "#5aa6d1",
+          gatekeeper: "#4399cb",
+          wrong_number: "#2b8cc4",
+        };
+        var OUTCOME_LABELS = {
+          committed: "Committed",
+          interested_followup: "Interested \u2014 needs another call",
+          referred_to_board: "Going to the board",
+          callback_scheduled: "Callback scheduled",
+          wants_updates: "Wants updates only",
+          wants_info_only: "Wants information only",
+          not_interested: "Not interested",
+          no_answer: "No answer",
+          gatekeeper: "Blocked at reception",
+          wrong_number: "Wrong number",
+        };
+        function outcomeColour(k) {
+          return OUTCOME_COLOURS[k] || "#8fa3b3";
+        }
+        function outcomeLabel(k) {
+          return OUTCOME_LABELS[k] || String(k).replace(/_/g, " ");
+        }
+
+        // Short names for the chart, where the full outcome labels won't fit.
+        var OUTCOME_SHORT = {
+          committed: "Committed",
+          interested_followup: "Interested",
+          referred_to_board: "To the board",
+          callback_scheduled: "Callback",
+          wants_updates: "Wants updates",
+          wants_info_only: "Info only",
+          not_interested: "Not interested",
+          no_answer: "No answer",
+          gatekeeper: "Reception",
+          wrong_number: "Wrong number",
+        };
+
+        // Hand-rolled SVG donut with labels either side, joined to their slices by
+        // leader lines. No chart library, so nothing external to load.
+        function pieChart(byOutcome) {
+          var keys = Object.keys(byOutcome || {}).filter(function (k) {
+            return byOutcome[k] > 0;
+          });
+          var total = keys.reduce(function (a, k) {
+            return a + byOutcome[k];
+          }, 0);
+          if (!total) {
+            return '<div class="chart-empty">No calls recorded yet &mdash; the outcome mix will appear here.</div>';
+          }
+          keys.sort(function (a, b) {
+            return byOutcome[b] - byOutcome[a];
+          });
+
+          var W = 520,
+            H = 264,
+            cx = 260,
+            cy = 132,
+            r = 86,
+            inner = 50;
+          var angle = -Math.PI / 2,
+            paths = "",
+            labels = [];
+
+          keys.forEach(function (k) {
+            var frac = byOutcome[k] / total;
+            var end = angle + frac * Math.PI * 2;
+            var mid = (angle + end) / 2;
+            // A single slice covering everything cannot be drawn as an arc (start and
+            // end coincide), so draw it as a ring instead.
+            if (frac >= 0.9999) {
+              paths +=
+                '<circle cx="' +
+                cx +
+                '" cy="' +
+                cy +
+                '" r="' +
+                (r + inner) / 2 +
+                '" fill="none" ' +
+                'stroke="' +
+                outcomeColour(k) +
+                '" stroke-width="' +
+                (r - inner) +
+                '"></circle>';
+            } else {
+              var large = frac > 0.5 ? 1 : 0;
+              var x1 = cx + r * Math.cos(angle),
+                y1 = cy + r * Math.sin(angle);
+              var x2 = cx + r * Math.cos(end),
+                y2 = cy + r * Math.sin(end);
+              var x3 = cx + inner * Math.cos(end),
+                y3 = cy + inner * Math.sin(end);
+              var x4 = cx + inner * Math.cos(angle),
+                y4 = cy + inner * Math.sin(angle);
+              paths +=
+                '<path d="M' +
+                x1.toFixed(2) +
+                " " +
+                y1.toFixed(2) +
+                " A" +
+                r +
+                " " +
+                r +
+                " 0 " +
+                large +
+                " 1 " +
+                x2.toFixed(2) +
+                " " +
+                y2.toFixed(2) +
+                " L" +
+                x3.toFixed(2) +
+                " " +
+                y3.toFixed(2) +
+                " A" +
+                inner +
+                " " +
+                inner +
+                " 0 " +
+                large +
+                " 0 " +
+                x4.toFixed(2) +
+                " " +
+                y4.toFixed(2) +
+                ' Z" fill="' +
+                outcomeColour(k) +
+                '" stroke="#081524" stroke-width="1.5"></path>';
+            }
+            labels.push({
+              k: k,
+              n: byOutcome[k],
+              pct: Math.round(frac * 100),
+              mid: mid,
+            });
+            angle = end;
+          });
+
+          // Plain lists either side of the donut — no leader lines. Each entry keeps
+          // its slice's colour as a swatch, and each side's list is centred
+          // vertically on the chart.
+          var left = labels.filter(function (l) {
+            return Math.cos(l.mid) < 0;
+          });
+          var right = labels.filter(function (l) {
+            return Math.cos(l.mid) >= 0;
+          });
+          function listSvg(list, x) {
+            var gap = 22;
+            var y0 = cy - ((list.length - 1) * gap) / 2;
+            y0 = Math.max(16, Math.min(y0, H - 16 - (list.length - 1) * gap));
+            return list
+              .map(function (l, i) {
+                var y = y0 + i * gap;
+                var name = OUTCOME_SHORT[l.k] || outcomeLabel(l.k);
+                return (
+                  '<rect x="' +
+                  x +
+                  '" y="' +
+                  (y - 5).toFixed(1) +
+                  '" width="10" height="10" rx="2" fill="' +
+                  outcomeColour(l.k) +
+                  '"></rect>' +
+                  '<text x="' +
+                  (x + 16) +
+                  '" y="' +
+                  (y + 4).toFixed(1) +
+                  '" text-anchor="start" font-family="Arial" font-size="12" fill="#a8c4d8">' +
+                  esc(name) +
+                  ' <tspan fill="#ffffff" font-weight="bold">' +
+                  l.n +
+                  "</tspan>" +
+                  ' <tspan fill="#7f97a8">(' +
+                  l.pct +
+                  "%)</tspan></text>"
+                );
+              })
+              .join("");
+          }
+          var decor = listSvg(left, 8) + listSvg(right, cx + r + 26);
+
+          return (
+            '<svg viewBox="0 0 ' +
+            W +
+            " " +
+            H +
+            '" style="width:100%;max-width:' +
+            W +
+            'px;display:block;margin:0 auto" role="img" ' +
+            'aria-label="Call outcomes as a proportion of all calls">' +
+            paths +
+            decor +
+            '<text x="' +
+            cx +
+            '" y="' +
+            (cy - 4) +
+            '" text-anchor="middle" fill="#ffffff" font-size="28" font-family="Arial" font-weight="bold">' +
+            total +
+            "</text>" +
+            '<text x="' +
+            cx +
+            '" y="' +
+            (cy + 16) +
+            '" text-anchor="middle" fill="#a8c4d8" font-size="12" font-family="Arial">calls</text>' +
+            "</svg>"
+          );
+        }
+
+        // -------------------------------------------------- client-side pagination
+        // Long tables render one page at a time; rows are kept in memory and the
+        // container re-renders on Prev/Next.
+        var PAGERS = {};
+        function pagedTable(key, head, rows, opts) {
+          PAGERS[key] = {
+            head: head,
+            rows: rows,
+            pageSize: (opts && opts.pageSize) || 10,
+            empty: (opts && opts.empty) || "Nothing here yet.",
+            page: 0,
+          };
+          return (
+            '<div class="scroll" data-pager="' +
+            key +
+            '">' +
+            pagedInner(key) +
+            "</div>"
+          );
+        }
+        function pagedInner(key) {
+          var o = PAGERS[key];
+          var total = o.rows.length;
+          var pages = Math.max(1, Math.ceil(total / o.pageSize));
+          if (o.page > pages - 1) o.page = pages - 1;
+          var s = o.page * o.pageSize;
+          return (
+            "<table><thead><tr>" +
+            o.head +
+            "</tr></thead><tbody>" +
+            (total
+              ? o.rows.slice(s, s + o.pageSize).join("")
+              : '<tr><td colspan="99">' + o.empty + "</td></tr>") +
+            "</tbody></table>" +
+            (pages > 1
+              ? '<div class="pager">' +
+                '<button type="button" class="pg-btn" data-pg="' +
+                key +
+                '" data-dir="-1"' +
+                (o.page === 0 ? " disabled" : "") +
+                ">&#8592; Prev</button>" +
+                "<span>" +
+                (s + 1) +
+                "&ndash;" +
+                Math.min(s + o.pageSize, total) +
+                " of " +
+                total +
+                "</span>" +
+                '<button type="button" class="pg-btn" data-pg="' +
+                key +
+                '" data-dir="1"' +
+                (o.page >= pages - 1 ? " disabled" : "") +
+                ">Next &#8594;</button>" +
+                "</div>"
+              : "")
+          );
+        }
+        document.addEventListener("click", function (e) {
+          var b = e.target.closest && e.target.closest(".pg-btn");
+          if (!b || b.disabled) return;
+          var key = b.getAttribute("data-pg");
+          if (!PAGERS[key]) return;
+          PAGERS[key].page += parseInt(b.getAttribute("data-dir"), 10);
+          var host = document.querySelector('[data-pager="' + key + '"]');
+          if (host) host.innerHTML = pagedInner(key);
+        });
+
+        // Horizontal stage timeline: one line across the panel, coloured in
+        // white-to-blue steps to show the stages, each with its count and
+        // description underneath.
+        var FUNNEL_COLOURS = [
+          "#ffffff",
+          "#cae2f0",
+          "#95c6e2",
+          "#60a9d3",
+          "#2b8cc4",
+        ];
+        function funnelChart(f, totalClubs) {
+          var stages = [
+            { key: "waiting", label: "Waiting to be called" },
+            { key: "called_once", label: "Called" },
+            { key: "into_cio", label: "Into Customer.io" },
+            { key: "second_call", label: "Second call" },
+            { key: "committed", label: "Committed money" },
+          ];
+          return (
+            '<ol class="funnel">' +
+            stages
+              .map(function (st, i) {
+                var n = Number(f[st.key] || 0);
+                var pctOfAll = totalClubs
+                  ? Math.round((n / totalClubs) * 100)
+                  : 0;
+                return (
+                  "<li>" +
+                  '<span class="fn-label">' +
+                  esc(st.label) +
+                  "</span>" +
+                  '<span class="fn-seg" style="background:' +
+                  FUNNEL_COLOURS[i] +
+                  '"></span>' +
+                  '<span class="fn-num">' +
+                  n +
+                  "</span>" +
+                  '<span class="fn-pct">' +
+                  pctOfAll +
+                  "% of clubs</span>" +
+                  "</li>"
+                );
+              })
+              .join("") +
+            "</ol>"
+          );
+        }
+
+        // Tap to toggle, since hover does not exist on touch. Delegated so it keeps
+        // working after the overview re-renders.
+        document.addEventListener("click", function (e) {
+          var icon = e.target.closest && e.target.closest(".info-i");
+          document.querySelectorAll(".info-i.open").forEach(function (n) {
+            if (n !== icon) n.classList.remove("open");
+          });
+          if (icon) icon.classList.toggle("open");
+        });
+
+        function infoIcon(text) {
+          return (
+            '<span class="info-i" tabindex="0" role="note" aria-label="' +
+            esc(text) +
+            '">i' +
+            '<span class="tip">' +
+            esc(text) +
+            "</span></span>"
+          );
+        }
+
+        function card(value, label, cls) {
+          return (
+            '<div class="card ' +
+            (cls || "") +
+            '"><b>' +
+            esc(value) +
+            "</b><span>" +
+            esc(label) +
+            "</span></div>"
+          );
+        }
+        function when(iso) {
+          if (!iso) return "—";
+          var d = new Date(iso);
+          return (
+            d.toLocaleDateString("en-AU") +
+            " " +
+            d.toLocaleTimeString("en-AU", {
+              hour: "2-digit",
+              minute: "2-digit",
+            })
+          );
+        }
+        function yesno(v) {
+          return v
+            ? '<span class="pill ok">yes</span>'
+            : '<span class="pill">no</span>';
+        }
+
+        // The two working lists. Every row opens the club's slide-out panel.
+        function listsHtml(lists) {
+          var r1 = (lists && lists.round1) || [];
+          var r2 = (lists && lists.round2) || [];
+
+          var round1 =
+            "<h2>First round &mdash; to call (" +
+            r1.length +
+            ")</h2>" +
+            '<p class="list-note">Clubs nobody has spoken to yet, biggest first. Click a club for its full record.</p>' +
+            pagedTable(
+              "r1",
+              "<th>Club</th><th>Where</th><th>Rank</th><th>Phone</th><th>Attempts</th>",
+              r1.map(function (t) {
+                return (
+                  '<tr class="rowlink" data-club="' +
+                  esc(t.id) +
+                  '">' +
+                  "<td>" +
+                  esc(t.entity_name) +
+                  "</td>" +
+                  "<td>" +
+                  esc(t.where || "—") +
+                  "</td>" +
+                  "<td>" +
+                  esc(t.gaming_rank != null ? t.gaming_rank : "—") +
+                  "</td>" +
+                  '<td class="nowrap">' +
+                  esc(t.primary_phone || "—") +
+                  "</td>" +
+                  "<td>" +
+                  (t.attempts ? esc(t.attempts) + " tried" : "—") +
+                  "</td></tr>"
+                );
+              }),
+              { empty: "Nothing left — every club has been spoken to." },
+            );
+
+          var round2 =
+            "<h2>Second round &mdash; call back (" +
+            r2.length +
+            ")</h2>" +
+            '<p class="list-note">Already called, in priority order: clubs where the first call landed a direct ' +
+            "contact come first, then everyone else. Not-interested clubs are left off.</p>" +
+            pagedTable(
+              "r2",
+              "<th>Priority</th><th>Club</th><th>Where</th><th>Contact</th><th>Last outcome</th><th>Calls</th>",
+              r2.map(function (t) {
+                return (
+                  '<tr class="rowlink" data-club="' +
+                  esc(t.id) +
+                  '">' +
+                  "<td>" +
+                  (t.direct
+                    ? '<span class="pill hot">direct contact</span>'
+                    : '<span class="pill">standard</span>') +
+                  "</td>" +
+                  "<td>" +
+                  esc(t.entity_name) +
+                  "</td>" +
+                  "<td>" +
+                  esc(t.where || "—") +
+                  "</td>" +
+                  "<td>" +
+                  esc(t.decision_maker || "—") +
+                  (t.decision_maker_phone
+                    ? "<br><span style='color:var(--muted)'>" +
+                      esc(t.decision_maker_phone) +
+                      "</span>"
+                    : "") +
+                  "</td>" +
+                  "<td>" +
+                  esc(outcomeLabel(t.last_outcome)) +
+                  (t.called_again
+                    ? ' <span class="pill ok">called again</span>'
+                    : "") +
+                  "</td>" +
+                  "<td>" +
+                  esc(t.calls) +
+                  "</td></tr>"
+                );
+              }),
+              {
+                empty:
+                  "No callbacks yet — they appear here after first calls are made.",
+              },
+            );
+
+          return round1 + round2;
+        }
+
+        // The caller's own overview: their numbers, their round lists, their calls.
+        function renderMyOverview(el, d) {
+          var s = d.stats || {};
+          el.innerHTML =
+            '<div class="admin">' +
+            "<h2>Your progress</h2>" +
+            '<div class="progress-split">' +
+            '<div class="cards cards-tight">' +
             card(s.my_calls, "calls you have made") +
             card(s.remaining, "left in your list") +
             card(s.done, "done in your list", "good") +
             card(s.total, "clubs in your list") +
-            card(s.call_group ? "list " + s.call_group + " of 5" : "all lists", "your list") +
-          "</div>" +
-          '<div class="panel">' +
+            card(
+              s.call_group ? "list " + s.call_group + " of 5" : "all lists",
+              "your list",
+            ) +
+            "</div>" +
+            '<div class="panel">' +
             '<h3 class="panel-title">Outcome of your calls</h3>' +
             pieChart(d.by_outcome) +
-          "</div>" +
-        "</div>" +
+            "</div>" +
+            "</div>" +
+            listsHtml(d.lists) +
+            "<h2>Your recent calls</h2>" +
+            pagedTable(
+              "myrecent",
+              "<th>When</th><th>Club</th><th>Outcome</th><th>Decision maker</th><th>Wants info</th><th>Notes</th>",
+              (d.recent || []).map(function (r) {
+                return (
+                  '<tr class="rowlink" data-club="' +
+                  esc(r.target_id || "") +
+                  '">' +
+                  '<td class="nowrap">' +
+                  esc(when(r.created_at)) +
+                  "</td>" +
+                  "<td>" +
+                  esc(r.club) +
+                  "<br><span style='color:var(--muted)'>" +
+                  esc(r.where) +
+                  "</span></td>" +
+                  "<td>" +
+                  esc(outcomeLabel(r.outcome)) +
+                  (r.round > 1 ? " (call " + esc(r.round) + ")" : "") +
+                  "</td>" +
+                  "<td>" +
+                  esc(r.decision_maker || "—") +
+                  (r.decision_maker_email
+                    ? "<br><span style='color:var(--muted)'>" +
+                      esc(r.decision_maker_email) +
+                      "</span>"
+                    : "") +
+                  "</td>" +
+                  "<td>" +
+                  yesno(r.wants_info) +
+                  "</td>" +
+                  "<td>" +
+                  esc(r.notes || "—") +
+                  "</td></tr>"
+                );
+              }),
+              { empty: "No calls recorded yet." },
+            ) +
+            "</div>";
+        }
 
-        listsHtml(d.lists) +
+        function renderOverview(el, d) {
+          var c = d.counters,
+            dl = d.delivery || {};
+          var waiting = Number(dl.waiting || 0);
+          var failing = Number(dl.failing || 0);
 
-        "<h2>Your recent calls</h2>" +
-        pagedTable("myrecent",
-          "<th>When</th><th>Club</th><th>Outcome</th><th>Decision maker</th><th>Wants info</th><th>Notes</th>",
-          (d.recent || []).map(function(r){
-            return '<tr class="rowlink" data-club="' + esc(r.target_id || "") + '">' +
-                   '<td class="nowrap">' + esc(when(r.created_at)) + "</td>" +
-                   "<td>" + esc(r.club) + "<br><span style='color:var(--muted)'>" + esc(r.where) + "</span></td>" +
-                   "<td>" + esc(outcomeLabel(r.outcome)) + (r.round > 1 ? " (call " + esc(r.round) + ")" : "") + "</td>" +
-                   "<td>" + esc(r.decision_maker || "—") +
-                     (r.decision_maker_email ? "<br><span style='color:var(--muted)'>" + esc(r.decision_maker_email) + "</span>" : "") + "</td>" +
-                   "<td>" + yesno(r.wants_info) + "</td>" +
-                   "<td>" + esc(r.notes || "—") + "</td></tr>";
-          }),
-          { empty: "No calls recorded yet." }) +
-      "</div>";
-  }
+          // Delivery leads, but only a genuine failure is alarming. A call saved
+          // between sweeps is simply queued, and saying otherwise trains people to
+          // ignore the banner.
+          var banner;
+          if (failing > 0) {
+            banner =
+              '<div class="banner bad"><b>' +
+              failing +
+              " call" +
+              (failing === 1 ? "" : "s") +
+              " could not be delivered yet.</b> Safely recorded in Supabase, and the sweeper keeps " +
+              "retrying — no data is lost. Details below.</div>";
+          } else if (waiting > 0) {
+            banner =
+              '<div class="banner ok">' +
+              waiting +
+              " call" +
+              (waiting === 1 ? "" : "s") +
+              " queued for the next sync. The sweeper runs every 5 minutes.</div>";
+          } else {
+            banner =
+              '<div class="banner ok">Every recorded call has reached the spreadsheet and ' +
+              "Customer.io. Nothing is outstanding.</div>";
+          }
 
-  function renderOverview(el, d){
-    var c = d.counters, dl = d.delivery || {};
-    var waiting = Number(dl.waiting || 0);
-    var failing = Number(dl.failing || 0);
+          var failingHtml = "";
+          if (d.failing && d.failing.length) {
+            failingHtml =
+              "<h2>Could not be delivered yet</h2><div class='scroll'><table><thead><tr>" +
+              "<th>Club</th><th>Recorded</th><th>Sheet tries</th><th>Sheet error</th><th>CIO tries</th><th>CIO error</th>" +
+              "</tr></thead><tbody>" +
+              d.failing
+                .map(function (f) {
+                  return (
+                    "<tr><td>" +
+                    esc(f.club) +
+                    '</td><td class="nowrap">' +
+                    esc(when(f.created_at)) +
+                    "</td>" +
+                    "<td>" +
+                    esc(f.sheet_attempts) +
+                    "</td><td>" +
+                    esc(f.sheet_error || "—") +
+                    "</td>" +
+                    "<td>" +
+                    esc(f.cio_attempts) +
+                    "</td><td>" +
+                    esc(f.cio_error || "—") +
+                    "</td></tr>"
+                  );
+                })
+                .join("") +
+              "</tbody></table></div>";
+          }
 
-    // Delivery leads, but only a genuine failure is alarming. A call saved
-    // between sweeps is simply queued, and saying otherwise trains people to
-    // ignore the banner.
-    var banner;
-    if (failing > 0) {
-      banner = '<div class="banner bad"><b>' + failing + ' call' + (failing === 1 ? "" : "s") +
-        ' could not be delivered yet.</b> Safely recorded in Supabase, and the sweeper keeps ' +
-        'retrying — no data is lost. Details below.</div>';
-    } else if (waiting > 0) {
-      banner = '<div class="banner ok">' + waiting + ' call' + (waiting === 1 ? "" : "s") +
-        ' queued for the next sync. The sweeper runs every 5 minutes.</div>';
-    } else {
-      banner = '<div class="banner ok">Every recorded call has reached the spreadsheet and ' +
-        'Customer.io. Nothing is outstanding.</div>';
-    }
+          var outcomeHtml =
+            '<h2>Where the clubs are up to</h2><div class="panel">' +
+            infoIcon(
+              "Every club counted once, at each stage it has reached. " +
+                "Attempts that reached nobody (no answer, reception, wrong number) " +
+                "do not count as a call. " +
+                c.do_not_call +
+                " club(s) are excluded as do-not-call.",
+            ) +
+            funnelChart(d.funnel || {}, c.total) +
+            "</div>";
 
-    var failingHtml = "";
-    if (d.failing && d.failing.length) {
-      failingHtml =
-        "<h2>Could not be delivered yet</h2><div class='scroll'><table><thead><tr>" +
-        "<th>Club</th><th>Recorded</th><th>Sheet tries</th><th>Sheet error</th><th>CIO tries</th><th>CIO error</th>" +
-        "</tr></thead><tbody>" +
-        d.failing.map(function(f){
-          return "<tr><td>" + esc(f.club) + '</td><td class="nowrap">' + esc(when(f.created_at)) + "</td>" +
-                 "<td>" + esc(f.sheet_attempts) + "</td><td>" + esc(f.sheet_error || "—") + "</td>" +
-                 "<td>" + esc(f.cio_attempts) + "</td><td>" + esc(f.cio_error || "—") + "</td></tr>";
-        }).join("") + "</tbody></table></div>";
-    }
-
-    var outcomeHtml =
-      '<h2>Where the clubs are up to</h2><div class="panel">' +
-        infoIcon("Every club counted once, at each stage it has reached. " +
-                 "Attempts that reached nobody (no answer, reception, wrong number) " +
-                 "do not count as a call. " + c.do_not_call + " club(s) are excluded as do-not-call.") +
-        funnelChart(d.funnel || {}, c.total) +
-      "</div>";
-
-    el.innerHTML =
-      '<div class="admin">' +
-        banner +
-
-        "<h2>Progress</h2>" +
-        '<div class="progress-split">' +
-          '<div class="cards cards-tight">' +
+          el.innerHTML =
+            '<div class="admin">' +
+            banner +
+            "<h2>Progress</h2>" +
+            '<div class="progress-split">' +
+            '<div class="cards cards-tight">' +
             card(c.total, "clubs on the list") +
             card(c.done, "called", "good") +
             card(c.pending, "still to call") +
             card(c.in_progress, "on a call now") +
             card(c.do_not_call, "do not call") +
             card(c.calls, "calls recorded") +
-          "</div>" +
-          '<div class="panel">' +
+            "</div>" +
+            '<div class="panel">' +
             '<h3 class="panel-title">Outcome of every call</h3>' +
             pieChart(d.by_outcome) +
-          "</div>" +
-        "</div>" +
+            "</div>" +
+            "</div>" +
+            outcomeHtml +
+            listsHtml(d.lists) +
+            "<h2>Callers</h2><div class='scroll'><table><thead><tr>" +
+            "<th>Name</th><th>Username</th><th>List</th><th>Calls</th><th>Left / all</th>" +
+            "<th>On a call</th><th>Password set</th><th>Last login</th>" +
+            "</tr></thead><tbody>" +
+            (d.callers.length
+              ? d.callers
+                  .map(function (x) {
+                    return (
+                      "<tr><td>" +
+                      esc(x.name) +
+                      (x.is_admin ? ' <span class="pill">admin</span>' : "") +
+                      "</td>" +
+                      "<td>" +
+                      esc(x.username) +
+                      "</td>" +
+                      "<td>" +
+                      (x.call_group
+                        ? esc(x.call_group) + " of 5"
+                        : '<span class="pill">any</span>') +
+                      "</td>" +
+                      "<td>" +
+                      esc(x.calls) +
+                      "</td>" +
+                      '<td class="nowrap">' +
+                      esc(x.group_remaining) +
+                      " / " +
+                      esc(x.group_total) +
+                      "</td>" +
+                      "<td>" +
+                      esc(x.assigned_now) +
+                      "</td>" +
+                      "<td>" +
+                      (x.password_set
+                        ? '<span class="pill ok">yes</span>'
+                        : '<span class="pill bad">setup link not used</span>') +
+                      "</td>" +
+                      '<td class="nowrap">' +
+                      esc(when(x.last_login_at)) +
+                      "</td></tr>"
+                    );
+                  })
+                  .join("")
+              : '<tr><td colspan="8">No callers set up yet.</td></tr>') +
+            "</tbody></table></div>" +
+            "<h2>Recent calls</h2>" +
+            pagedTable(
+              "recent",
+              "<th>When</th><th>Club</th><th>Caller</th><th>Outcome</th><th>Decision maker</th>" +
+                "<th>Wants info</th><th>In sheet</th><th>Notes</th>",
+              (d.recent || []).map(function (r) {
+                return (
+                  '<tr class="rowlink" data-club="' +
+                  esc(r.target_id || "") +
+                  '">' +
+                  '<td class="nowrap">' +
+                  esc(when(r.created_at)) +
+                  "</td>" +
+                  "<td>" +
+                  esc(r.club) +
+                  "<br><span style='color:var(--muted)'>" +
+                  esc(r.where) +
+                  "</span></td>" +
+                  "<td>" +
+                  esc(r.caller) +
+                  "</td>" +
+                  "<td>" +
+                  esc((r.outcome || "").replace(/_/g, " ")) +
+                  (r.round > 1 ? " (call " + esc(r.round) + ")" : "") +
+                  "</td>" +
+                  "<td>" +
+                  esc(r.decision_maker || "—") +
+                  (r.decision_maker_role
+                    ? "<br><span style='color:var(--muted)'>" +
+                      esc(r.decision_maker_role) +
+                      "</span>"
+                    : "") +
+                  (r.decision_maker_email
+                    ? "<br>" + esc(r.decision_maker_email)
+                    : "") +
+                  "</td>" +
+                  "<td>" +
+                  yesno(r.wants_info) +
+                  "</td>" +
+                  "<td>" +
+                  (r.sheet_synced
+                    ? '<span class="pill ok">yes</span>'
+                    : '<span class="pill bad">pending</span>') +
+                  "</td>" +
+                  "<td>" +
+                  esc(r.notes || "—") +
+                  "</td></tr>"
+                );
+              }),
+              { empty: "No calls recorded yet." },
+            ) +
+            failingHtml +
+            "<h2>Do not call &mdash; already came to us</h2>" +
+            pagedTable(
+              "dnc",
+              "<th>Club</th><th>Where</th><th>Why</th>",
+              (d.do_not_call || []).map(function (x) {
+                return (
+                  "<tr><td>" +
+                  esc(x.entity_name) +
+                  "</td><td>" +
+                  esc([x.suburb, x.state].filter(Boolean).join(" ")) +
+                  "</td><td>" +
+                  esc(x.do_not_call_reason || "—") +
+                  "</td></tr>"
+                );
+              }),
+              { empty: "Nothing flagged yet." },
+            ) +
+            "</div>";
+        }
 
-        outcomeHtml +
+        function setStats(s) {
+          if (!s) return;
+          document.getElementById("c-mine").textContent = s.my_calls;
+          document.getElementById("c-remaining").textContent = s.remaining;
+          document.getElementById("c-done").textContent = s.done;
+          document.getElementById("c-dnc").textContent = s.do_not_call;
+        }
 
-        listsHtml(d.lists) +
+        // On a desktop there is nothing useful behind tel: — clicking the number
+        // copies it instead, for pasting into a softphone. Touch devices still
+        // place the call.
+        var TOUCH_CALLING = !!(
+          window.matchMedia && window.matchMedia("(pointer: coarse)").matches
+        );
+        document.addEventListener("click", function (e) {
+          var a =
+            e.target.closest && e.target.closest("a.phone-cta, a.drawer-phone");
+          if (!a || TOUCH_CALLING) return;
+          e.preventDefault();
+          var num = (a.textContent || "").replace(/Copied.*/, "").trim();
+          function done() {
+            a.setAttribute("data-restore", num);
+            a.textContent = "Copied ✓";
+            setTimeout(function () {
+              if (a.getAttribute("data-restore"))
+                a.textContent = a.getAttribute("data-restore");
+            }, 1400);
+          }
+          if (navigator.clipboard && navigator.clipboard.writeText) {
+            navigator.clipboard.writeText(num).then(done, done);
+          } else {
+            try {
+              var ta = document.createElement("textarea");
+              ta.value = num;
+              document.body.appendChild(ta);
+              ta.select();
+              document.execCommand("copy");
+              document.body.removeChild(ta);
+              done();
+            } catch (err) {}
+          }
+        });
 
-        "<h2>Callers</h2><div class='scroll'><table><thead><tr>" +
-          "<th>Name</th><th>Username</th><th>List</th><th>Calls</th><th>Left / all</th>" +
-          "<th>On a call</th><th>Password set</th><th>Last login</th>" +
-        "</tr></thead><tbody>" +
-        (d.callers.length
-          ? d.callers.map(function(x){
-              return "<tr><td>" + esc(x.name) + (x.is_admin ? ' <span class="pill">admin</span>' : "") + "</td>" +
-                     "<td>" + esc(x.username) + "</td>" +
-                     "<td>" + (x.call_group ? esc(x.call_group) + " of 5"
-                                            : '<span class="pill">any</span>') + "</td>" +
-                     "<td>" + esc(x.calls) + "</td>" +
-                     '<td class="nowrap">' + esc(x.group_remaining) + " / " + esc(x.group_total) + "</td>" +
-                     "<td>" + esc(x.assigned_now) + "</td>" +
-                     "<td>" + (x.password_set ? '<span class="pill ok">yes</span>'
-                                              : '<span class="pill bad">setup link not used</span>') + "</td>" +
-                     '<td class="nowrap">' + esc(when(x.last_login_at)) + "</td></tr>";
-            }).join("")
-          : '<tr><td colspan="8">No callers set up yet.</td></tr>') +
-        "</tbody></table></div>" +
+        // ------------------------------------------------------------ worksheet
+        // Lives in the topbar's top-right corner: which calling round the
+        // worksheet serves from.
+        function renderRoundSwitch() {
+          document.getElementById("round-wrap").innerHTML =
+            '<div class="tabs">' +
+            '<button type="button" class="tab round-btn' +
+            (roundMode === 1 ? " on" : "") +
+            '" data-round="1" title="First round">1</button>' +
+            '<button type="button" class="tab round-btn' +
+            (roundMode === 2 ? " on" : "") +
+            '" data-round="2" title="Second round">2</button>' +
+            "</div>";
+        }
 
-        "<h2>Recent calls</h2>" +
-        pagedTable("recent",
-          "<th>When</th><th>Club</th><th>Caller</th><th>Outcome</th><th>Decision maker</th>" +
-          "<th>Wants info</th><th>In sheet</th><th>Notes</th>",
-          (d.recent || []).map(function(r){
-            return '<tr class="rowlink" data-club="' + esc(r.target_id || "") + '">' +
-                   '<td class="nowrap">' + esc(when(r.created_at)) + "</td>" +
-                   "<td>" + esc(r.club) + "<br><span style='color:var(--muted)'>" + esc(r.where) + "</span></td>" +
-                   "<td>" + esc(r.caller) + "</td>" +
-                   "<td>" + esc((r.outcome||"").replace(/_/g," ")) + (r.round>1 ? " (call "+esc(r.round)+")" : "") + "</td>" +
-                   "<td>" + esc(r.decision_maker || "—") +
-                     (r.decision_maker_role ? "<br><span style='color:var(--muted)'>"+esc(r.decision_maker_role)+"</span>" : "") +
-                     (r.decision_maker_email ? "<br>"+esc(r.decision_maker_email) : "") + "</td>" +
-                   "<td>" + yesno(r.wants_info) + "</td>" +
-                   "<td>" + (r.sheet_synced ? '<span class="pill ok">yes</span>' : '<span class="pill bad">pending</span>') + "</td>" +
-                   "<td>" + esc(r.notes || "—") + "</td></tr>";
-          }),
-          { empty: "No calls recorded yet." }) +
+        function isFormDirty() {
+          return [
+            "f-dm",
+            "f-role",
+            "f-email",
+            "f-phone",
+            "f-grants",
+            "f-others",
+            "f-board",
+            "f-notes",
+            "f-a-meeting",
+            "f-a-level",
+          ].some(function (id) {
+            var n = document.getElementById(id);
+            return n && n.value.trim();
+          });
+        }
 
-        failingHtml +
+        // Switching rounds hands the current club straight back to the pool (no
+        // penalty) and claims from the other queue.
+        document.addEventListener("click", function (e) {
+          var b = e.target.closest && e.target.closest(".round-btn");
+          if (!b) return;
+          var m = parseInt(b.getAttribute("data-round"), 10) === 2 ? 2 : 1;
+          if (m === roundMode) return;
+          if (
+            current &&
+            isFormDirty() &&
+            !confirm(
+              "You have unsaved answers on this call. Switch rounds and lose them?",
+            )
+          )
+            return;
+          roundMode = m;
+          try {
+            localStorage.setItem("d1942_round", String(m));
+          } catch (err) {}
+          renderRoundSwitch();
+          switchTab("work"); // the switch drives the worksheet, so show it
+          var prev = current;
+          current = null;
+          if (prev)
+            api("unclaim", { target_id: prev.id }).catch(function () {});
+          loadNext();
+        });
 
-        "<h2>Do not call &mdash; already came to us</h2>" +
-        pagedTable("dnc",
-          "<th>Club</th><th>Where</th><th>Why</th>",
-          (d.do_not_call || []).map(function(x){
-            return "<tr><td>" + esc(x.entity_name) + "</td><td>" +
-                   esc([x.suburb, x.state].filter(Boolean).join(" ")) + "</td><td>" +
-                   esc(x.do_not_call_reason || "—") + "</td></tr>";
-          }),
-          { empty: "Nothing flagged yet." }) +
-      "</div>";
-  }
+        function loadNext() {
+          document.getElementById("work-body").innerHTML =
+            '<div class="empty"><p>Finding your next club...</p></div>';
+          api("next", { round: roundMode })
+            .then(function (r) {
+              setStats(r.stats);
+              current = r.target;
+              if (!r.target) {
+                document.getElementById("work-body").innerHTML =
+                  '<div class="empty"><h2>' +
+                  (roundMode === 2
+                    ? "No callbacks waiting"
+                    : "Nothing left to call") +
+                  "</h2>" +
+                  "<p>" +
+                  esc(
+                    r.message || "Every club in this queue has been called.",
+                  ) +
+                  "</p>" +
+                  '<p style="color:var(--muted);font-size:14px">Use the round switch in the top bar to work the other queue.</p></div>';
+                return;
+              }
+              render(r.target, r.history || [], r.round || roundMode);
+            })
+            .catch(function (e) {
+              document.getElementById("work-body").innerHTML =
+                '<div class="empty"><h2>Something went wrong</h2><p>' +
+                esc(e.message) +
+                "</p></div>";
+            });
+        }
 
-  function setStats(s){
-    if (!s) return;
-    document.getElementById("c-mine").textContent = s.my_calls;
-    document.getElementById("c-remaining").textContent = s.remaining;
-    document.getElementById("c-done").textContent = s.done;
-    document.getElementById("c-dnc").textContent = s.do_not_call;
-  }
+        // A div wrapping dt/dd inside a dl is valid HTML and is what lets each fact
+        // be a grid cell with its label stacked above the value.
+        function fact(label, value, cls) {
+          if (!value && value !== 0) return "";
+          return (
+            '<div class="fact ' +
+            (cls || "") +
+            '"><dt>' +
+            esc(label) +
+            "</dt><dd>" +
+            esc(value) +
+            "</dd></div>"
+          );
+        }
 
-  // On a desktop there is nothing useful behind tel: — clicking the number
-  // copies it instead, for pasting into a softphone. Touch devices still
-  // place the call.
-  var TOUCH_CALLING = !!(window.matchMedia && window.matchMedia("(pointer: coarse)").matches);
-  document.addEventListener("click", function(e){
-    var a = e.target.closest && e.target.closest("a.phone-cta, a.drawer-phone");
-    if (!a || TOUCH_CALLING) return;
-    e.preventDefault();
-    var num = (a.textContent || "").replace(/Copied.*/, "").trim();
-    function done(){
-      a.setAttribute("data-restore", num);
-      a.textContent = "Copied ✓";
-      setTimeout(function(){ if (a.getAttribute("data-restore")) a.textContent = a.getAttribute("data-restore"); }, 1400);
-    }
-    if (navigator.clipboard && navigator.clipboard.writeText) {
-      navigator.clipboard.writeText(num).then(done, done);
-    } else {
-      try {
-        var ta = document.createElement("textarea");
-        ta.value = num; document.body.appendChild(ta); ta.select();
-        document.execCommand("copy"); document.body.removeChild(ta); done();
-      } catch(err){}
-    }
-  });
+        function money(v) {
+          return v ? String(v) : "";
+        }
 
-  // ------------------------------------------------------------ worksheet
-  // Lives in the topbar's top-right corner: which calling round the
-  // worksheet serves from.
-  function renderRoundSwitch(){
-    document.getElementById("round-wrap").innerHTML =
-      '<div class="tabs">' +
-      '<button type="button" class="tab round-btn' + (roundMode === 1 ? " on" : "") + '" data-round="1" title="First round">1</button>' +
-      '<button type="button" class="tab round-btn' + (roundMode === 2 ? " on" : "") + '" data-round="2" title="Second round">2</button>' +
-      "</div>";
-  }
+        function render(t, history, round) {
+          var phone = (t.primary_phone || "").trim();
+          var telHref = phone ? "tel:" + phone.replace(/[^0-9+]/g, "") : "";
+          var websites = (t.websites || "").split(";")[0].trim();
+          // Shown without the scheme or www, but the link still points at the full URL.
+          var webLabel = websites
+            .replace(/^https?:\/\//i, "")
+            .replace(/^www\./i, "")
+            .replace(/\/$/, "");
+          var place =
+            t.full_address ||
+            [t.suburb, t.state, t.postcode].filter(Boolean).join(" ");
+          var distance = t.distance_km ? t.distance_km + " km from Sydney" : "";
 
-  function isFormDirty(){
-    return ["f-dm","f-role","f-email","f-phone","f-grants","f-others","f-board","f-notes"]
-      .some(function(id){ var n = document.getElementById(id); return n && n.value.trim(); });
-  }
+          var historyHtml = "";
+          if (history.length) {
+            historyHtml =
+              '<div class="history"><h4>Previous contact</h4><ul>' +
+              history
+                .map(function (h) {
+                  var when = h.created_at
+                    ? new Date(h.created_at).toLocaleDateString("en-AU")
+                    : "";
+                  var who = (h.d1942_callers && h.d1942_callers.name) || "";
+                  return (
+                    "<li><b>" +
+                    esc(when) +
+                    "</b> " +
+                    esc(who) +
+                    " &mdash; " +
+                    esc(h.outcome || "") +
+                    (h.decision_maker_name
+                      ? " (spoke to " + esc(h.decision_maker_name) + ")"
+                      : "") +
+                    (h.notes ? "<br>" + esc(h.notes) : "") +
+                    "</li>"
+                  );
+                })
+                .join("") +
+              "</ul></div>";
+          }
 
-  // Switching rounds hands the current club straight back to the pool (no
-  // penalty) and claims from the other queue.
-  document.addEventListener("click", function(e){
-    var b = e.target.closest && e.target.closest(".round-btn");
-    if (!b) return;
-    var m = parseInt(b.getAttribute("data-round"), 10) === 2 ? 2 : 1;
-    if (m === roundMode) return;
-    if (current && isFormDirty() &&
-        !confirm("You have unsaved answers on this call. Switch rounds and lose them?")) return;
-    roundMode = m;
-    try { localStorage.setItem("d1942_round", String(m)); } catch(err){}
-    renderRoundSwitch();
-    switchTab("work"); // the switch drives the worksheet, so show it
-    var prev = current;
-    current = null;
-    if (prev) api("unclaim", { target_id: prev.id }).catch(function(){});
-    loadNext();
-  });
-
-  function loadNext(){
-    document.getElementById("work-body").innerHTML =
-      '<div class="empty"><p>Finding your next club...</p></div>';
-    api("next", { round: roundMode }).then(function(r){
-      setStats(r.stats);
-      current = r.target;
-      if (!r.target) {
-        document.getElementById("work-body").innerHTML =
-          '<div class="empty"><h2>' + (roundMode === 2 ? "No callbacks waiting" : "Nothing left to call") + "</h2>" +
-          "<p>" + esc(r.message || "Every club in this queue has been called.") + "</p>" +
-          '<p style="color:var(--muted);font-size:14px">Use the round switch in the top bar to work the other queue.</p></div>';
-        return;
-      }
-      render(r.target, r.history || [], r.round || roundMode);
-    }).catch(function(e){
-      document.getElementById("work-body").innerHTML =
-        '<div class="empty"><h2>Something went wrong</h2><p>' + esc(e.message) + '</p></div>';
-    });
-  }
-
-  // A div wrapping dt/dd inside a dl is valid HTML and is what lets each fact
-  // be a grid cell with its label stacked above the value.
-  function fact(label, value, cls){
-    if (!value && value !== 0) return "";
-    return '<div class="fact ' + (cls || "") + '"><dt>' + esc(label) + "</dt><dd>" + esc(value) + "</dd></div>";
-  }
-
-  function money(v){ return v ? String(v) : ""; }
-
-  function render(t, history, round){
-    var phone = (t.primary_phone || "").trim();
-    var telHref = phone ? "tel:" + phone.replace(/[^0-9+]/g, "") : "";
-    var firstName = (t.primary_person || "").split(" ")[0] || "";
-
-    var websites = (t.websites || "").split(";")[0].trim();
-    // Shown without the scheme or www, but the link still points at the full URL.
-    var webLabel = websites.replace(/^https?:\/\//i, "").replace(/^www\./i, "").replace(/\/$/, "");
-    var place = t.full_address || [t.suburb, t.state, t.postcode].filter(Boolean).join(" ");
-    var distance = t.distance_km ? t.distance_km + " km from Sydney" : "";
-
-    var historyHtml = "";
-    if (history.length) {
-      historyHtml =
-        '<div class="history"><h4>Previous contact</h4><ul>' +
-        history.map(function(h){
-          var when = h.created_at ? new Date(h.created_at).toLocaleDateString("en-AU") : "";
-          var who = (h.d1942_callers && h.d1942_callers.name) || "";
-          return "<li><b>" + esc(when) + "</b> " + esc(who) + " &mdash; " + esc(h.outcome || "") +
-                 (h.decision_maker_name ? " (spoke to " + esc(h.decision_maker_name) + ")" : "") +
-                 (h.notes ? "<br>" + esc(h.notes) : "") + "</li>";
-        }).join("") +
-        "</ul></div>";
-    }
-
-    var html =
-    '<div class="work">' +
-
-      // -------------------------------------------------- left: who + script
-      '<div class="pane pane-left">' +
-        '<div class="club-head">' +
-          '<div class="club-id">' +
-            '<h2 class="club-name">' + esc(t.entity_name) +
-              (round >= 2 ? ' <span class="pill hot">call back</span>' : "") + "</h2>" +
-            '<p class="club-sub">' + esc(place) + "</p>" +
-            (distance ? '<p class="club-dist">' + esc(distance) + "</p>" : "") +
-          "</div>" +
-          (phone
-            ? '<a class="phone-cta" href="' + esc(telHref) + '">' + esc(phone) + "</a>"
-            : '<span class="phone-cta none">No phone number on file &mdash; try the website</span>') +
-        "</div>" +
-
-        '<dl class="facts">' +
-          fact("Contact on file", t.primary_person) +
-          fact("Email on file", t.primary_email) +
-          (websites
-            ? '<div class="fact"><dt>Website</dt><dd><a href="' + esc(websites) +
-              '" target="_blank" rel="noopener">' + esc(webLabel) + "</a></dd></div>"
-            : '<div class="fact"></div>') +
-          fact("Gaming machines", t.egm_count) +
-          fact("Gaming revenue", money(t.gaming_revenue)) +
-          fact("State profit rank", t.gaming_rank) +
-        "</dl>" +
-
-        // The script is deliberately plain HTML you can edit in this file.
-        '<div class="script">' +
-          "<h2>Call script</h2>" +
-
-          '<div class="step"><b>1. Opening</b>' +
-            "Hi, it’s <em>" + esc((meCaller && meCaller.name) || "[your name]") + "</em> calling from the Darwin 1942 documentary team. " +
-            'Could I speak with ' + (firstName ? "<em>" + esc(firstName) + "</em>, or " : "") +
-            'whoever looks after community partnerships or sponsorship at ' + esc(t.entity_name) + "?</div>" +
-
-          '<div class="step"><b>2. Why we are calling</b>' +
-            'We’re making <em>Darwin 1942 &mdash; The Forgotten War That Reshaped Australia</em>, a commemorative ' +
-            'documentary about the bombing of Darwin and the Veterans who defended it. ' +
-            'We’re partnering with RSL clubs and sub branches around the country to bring it to their communities.</div>' +
-
-          '<div class="step"><b>3. What it means for the club</b>' +
-            'For clubs that come on board it’s unlimited community screenings for up to 10 years, ' +
-            'a digital watch-at-home gift for members, copies for local schools, and a member ' +
-            'engagement and growth campaign built around the film. ' +
-            'It’s designed to honour Veterans and bring people back through the doors.</div>' +
-
-          '<div class="step"><b>4. Qualify &mdash; fill the form as you go</b>' +
-            '<span class="script-do">' +
-              "<span>Who would be the right person to make a decision like this?</span>" +
-              "<span>Does the club run ClubGRANTS or a community funding round?</span>" +
-              "<span>Who else would be involved in a decision?</span>" +
-              "<span>When does the committee next meet?</span>" +
-            "</span></div>" +
-
-          '<div class="step"><b>5. Close</b>' +
-            "Can I email you the partnership presentation so you have it in front of you before " +
-            "that meeting?" +
-            '<span class="script-do"><span>Tick “they want to receive more information” and take their email.</span></span></div>' +
-
-          '<div class="step"><b>If they push back on money</b>' +
-            "Completely understand — nothing has to be decided today. Can I keep you posted as " +
-            "the film progresses?" +
-            '<span class="script-do"><span>Choose the “not ready to commit financially” outcome.</span></span></div>' +
-        "</div>" +
-
-        historyHtml +
-      "</div>" +
-
-      // ------------------------------------------------------- right: form
-      '<div class="pane pane-form">' +
-        '<div class="form-head"><h2>Record the call</h2></div>' +
-        '<form id="call-form">' +
-          '<div class="field-row">' +
-            '<div class="field"><label for="f-dm">Who is the appropriate decision maker?</label>' +
-              '<input type="text" id="f-dm" autocomplete="off"></div>' +
-            '<div class="field"><label for="f-role">What is their role?</label>' +
-              '<input type="text" id="f-role" autocomplete="off"></div>' +
-          "</div>" +
-          '<div class="field-row">' +
-            '<div class="field"><label for="f-email">Their direct email</label>' +
-              '<input type="email" id="f-email" autocomplete="off"></div>' +
-            '<div class="field"><label for="f-phone">Their direct phone number</label>' +
-              '<input type="tel" id="f-phone" autocomplete="off"></div>' +
-          "</div>" +
-          '<div class="field"><label for="f-grants">Does the club participate in ClubGRANTS / community funding?</label>' +
-            '<input type="text" id="f-grants" autocomplete="off" placeholder="Yes / No / details"></div>' +
-          '<div class="field-row">' +
-            '<div class="field"><label for="f-others">Who else is involved in the decision?</label>' +
-              '<input type="text" id="f-others" autocomplete="off"></div>' +
-            '<div class="field"><label for="f-board">When does the relevant committee meet?</label>' +
-              '<input type="text" id="f-board" autocomplete="off" placeholder="e.g. third Tuesday monthly"></div>' +
-          "</div>" +
-
-          '<div class="field checkbox">' +
-            '<input type="checkbox" id="f-wants">' +
-            '<label for="f-wants">They want to receive more information &mdash; add them to Customer.io and send the partnership pack. Needs their email address above.</label>' +
-          "</div>" +
-
-          '<div class="field"><label for="f-outcome">Outcome <span class="req">*</span></label>' +
-            '<select id="f-outcome" required>' +
+          // First calls keep the flat outcome list. Second calls are recorded as
+          // one of three paths (plus "no conversation"), which map onto the same
+          // outcomes underneath so nothing downstream changes.
+          var outcomeHtml;
+          if (round >= 2) {
+            outcomeHtml =
+              '<div class="field"><label>Where did the call land? <span class="req">*</span></label>' +
+              '<div class="paths">' +
+              '<label class="path"><input type="radio" name="f-path" value="a">' +
+              "<b>Path A &mdash; ready to explore</b>" +
+              "<span>Interested and prepared to discuss participation.</span></label>" +
+              '<label class="path"><input type="radio" name="f-path" value="b">' +
+              "<b>Path B &mdash; interested, but not ready</b>" +
+              "<span>Likes the concept but needs more information, internal discussion, or the timing is unclear.</span></label>" +
+              '<label class="path"><input type="radio" name="f-path" value="c">' +
+              "<b>Path C &mdash; not interested</b>" +
+              "<span>Work out why before you hang up.</span></label>" +
+              '<label class="path"><input type="radio" name="f-path" value="x">' +
+              "<b>No conversation</b>" +
+              "<span>No answer, blocked at reception, or bad contact details.</span></label>" +
+              "</div></div>" +
+              '<div class="path-extra" id="path-a" hidden>' +
+              '<div class="field"><label for="f-a-next">Next step <span class="req">*</span></label>' +
+              '<select id="f-a-next">' +
+              '<option value="callback_scheduled">Meeting booked (15&ndash;20 minutes)</option>' +
+              '<option value="referred_to_board">Going to the board / committee</option>' +
+              '<option value="interested_followup">Needs another call from us first</option>' +
+              '<option value="committed">Committed &mdash; agreed to a package</option>' +
+              "</select></div>" +
+              '<div class="field-row">' +
+              '<div class="field"><label for="f-a-meeting">Meeting time agreed (if booked)</label>' +
+              '<input type="text" id="f-a-meeting" autocomplete="off" placeholder="e.g. Tue 10 Sep, 2:30pm"></div>' +
+              '<div class="field"><label for="f-a-level">Partnership level discussed</label>' +
+              '<input type="text" id="f-a-level" autocomplete="off" placeholder="e.g. ClubGRANTS, sponsorship, screening host"></div>' +
+              "</div>" +
+              '<p class="path-hint">While you have them: capture the other decision makers, the ClubGRANTS / board process and the committee timing in the fields above. Booking runs off Richard and Rod&rsquo;s availability &mdash; until the booking system exists, agree a time on the call and record it here.</p>' +
+              "</div>" +
+              '<div class="path-extra" id="path-b" hidden>' +
+              '<p class="path-hint">They continue on the nurture journey. If you have their email, tick &ldquo;they want to receive more information&rdquo; above so the updates keep flowing.</p>' +
+              "</div>" +
+              '<div class="path-extra" id="path-c" hidden>' +
+              '<div class="field"><label for="f-c-reason">Why not? <span class="req">*</span></label>' +
+              '<select id="f-c-reason">' +
+              '<option value="">Choose a reason...</option>' +
+              '<option value="Wrong timing">Wrong timing</option>' +
+              '<option value="Wrong person">Wrong person</option>' +
+              '<option value="Funding unavailable">Funding unavailable</option>' +
+              '<option value="Grant cycle closed">Grant cycle closed</option>' +
+              '<option value="Genuinely not aligned">Genuinely not aligned</option>' +
+              "</select></div>" +
+              "</div>" +
+              '<div class="path-extra" id="path-x" hidden>' +
+              '<div class="field"><label for="f-x-outcome">What happened? <span class="req">*</span></label>' +
+              '<select id="f-x-outcome">' +
+              '<option value="no_answer">No answer / voicemail</option>' +
+              '<option value="gatekeeper">Could not get past reception</option>' +
+              '<option value="wrong_number">Wrong number / bad contact details</option>' +
+              "</select>" +
+              '<p style="color:var(--muted);font-size:13px;margin:6px 0 0;">These put the club back in the callback pool to try again later.</p>' +
+              "</div>" +
+              "</div>";
+          } else {
+            outcomeHtml =
+              '<div class="field"><label for="f-outcome">Outcome <span class="req">*</span></label>' +
+              '<select id="f-outcome" required>' +
               '<option value="">Choose an outcome...</option>' +
               '<option value="interested_followup">Seems interested &mdash; needs another call</option>' +
               '<option value="referred_to_board">Going to the board / committee</option>' +
@@ -1275,243 +2616,546 @@
               '<option value="no_answer">No answer / voicemail</option>' +
               '<option value="gatekeeper">Could not get past reception</option>' +
               '<option value="wrong_number">Wrong number / bad contact details</option>' +
-            "</select>" +
-            '<p style="color:var(--muted);font-size:13px;margin:6px 0 0;">No answer, reception and wrong number put the club back in the pool to try again later. Everything else marks it called.</p>' +
-          "</div>" +
+              "</select>" +
+              '<p style="color:var(--muted);font-size:13px;margin:6px 0 0;">No answer, reception and wrong number put the club back in the pool to try again later. Everything else marks it called.</p>' +
+              "</div>";
+          }
 
-          '<div class="field"><label for="f-notes">Any other notes on how the call went</label>' +
+          var html =
+            '<div class="work">' +
+            // -------------------------------------------------- left: who + script
+            '<div class="pane pane-left">' +
+            '<div class="club-head">' +
+            '<div class="club-id">' +
+            '<h2 class="club-name">' +
+            esc(t.entity_name) +
+            (round >= 2 ? ' <span class="pill hot">call back</span>' : "") +
+            "</h2>" +
+            '<p class="club-sub">' +
+            esc(place) +
+            "</p>" +
+            (distance ? '<p class="club-dist">' + esc(distance) + "</p>" : "") +
+            "</div>" +
+            (phone
+              ? '<a class="phone-cta" href="' +
+                esc(telHref) +
+                '">' +
+                esc(phone) +
+                "</a>"
+              : '<span class="phone-cta none">No phone number on file &mdash; try the website</span>') +
+            "</div>" +
+            '<dl class="facts">' +
+            fact("Contact on file", t.primary_person) +
+            fact("Email on file", t.primary_email) +
+            (websites
+              ? '<div class="fact"><dt>Website</dt><dd><a href="' +
+                esc(websites) +
+                '" target="_blank" rel="noopener">' +
+                esc(webLabel) +
+                "</a></dd></div>"
+              : '<div class="fact"></div>') +
+            fact("Gaming machines", t.egm_count) +
+            fact("Gaming revenue", money(t.gaming_revenue)) +
+            fact("State profit rank", t.gaming_rank) +
+            "</dl>" +
+            // The script is deliberately plain HTML you can edit in this file.
+            '<div class="script">' +
+            "<h2>Call script</h2>" +
+            '<div class="step"><b>1. Opening</b>' +
+            "Hi, my name is <em>" +
+            esc((meCaller && meCaller.name) || "[your name]") +
+            "</em> calling from Heritage Films. We’re working alongside Australian Television " +
+            "and Media Group on a feature commemorative documentary called <em>Darwin 1942</em>, " +
+            "which honours the veterans who defended Australia during the bombing of Darwin. " +
+            "We’re beginning conversations with RSL Clubs and Sub-Branches around Australia, " +
+            "and I was wondering if you could point me towards the person who oversees " +
+            "community grants, sponsorships or special community initiatives?</div>" +
+            '<div class="step"><b>2. Why we are calling</b>' +
+            "Certainly. It’s a national documentary leading into the 85th anniversary of the " +
+            "Bombing of Darwin in 2027. " +
+            "The project is being developed with military historians and RSL partners and includes " +
+            "community screenings, education resources and veteran storytelling. " +
+            "We’re simply trying to speak with the right person before sending some information through.</div>" +
+            '<div class="step"><b>3. What it means for the club</b>' +
+            "We’re inviting selected RSL Clubs to explore becoming part of a national legacy project. " +
+            "Depending on each club, that could involve community grant funding, sponsorship, " +
+            "hosting screenings or simply participating locally. " +
+            "At this stage, we’re simply looking for the right person to introduce the project to.</div>" +
+            '<div class="step"><b>4. Qualify &mdash; fill the form as you go</b>' +
+            '<span class="script-do">' +
+            "<span>Who would be the right person to make a decision like this?</span>" +
+            "<span>Does the club run ClubGRANTS or a community funding round?</span>" +
+            "<span>Who else would be involved in a decision?</span>" +
+            "<span>When does the committee next meet?</span>" +
+            "</span></div>" +
+            '<div class="step"><b>5. Close</b>' +
+            "Can I email you the partnership presentation so you have it in front of you before " +
+            "that meeting?" +
+            '<span class="script-do"><span>Tick “they want to receive more information” and take their email.</span></span></div>' +
+            '<div class="step"><b>If they push back on money</b>' +
+            "Completely understand — nothing has to be decided today. Can I keep you posted as " +
+            "the film progresses?" +
+            '<span class="script-do"><span>Choose the “not ready to commit financially” outcome.</span></span></div>' +
+            "</div>" +
+            historyHtml +
+            "</div>" +
+            // ------------------------------------------------------- right: form
+            '<div class="pane pane-form">' +
+            '<div class="form-head"><h2>Record the call</h2></div>' +
+            '<form id="call-form">' +
+            '<div class="field-row">' +
+            '<div class="field"><label for="f-dm">Who is the appropriate decision maker?</label>' +
+            '<input type="text" id="f-dm" autocomplete="off"></div>' +
+            '<div class="field"><label for="f-role">What is their role?</label>' +
+            '<input type="text" id="f-role" autocomplete="off"></div>' +
+            "</div>" +
+            '<div class="field-row">' +
+            '<div class="field"><label for="f-email">Their direct email</label>' +
+            '<input type="email" id="f-email" autocomplete="off"></div>' +
+            '<div class="field"><label for="f-phone">Their direct phone number</label>' +
+            '<input type="tel" id="f-phone" autocomplete="off"></div>' +
+            "</div>" +
+            '<div class="field"><label for="f-grants">Does the club participate in ClubGRANTS / community funding?</label>' +
+            '<input type="text" id="f-grants" autocomplete="off" placeholder="Yes / No / details"></div>' +
+            '<div class="field-row">' +
+            '<div class="field"><label for="f-others">Who else is involved in the decision?</label>' +
+            '<input type="text" id="f-others" autocomplete="off"></div>' +
+            '<div class="field"><label for="f-board">When does the relevant committee meet?</label>' +
+            '<input type="text" id="f-board" autocomplete="off" placeholder="e.g. third Tuesday monthly"></div>' +
+            "</div>" +
+            '<div class="field checkbox">' +
+            '<input type="checkbox" id="f-wants">' +
+            '<label for="f-wants">They want to receive more information &mdash; add them to Customer.io and send the partnership pack. Needs their email address above.</label>' +
+            "</div>" +
+            outcomeHtml +
+            '<div class="field"><label for="f-notes">Any other notes on how the call went</label>' +
             '<textarea id="f-notes" rows="4"></textarea></div>' +
-
-          '<div class="actions">' +
+            '<div class="actions">' +
             '<button type="submit" class="btn-primary" id="save-btn">Done &mdash; save and next</button>' +
             '<button type="button" class="btn-ghost" id="skip-btn">Skip for now</button>' +
-          "</div>" +
-          '<div class="msg" id="save-msg"></div>' +
-        "</form>" +
-      "</div>" +
-    "</div>";
+            "</div>" +
+            '<div class="msg" id="save-msg"></div>' +
+            "</form>" +
+            "</div>" +
+            "</div>";
 
-    document.getElementById("work-body").innerHTML = html;
+          document.getElementById("work-body").innerHTML = html;
+          formRound = round;
 
-    document.getElementById("call-form").addEventListener("submit", onSave);
-    document.getElementById("skip-btn").addEventListener("click", function(){
-      if (!current) return;
-      var b = this; b.disabled = true;
-      api("skip", { target_id: current.id }).then(loadNext).catch(function(e){
-        msg("save-msg", e.message, "error"); b.disabled = false;
-      });
-    });
-  }
+          if (round >= 2) {
+            document
+              .querySelectorAll('#call-form input[name="f-path"]')
+              .forEach(function (radio) {
+                radio.addEventListener("change", function () {
+                  ["a", "b", "c", "x"].forEach(function (p) {
+                    document.getElementById("path-" + p).hidden =
+                      radio.value !== p;
+                  });
+                });
+              });
+          }
 
-  function onSave(e){
-    e.preventDefault();
-    if (!current) return;
-    clearMsg("save-msg");
+          document
+            .getElementById("call-form")
+            .addEventListener("submit", onSave);
+          document
+            .getElementById("skip-btn")
+            .addEventListener("click", function () {
+              if (!current) return;
+              var b = this;
+              b.disabled = true;
+              api("skip", { target_id: current.id })
+                .then(loadNext)
+                .catch(function (e) {
+                  msg("save-msg", e.message, "error");
+                  b.disabled = false;
+                });
+            });
+        }
 
-    var wants = document.getElementById("f-wants").checked;
-    var email = document.getElementById("f-email").value.trim();
-    if (wants && !email) {
-      msg("save-msg", "To send more information you need their email address.", "error");
-      document.getElementById("f-email").focus();
-      return;
-    }
+        function onSave(e) {
+          e.preventDefault();
+          if (!current) return;
+          clearMsg("save-msg");
 
-    var btn = document.getElementById("save-btn");
-    btn.disabled = true; btn.textContent = "Saving...";
+          var wants = document.getElementById("f-wants").checked;
+          var email = document.getElementById("f-email").value.trim();
+          if (wants && !email) {
+            msg(
+              "save-msg",
+              "To send more information you need their email address.",
+              "error",
+            );
+            document.getElementById("f-email").focus();
+            return;
+          }
 
-    api("save", {
-      target_id: current.id,
-      decision_maker_name:  document.getElementById("f-dm").value,
-      decision_maker_role:  document.getElementById("f-role").value,
-      decision_maker_email: email,
-      decision_maker_phone: document.getElementById("f-phone").value,
-      clubgrants:           document.getElementById("f-grants").value,
-      others_involved:      document.getElementById("f-others").value,
-      board_meeting:        document.getElementById("f-board").value,
-      wants_info:           wants,
-      notes:                document.getElementById("f-notes").value,
-      outcome:              document.getElementById("f-outcome").value
-    }).then(function(r){
-      // Rare: the claim expired mid-call and the club went to someone else. The
-      // call is still saved, but say so rather than moving on silently.
-      if (r && r.warning) {
-        msg("save-msg", r.warning, "ok");
-        setTimeout(loadNext, 3000);
-        return;
-      }
-      loadNext();
-    }).catch(function(err){
-      msg("save-msg", err.message, "error");
-      btn.disabled = false; btn.textContent = "Done — save and next";
-    });
-  }
+          // Second calls record a path; it resolves to a normal outcome, and the
+          // path details ride along at the top of the notes so they land in the
+          // sheet and Customer.io without any backend changes.
+          var outcome, notes = document.getElementById("f-notes").value;
+          if (formRound >= 2) {
+            var pathEl = document.querySelector(
+              '#call-form input[name="f-path"]:checked',
+            );
+            if (!pathEl) {
+              msg("save-msg", "Choose where the call landed.", "error");
+              return;
+            }
+            var path = pathEl.value;
+            if (path === "a") {
+              outcome = document.getElementById("f-a-next").value;
+              var mtg = document.getElementById("f-a-meeting").value.trim();
+              var lvl = document.getElementById("f-a-level").value.trim();
+              notes =
+                "Path A - ready to explore." +
+                (mtg ? " Meeting: " + mtg + "." : "") +
+                (lvl ? " Partnership level: " + lvl + "." : "") +
+                (notes ? "\n" + notes : "");
+            } else if (path === "b") {
+              outcome = "wants_updates";
+              notes =
+                "Path B - interested, not ready. Continue nurture journey." +
+                (notes ? "\n" + notes : "");
+            } else if (path === "c") {
+              var reason = document.getElementById("f-c-reason").value;
+              if (!reason) {
+                msg("save-msg", "Choose why they are not interested.", "error");
+                document.getElementById("f-c-reason").focus();
+                return;
+              }
+              outcome = "not_interested";
+              notes =
+                "Path C - not interested (" +
+                reason.toLowerCase() +
+                ")." +
+                (notes ? "\n" + notes : "");
+            } else {
+              outcome = document.getElementById("f-x-outcome").value;
+            }
+          } else {
+            outcome = document.getElementById("f-outcome").value;
+          }
 
-  // Warn before losing anything typed into the form.
-  window.addEventListener("beforeunload", function(e){
-    if (!current) return;
-    var form = document.getElementById("call-form");
-    if (!form) return;
-    var dirty = ["f-dm","f-role","f-email","f-phone","f-grants","f-others","f-board","f-notes"]
-      .some(function(id){ var n = document.getElementById(id); return n && n.value.trim(); });
-    if (dirty) { e.preventDefault(); e.returnValue = ""; }
-  });
+          var btn = document.getElementById("save-btn");
+          btn.disabled = true;
+          btn.textContent = "Saving...";
 
-  // ------------------------------------------------------------ club drawer
-  var drawerEl = document.getElementById("drawer");
-  var backdropEl = document.getElementById("drawer-backdrop");
+          api("save", {
+            target_id: current.id,
+            decision_maker_name: document.getElementById("f-dm").value,
+            decision_maker_role: document.getElementById("f-role").value,
+            decision_maker_email: email,
+            decision_maker_phone: document.getElementById("f-phone").value,
+            clubgrants: document.getElementById("f-grants").value,
+            others_involved: document.getElementById("f-others").value,
+            board_meeting: document.getElementById("f-board").value,
+            wants_info: wants,
+            notes: notes,
+            outcome: outcome,
+          })
+            .then(function (r) {
+              // Rare: the claim expired mid-call and the club went to someone else. The
+              // call is still saved, but say so rather than moving on silently.
+              if (r && r.warning) {
+                msg("save-msg", r.warning, "ok");
+                setTimeout(loadNext, 3000);
+                return;
+              }
+              loadNext();
+            })
+            .catch(function (err) {
+              msg("save-msg", err.message, "error");
+              btn.disabled = false;
+              btn.textContent = "Done — save and next";
+            });
+        }
 
-  function closeDrawer(){
-    drawerEl.classList.remove("open");
-    backdropEl.classList.remove("open");
-    drawerClub = null;
-  }
-  backdropEl.addEventListener("click", closeDrawer);
-  document.addEventListener("keydown", function(e){
-    if (e.key === "Escape" && drawerClub) closeDrawer();
-  });
+        // Warn before losing anything typed into the form.
+        window.addEventListener("beforeunload", function (e) {
+          if (!current) return;
+          var form = document.getElementById("call-form");
+          if (!form) return;
+          if (isFormDirty()) {
+            e.preventDefault();
+            e.returnValue = "";
+          }
+        });
 
-  // Any element carrying data-club opens the panel — list rows, recent calls.
-  document.addEventListener("click", function(e){
-    if (e.target.closest && e.target.closest("a,button")) return;
-    var row = e.target.closest && e.target.closest("[data-club]");
-    if (row && row.getAttribute("data-club")) openClub(row.getAttribute("data-club"));
-  });
+        // ------------------------------------------------------------ club drawer
+        var drawerEl = document.getElementById("drawer");
+        var backdropEl = document.getElementById("drawer-backdrop");
 
-  function openClub(targetId){
-    drawerClub = targetId;
-    drawerEl.classList.add("open");
-    backdropEl.classList.add("open");
-    document.getElementById("drawer-inner").innerHTML =
-      '<div class="empty"><p>Loading club...</p></div>';
-    api("club_detail", { target_id: targetId }).then(function(d){
-      if (drawerClub !== targetId) return; // another club was opened meanwhile
-      renderDrawer(d);
-    }).catch(function(e){
-      document.getElementById("drawer-inner").innerHTML =
-        '<div class="empty"><h2>Could not load</h2><p>' + esc(e.message) + "</p></div>";
-    });
-  }
+        function closeDrawer() {
+          drawerEl.classList.remove("open");
+          backdropEl.classList.remove("open");
+          drawerClub = null;
+        }
+        backdropEl.addEventListener("click", closeDrawer);
+        document.addEventListener("keydown", function (e) {
+          if (e.key === "Escape" && drawerClub) closeDrawer();
+        });
 
-  function drawerFact(label, value){
-    if (!value && value !== 0) return "";
-    return '<div class="fact"><dt>' + esc(label) + "</dt><dd>" + esc(value) + "</dd></div>";
-  }
+        // Any element carrying data-club opens the panel — list rows, recent calls.
+        document.addEventListener("click", function (e) {
+          if (e.target.closest && e.target.closest("a,button")) return;
+          var row = e.target.closest && e.target.closest("[data-club]");
+          if (row && row.getAttribute("data-club"))
+            openClub(row.getAttribute("data-club"));
+        });
 
-  function evLabel(kind){
-    return { delivered:"Delivered", sent:"Sent", opened:"Opened", clicked:"Clicked link",
-             bounced:"Bounced", failed:"Failed", suppressed:"Suppressed", spam:"Marked as spam",
-             unsubscribed:"Unsubscribed", converted:"Converted" }[kind] || kind;
-  }
+        function openClub(targetId) {
+          drawerClub = targetId;
+          drawerEl.classList.add("open");
+          backdropEl.classList.add("open");
+          document.getElementById("drawer-inner").innerHTML =
+            '<div class="empty"><p>Loading club...</p></div>';
+          api("club_detail", { target_id: targetId })
+            .then(function (d) {
+              if (drawerClub !== targetId) return; // another club was opened meanwhile
+              renderDrawer(d);
+            })
+            .catch(function (e) {
+              document.getElementById("drawer-inner").innerHTML =
+                '<div class="empty"><h2>Could not load</h2><p>' +
+                esc(e.message) +
+                "</p></div>";
+            });
+        }
 
-  function renderDrawer(d){
-    var t = d.target;
-    var phone = (t.primary_phone || "").trim();
-    var place = t.full_address || [t.suburb, t.state, t.postcode].filter(Boolean).join(" ");
-    var websites = (t.websites || "").split(";")[0].trim();
+        function drawerFact(label, value) {
+          if (!value && value !== 0) return "";
+          return (
+            '<div class="fact"><dt>' +
+            esc(label) +
+            "</dt><dd>" +
+            esc(value) +
+            "</dd></div>"
+          );
+        }
 
-    var callsHtml = (d.calls || []).length
-      ? d.calls.map(function(c){
-          var who = (c.d1942_callers && c.d1942_callers.name) || "";
-          var bits = [];
-          if (c.decision_maker_name) bits.push("Spoke to " + c.decision_maker_name + (c.decision_maker_role ? " (" + c.decision_maker_role + ")" : ""));
-          if (c.decision_maker_email) bits.push(c.decision_maker_email);
-          if (c.decision_maker_phone) bits.push(c.decision_maker_phone);
-          if (c.clubgrants) bits.push("ClubGRANTS: " + c.clubgrants);
-          if (c.others_involved) bits.push("Also involved: " + c.others_involved);
-          if (c.board_meeting) bits.push("Committee meets: " + c.board_meeting);
-          return '<div class="call-item">' +
-                 '<div class="ci-head"><b>' + esc(outcomeLabel(c.outcome)) +
-                   (c.round > 1 ? " (call " + esc(c.round) + ")" : "") + "</b>" +
-                   '<span class="ci-when">' + esc(when(c.created_at)) + (who ? " · " + esc(who) : "") + "</span></div>" +
-                 (bits.length ? "<div>" + bits.map(esc).join("<br>") + "</div>" : "") +
-                 (c.wants_info ? '<div><span class="pill ok">wants more info</span></div>' : "") +
-                 (c.notes ? '<div class="ci-notes">' + esc(c.notes) + "</div>" : "") +
-                 "</div>";
-        }).join("")
-      : '<p class="list-note">No calls recorded for this club yet.</p>';
+        function evLabel(kind) {
+          return (
+            {
+              delivered: "Delivered",
+              sent: "Sent",
+              opened: "Opened",
+              clicked: "Clicked link",
+              bounced: "Bounced",
+              failed: "Failed",
+              suppressed: "Suppressed",
+              spam: "Marked as spam",
+              unsubscribed: "Unsubscribed",
+              converted: "Converted",
+            }[kind] || kind
+          );
+        }
 
-    var em = d.emails || {};
-    var emailsHtml;
-    // Unix seconds -> short date; a chip only appears when its stage happened.
-    function emChip(kind, label, ts){
-      if (!ts) return "";
-      return '<span class="ev-pill ' + kind + '">' + label + " " +
-             esc(new Date(ts * 1000).toLocaleDateString("en-AU")) + "</span>";
-    }
-    if (!em.available) {
-      emailsHtml = '<p class="list-note">Email history could not be loaded: ' + esc(em.reason || "unknown") + "</p>";
-    } else if (!(em.addresses || []).length) {
-      emailsHtml = '<p class="list-note">No email address has been captured for this club yet, so there is no email history to show.</p>';
-    } else if ((em.deliveries || []).length) {
-      // Preferred shape: one card per email, subject first, then what happened to it.
-      emailsHtml =
-        '<p class="list-note">Tracking ' + esc(em.addresses.join(", ")) + "</p>" +
-        em.deliveries.map(function(m){
-          var chips =
-            emChip("sent", "Sent", m.sent) +
-            emChip("delivered", "Delivered", m.delivered) +
-            emChip("opened", "Opened", m.opened) +
-            emChip("clicked", "Clicked", m.clicked) +
-            emChip("bounced", "Bounced", m.bounced) +
-            emChip("spam", "Marked as spam", m.spammed) +
-            emChip("unsubscribed", "Unsubscribed", m.unsubscribed) +
-            (m.failure ? '<span class="ev-pill failed">Failed</span>' : "");
-          return '<div class="email-msg">' +
-                 '<div class="em-head"><b>' + esc(m.subject || m.campaign || "(no subject)") + "</b></div>" +
-                 '<div class="em-chips">' + chips + "</div>" +
-                 '<div class="ev-addr">' + esc(m.email) + "</div>" +
-                 "</div>";
-        }).join("");
-    } else if (!(em.events || []).length) {
-      emailsHtml = '<p class="list-note">Nothing sent yet to ' + esc(em.addresses.join(", ")) + ".</p>";
-    } else {
-      emailsHtml =
-        '<p class="list-note">Tracking ' + esc(em.addresses.join(", ")) + "</p>" +
-        em.events.map(function(ev){
-          return '<div class="email-ev">' +
-                 '<span class="ev-pill ' + esc(ev.kind) + '">' + esc(evLabel(ev.kind)) + "</span>" +
-                 '<span class="ev-addr">' + esc(ev.email) +
-                   (ev.subject ? " — " + esc(ev.subject) : (ev.campaign ? " — " + esc(ev.campaign) : "")) + "</span>" +
-                 '<span class="ev-when" style="margin-left:auto">' + esc(when(ev.at)) + "</span>" +
-                 "</div>";
-        }).join("");
-    }
+        function renderDrawer(d) {
+          var t = d.target;
+          var phone = (t.primary_phone || "").trim();
+          var place =
+            t.full_address ||
+            [t.suburb, t.state, t.postcode].filter(Boolean).join(" ");
+          var websites = (t.websites || "").split(";")[0].trim();
 
-    document.getElementById("drawer-inner").innerHTML =
-      '<div class="drawer-top"><h2>' + esc(t.entity_name) + "</h2>" +
-        '<button class="drawer-close" id="drawer-close" aria-label="Close">&times;</button></div>' +
-      '<p class="drawer-sub">' + esc(place) +
-        (t.distance_km ? " · " + esc(t.distance_km) + " km from Sydney" : "") + "</p>" +
-      (phone ? '<a class="drawer-phone" href="tel:' + esc(phone.replace(/[^0-9+]/g, "")) + '">' + esc(phone) + "</a>" : "") +
+          var callsHtml = (d.calls || []).length
+            ? d.calls
+                .map(function (c) {
+                  var who = (c.d1942_callers && c.d1942_callers.name) || "";
+                  var bits = [];
+                  if (c.decision_maker_name)
+                    bits.push(
+                      "Spoke to " +
+                        c.decision_maker_name +
+                        (c.decision_maker_role
+                          ? " (" + c.decision_maker_role + ")"
+                          : ""),
+                    );
+                  if (c.decision_maker_email) bits.push(c.decision_maker_email);
+                  if (c.decision_maker_phone) bits.push(c.decision_maker_phone);
+                  if (c.clubgrants) bits.push("ClubGRANTS: " + c.clubgrants);
+                  if (c.others_involved)
+                    bits.push("Also involved: " + c.others_involved);
+                  if (c.board_meeting)
+                    bits.push("Committee meets: " + c.board_meeting);
+                  return (
+                    '<div class="call-item">' +
+                    '<div class="ci-head"><b>' +
+                    esc(outcomeLabel(c.outcome)) +
+                    (c.round > 1 ? " (call " + esc(c.round) + ")" : "") +
+                    "</b>" +
+                    '<span class="ci-when">' +
+                    esc(when(c.created_at)) +
+                    (who ? " · " + esc(who) : "") +
+                    "</span></div>" +
+                    (bits.length
+                      ? "<div>" + bits.map(esc).join("<br>") + "</div>"
+                      : "") +
+                    (c.wants_info
+                      ? '<div><span class="pill ok">wants more info</span></div>'
+                      : "") +
+                    (c.notes
+                      ? '<div class="ci-notes">' + esc(c.notes) + "</div>"
+                      : "") +
+                    "</div>"
+                  );
+                })
+                .join("")
+            : '<p class="list-note">No calls recorded for this club yet.</p>';
 
-      '<dl class="facts">' +
-        drawerFact("Contact on file", t.primary_person) +
-        drawerFact("Email on file", t.primary_email) +
-        (websites ? '<div class="fact"><dt>Website</dt><dd><a href="' + esc(websites) + '" target="_blank" rel="noopener">' +
-          esc(websites.replace(/^https?:\/\//i, "").replace(/^www\./i, "").replace(/\/$/, "")) + "</a></dd></div>" : "") +
-        drawerFact("Gaming machines", t.egm_count) +
-        drawerFact("Gaming revenue", t.gaming_revenue) +
-        drawerFact("State profit rank", t.gaming_rank) +
-        drawerFact("Licence", t.licence_name) +
-        drawerFact("Status", (t.status || "").replace(/_/g, " ") + (t.do_not_call ? " · DO NOT CALL" : "")) +
-      "</dl>" +
+          var em = d.emails || {};
+          var emailsHtml;
+          // Unix seconds -> short date; a chip only appears when its stage happened.
+          function emChip(kind, label, ts) {
+            if (!ts) return "";
+            return (
+              '<span class="ev-pill ' +
+              kind +
+              '">' +
+              label +
+              " " +
+              esc(new Date(ts * 1000).toLocaleDateString("en-AU")) +
+              "</span>"
+            );
+          }
+          if (!em.available) {
+            emailsHtml =
+              '<p class="list-note">Email history could not be loaded: ' +
+              esc(em.reason || "unknown") +
+              "</p>";
+          } else if (!(em.addresses || []).length) {
+            emailsHtml =
+              '<p class="list-note">No email address has been captured for this club yet, so there is no email history to show.</p>';
+          } else if ((em.deliveries || []).length) {
+            // Preferred shape: one card per email, subject first, then what happened to it.
+            emailsHtml =
+              '<p class="list-note">Tracking ' +
+              esc(em.addresses.join(", ")) +
+              "</p>" +
+              em.deliveries
+                .map(function (m) {
+                  var chips =
+                    emChip("sent", "Sent", m.sent) +
+                    emChip("delivered", "Delivered", m.delivered) +
+                    emChip("opened", "Opened", m.opened) +
+                    emChip("clicked", "Clicked", m.clicked) +
+                    emChip("bounced", "Bounced", m.bounced) +
+                    emChip("spam", "Marked as spam", m.spammed) +
+                    emChip("unsubscribed", "Unsubscribed", m.unsubscribed) +
+                    (m.failure
+                      ? '<span class="ev-pill failed">Failed</span>'
+                      : "");
+                  return (
+                    '<div class="email-msg">' +
+                    '<div class="em-head"><b>' +
+                    esc(m.subject || m.campaign || "(no subject)") +
+                    "</b></div>" +
+                    '<div class="em-chips">' +
+                    chips +
+                    "</div>" +
+                    '<div class="ev-addr">' +
+                    esc(m.email) +
+                    "</div>" +
+                    "</div>"
+                  );
+                })
+                .join("");
+          } else if (!(em.events || []).length) {
+            emailsHtml =
+              '<p class="list-note">Nothing sent yet to ' +
+              esc(em.addresses.join(", ")) +
+              ".</p>";
+          } else {
+            emailsHtml =
+              '<p class="list-note">Tracking ' +
+              esc(em.addresses.join(", ")) +
+              "</p>" +
+              em.events
+                .map(function (ev) {
+                  return (
+                    '<div class="email-ev">' +
+                    '<span class="ev-pill ' +
+                    esc(ev.kind) +
+                    '">' +
+                    esc(evLabel(ev.kind)) +
+                    "</span>" +
+                    '<span class="ev-addr">' +
+                    esc(ev.email) +
+                    (ev.subject
+                      ? " — " + esc(ev.subject)
+                      : ev.campaign
+                        ? " — " + esc(ev.campaign)
+                        : "") +
+                    "</span>" +
+                    '<span class="ev-when" style="margin-left:auto">' +
+                    esc(when(ev.at)) +
+                    "</span>" +
+                    "</div>"
+                  );
+                })
+                .join("");
+          }
 
-      "<h3>Record another call</h3>" +
-      '<form id="d-call-form">' +
-        '<div class="field-row">' +
-          '<div class="field"><label for="d-dm">Decision maker</label><input type="text" id="d-dm" autocomplete="off"></div>' +
-          '<div class="field"><label for="d-role">Their role</label><input type="text" id="d-role" autocomplete="off"></div>' +
-        "</div>" +
-        '<div class="field-row">' +
-          '<div class="field"><label for="d-email">Their direct email</label><input type="email" id="d-email" autocomplete="off"></div>' +
-          '<div class="field"><label for="d-phone">Their direct phone</label><input type="tel" id="d-phone" autocomplete="off"></div>' +
-        "</div>" +
-        '<div class="field checkbox">' +
-          '<input type="checkbox" id="d-wants">' +
-          '<label for="d-wants">They want to receive more information &mdash; needs their email above.</label>' +
-        "</div>" +
-        '<div class="field"><label for="d-outcome">Outcome <span class="req">*</span></label>' +
-          '<select id="d-outcome" required>' +
+          document.getElementById("drawer-inner").innerHTML =
+            '<div class="drawer-top"><h2>' +
+            esc(t.entity_name) +
+            "</h2>" +
+            '<button class="drawer-close" id="drawer-close" aria-label="Close">&times;</button></div>' +
+            '<p class="drawer-sub">' +
+            esc(place) +
+            (t.distance_km
+              ? " · " + esc(t.distance_km) + " km from Sydney"
+              : "") +
+            "</p>" +
+            (phone
+              ? '<a class="drawer-phone" href="tel:' +
+                esc(phone.replace(/[^0-9+]/g, "")) +
+                '">' +
+                esc(phone) +
+                "</a>"
+              : "") +
+            '<dl class="facts">' +
+            drawerFact("Contact on file", t.primary_person) +
+            drawerFact("Email on file", t.primary_email) +
+            (websites
+              ? '<div class="fact"><dt>Website</dt><dd><a href="' +
+                esc(websites) +
+                '" target="_blank" rel="noopener">' +
+                esc(
+                  websites
+                    .replace(/^https?:\/\//i, "")
+                    .replace(/^www\./i, "")
+                    .replace(/\/$/, ""),
+                ) +
+                "</a></dd></div>"
+              : "") +
+            drawerFact("Gaming machines", t.egm_count) +
+            drawerFact("Gaming revenue", t.gaming_revenue) +
+            drawerFact("State profit rank", t.gaming_rank) +
+            drawerFact("Licence", t.licence_name) +
+            drawerFact(
+              "Status",
+              (t.status || "").replace(/_/g, " ") +
+                (t.do_not_call ? " · DO NOT CALL" : ""),
+            ) +
+            "</dl>" +
+            "<h3>Record another call</h3>" +
+            '<form id="d-call-form">' +
+            '<div class="field-row">' +
+            '<div class="field"><label for="d-dm">Decision maker</label><input type="text" id="d-dm" autocomplete="off"></div>' +
+            '<div class="field"><label for="d-role">Their role</label><input type="text" id="d-role" autocomplete="off"></div>' +
+            "</div>" +
+            '<div class="field-row">' +
+            '<div class="field"><label for="d-email">Their direct email</label><input type="email" id="d-email" autocomplete="off"></div>' +
+            '<div class="field"><label for="d-phone">Their direct phone</label><input type="tel" id="d-phone" autocomplete="off"></div>' +
+            "</div>" +
+            '<div class="field checkbox">' +
+            '<input type="checkbox" id="d-wants">' +
+            '<label for="d-wants">They want to receive more information &mdash; needs their email above.</label>' +
+            "</div>" +
+            '<div class="field"><label for="d-outcome">Outcome <span class="req">*</span></label>' +
+            '<select id="d-outcome" required>' +
             '<option value="">Choose an outcome...</option>' +
             '<option value="interested_followup">Seems interested &mdash; needs another call</option>' +
             '<option value="referred_to_board">Going to the board / committee</option>' +
@@ -1523,62 +3167,86 @@
             '<option value="no_answer">No answer / voicemail</option>' +
             '<option value="gatekeeper">Could not get past reception</option>' +
             '<option value="wrong_number">Wrong number / bad contact details</option>' +
-          "</select></div>" +
-        '<div class="field"><label for="d-notes">Notes</label><textarea id="d-notes" rows="3"></textarea></div>' +
-        '<button type="submit" class="btn-primary" id="d-save-btn">Save this call</button>' +
-        '<div class="msg" id="d-save-msg"></div>' +
-      "</form>" +
+            "</select></div>" +
+            '<div class="field"><label for="d-notes">Notes</label><textarea id="d-notes" rows="3"></textarea></div>' +
+            '<button type="submit" class="btn-primary" id="d-save-btn">Save this call</button>' +
+            '<div class="msg" id="d-save-msg"></div>' +
+            "</form>" +
+            "<h3>All calls to this club (" +
+            (d.calls || []).length +
+            ")</h3>" +
+            callsHtml +
+            "<h3>Emails to this contact</h3>" +
+            emailsHtml;
 
-      "<h3>All calls to this club (" + (d.calls || []).length + ")</h3>" + callsHtml +
-      "<h3>Emails to this contact</h3>" + emailsHtml;
+          document
+            .getElementById("drawer-close")
+            .addEventListener("click", closeDrawer);
 
-    document.getElementById("drawer-close").addEventListener("click", closeDrawer);
+          document
+            .getElementById("d-call-form")
+            .addEventListener("submit", function (e) {
+              e.preventDefault();
+              clearMsg("d-save-msg");
+              var wants = document.getElementById("d-wants").checked;
+              var email = document.getElementById("d-email").value.trim();
+              if (wants && !email) {
+                msg(
+                  "d-save-msg",
+                  "To send more information you need their email address.",
+                  "error",
+                );
+                return;
+              }
+              if (!document.getElementById("d-outcome").value) {
+                msg("d-save-msg", "Choose an outcome before saving.", "error");
+                return;
+              }
+              var btn = document.getElementById("d-save-btn");
+              btn.disabled = true;
+              btn.textContent = "Saving...";
+              api("log_call", {
+                target_id: t.id,
+                decision_maker_name: document.getElementById("d-dm").value,
+                decision_maker_role: document.getElementById("d-role").value,
+                decision_maker_email: email,
+                decision_maker_phone: document.getElementById("d-phone").value,
+                wants_info: wants,
+                notes: document.getElementById("d-notes").value,
+                outcome: document.getElementById("d-outcome").value,
+              })
+                .then(function () {
+                  openClub(t.id); // reload the drawer with the new call in the timeline
+                  // The lists behind the drawer have changed too.
+                  if (
+                    !document
+                      .getElementById("admin-body")
+                      .classList.contains("hidden")
+                  )
+                    loadOverview();
+                })
+                .catch(function (err) {
+                  msg("d-save-msg", err.message, "error");
+                  btn.disabled = false;
+                  btn.textContent = "Save this call";
+                });
+            });
+        }
 
-    document.getElementById("d-call-form").addEventListener("submit", function(e){
-      e.preventDefault();
-      clearMsg("d-save-msg");
-      var wants = document.getElementById("d-wants").checked;
-      var email = document.getElementById("d-email").value.trim();
-      if (wants && !email) {
-        msg("d-save-msg", "To send more information you need their email address.", "error");
-        return;
-      }
-      if (!document.getElementById("d-outcome").value) {
-        msg("d-save-msg", "Choose an outcome before saving.", "error");
-        return;
-      }
-      var btn = document.getElementById("d-save-btn");
-      btn.disabled = true; btn.textContent = "Saving...";
-      api("log_call", {
-        target_id: t.id,
-        decision_maker_name:  document.getElementById("d-dm").value,
-        decision_maker_role:  document.getElementById("d-role").value,
-        decision_maker_email: email,
-        decision_maker_phone: document.getElementById("d-phone").value,
-        wants_info:           wants,
-        notes:                document.getElementById("d-notes").value,
-        outcome:              document.getElementById("d-outcome").value
-      }).then(function(){
-        openClub(t.id); // reload the drawer with the new call in the timeline
-        // The lists behind the drawer have changed too.
-        if (!document.getElementById("admin-body").classList.contains("hidden")) loadOverview();
-      }).catch(function(err){
-        msg("d-save-msg", err.message, "error");
-        btn.disabled = false; btn.textContent = "Save this call";
-      });
-    });
-  }
-
-  // ------------------------------------------------------- resume session
-  if (token) {
-    api("me", {}).then(function(r){
-      setStats(r.stats);
-      startWork(r.caller);
-    }).catch(function(){ signOut(); });
-  } else {
-    show("view-login");
-  }
-})();
-</script>
-</body>
+        // ------------------------------------------------------- resume session
+        if (token) {
+          api("me", {})
+            .then(function (r) {
+              setStats(r.stats);
+              startWork(r.caller);
+            })
+            .catch(function () {
+              signOut();
+            });
+        } else {
+          show("view-login");
+        }
+      })();
+    </script>
+  </body>
 </html>
