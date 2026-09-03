@@ -92,10 +92,45 @@
       }
       .topbar h1 {
         font-size: 18px;
+        flex: 1 1 0;
+        min-width: max-content;
+      }
+      .topbar .nav {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 16px;
+        flex-wrap: wrap;
       }
       .topbar .who {
         color: var(--muted);
-        font-size: 14px;
+        font-size: 13px;
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        flex: 1 1 0;
+        justify-content: flex-end;
+      }
+      .round-select {
+        font-family: var(--heading-font);
+        font-weight: 700;
+        font-size: 13px;
+        padding: 7px 12px;
+        border: 1px solid var(--line);
+        border-radius: 999px;
+        background: rgba(255, 255, 255, 0.07);
+        color: var(--white);
+        cursor: pointer;
+      }
+      .round-select option {
+        color: #000;
+      }
+      .round-select:hover {
+        background: rgba(255, 255, 255, 0.14);
+      }
+      .round-select:focus {
+        outline: 2px solid var(--sky-blue);
+        outline-offset: 0;
       }
       .counters {
         display: flex;
@@ -1365,25 +1400,25 @@
     <!-- ========================================================== WORKSHEET -->
     <div class="hidden" id="view-work">
       <div class="topbar">
-        <div>
-          <h1>Call worksheet</h1>
-          <div class="who">
-            <span id="who-name"></span> &middot;
-            <button class="linkbtn" id="logout-btn">log out</button>
+        <h1>Call worksheet</h1>
+        <div class="nav">
+          <div id="round-wrap"></div>
+          <div class="tabs" id="admin-tabs">
+            <button class="tab on" id="tab-work">Worksheet</button>
+            <button class="tab" id="tab-admin">Overview</button>
+            <button class="tab" id="tab-training">Training</button>
+          </div>
+          <div class="counters">
+            <div><b id="c-mine">0</b> my calls</div>
+            <div><b id="c-remaining">0</b> left to call</div>
+            <div><b id="c-done">0</b> done</div>
+            <div id="c-dnc-wrap"><b id="c-dnc">0</b> do not call</div>
           </div>
         </div>
-        <div class="tabs" id="admin-tabs">
-          <button class="tab on" id="tab-work">Worksheet</button>
-          <button class="tab" id="tab-admin">Overview</button>
-          <button class="tab" id="tab-training">Training</button>
+        <div class="who">
+          <span id="who-name"></span>
+          <button class="linkbtn" id="logout-btn">log out</button>
         </div>
-        <div class="counters">
-          <div><b id="c-mine">0</b> my calls</div>
-          <div><b id="c-remaining">0</b> left to call</div>
-          <div><b id="c-done">0</b> done</div>
-          <div id="c-dnc-wrap"><b id="c-dnc">0</b> do not call</div>
-        </div>
-        <div id="round-wrap"></div>
       </div>
 
       <div id="work-body"></div>
@@ -2870,14 +2905,10 @@
         // worksheet serves from.
         function renderRoundSwitch() {
           document.getElementById("round-wrap").innerHTML =
-            '<div class="tabs">' +
-            '<button type="button" class="tab round-btn' +
-            (roundMode === 1 ? " on" : "") +
-            '" data-round="1" title="First round">1</button>' +
-            '<button type="button" class="tab round-btn' +
-            (roundMode === 2 ? " on" : "") +
-            '" data-round="2" title="Second round">2</button>' +
-            "</div>";
+            '<select class="round-select" id="round-select" title="Which round to call">' +
+            '<option value="1"' + (roundMode === 1 ? " selected" : "") + ">Round 1</option>" +
+            '<option value="2"' + (roundMode === 2 ? " selected" : "") + ">Round 2</option>" +
+            "</select>";
         }
 
         function isFormDirty() {
@@ -2901,10 +2932,8 @@
 
         // Switching rounds hands the current club straight back to the pool (no
         // penalty) and claims from the other queue.
-        document.addEventListener("click", function (e) {
-          var b = e.target.closest && e.target.closest(".round-btn");
-          if (!b) return;
-          var m = parseInt(b.getAttribute("data-round"), 10) === 2 ? 2 : 1;
+        function switchRound(m) {
+          m = m === 2 ? 2 : 1;
           if (m === roundMode) return;
           if (
             current &&
@@ -2912,8 +2941,10 @@
             !confirm(
               "You have unsaved answers on this call. Switch rounds and lose them?",
             )
-          )
+          ) {
+            renderRoundSwitch(); // put the select back to the round we're on
             return;
+          }
           roundMode = m;
           try {
             localStorage.setItem("d1942_round", String(m));
@@ -2925,6 +2956,11 @@
           if (prev)
             api("unclaim", { target_id: prev.id }).catch(function () {});
           loadNext();
+        }
+        document.addEventListener("change", function (e) {
+          var sel = e.target.closest && e.target.closest(".round-select");
+          if (!sel) return;
+          switchRound(parseInt(sel.value, 10));
         });
 
         function loadNext() {
