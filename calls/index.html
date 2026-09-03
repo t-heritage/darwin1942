@@ -372,7 +372,10 @@
       .sp.side-r .band { border-right: 2px solid var(--ink); }
       .sp.side-t .band { order: 2; border-bottom: 0; border-top: 2px solid var(--ink); }
       .sp.side-l, .sp.side-r { flex-direction: row; }
-      .sp .nm { flex: 1 1 auto; padding: 2px; text-align: center; display: flex; align-items: center; justify-content: center; font-family: var(--heading-font); font-weight: 700; text-transform: uppercase; letter-spacing: 0; overflow-wrap: break-word; hyphens: auto; min-width: 0; }
+      .sp .nm { flex: 1 1 auto; padding: 2px; text-align: center; display: flex; align-items: safe center; justify-content: center; font-family: var(--heading-font); font-weight: 700; text-transform: uppercase; letter-spacing: 0; overflow-wrap: break-word; hyphens: auto; min-width: 0; min-height: 0; overflow: hidden; }
+      /* Long names step down in size so every word stays on the square. */
+      .sp .nm.long { font-size: 6.5px; line-height: 1.05; }
+      .sp .nm.longer { font-size: 5.5px; line-height: 1.05; letter-spacing: -0.01em; }
       .sp.done { background: var(--paper-2); }
       .sp.done .nm { color: var(--muted); }
       .sp.out .nm { text-decoration: line-through; color: #9aa39d; }
@@ -2329,6 +2332,11 @@
             });
         }
 
+        // Class for a name that needs a smaller face to fit its square.
+        function nmClass(name) {
+          var n = String(name || "").length;
+          return n > 22 ? " longer" : n > 13 ? " long" : "";
+        }
         function shortName(n) {
           var s = String(n || "")
             .replace(/\b(RSL|R\.S\.L\.?|Club|Clubs|Ltd|Limited|Memorial|Sub[- ]?Branch|Community|Services|Inc\.?|Co-?operative|Pty|The)\b/gi, "")
@@ -2431,7 +2439,7 @@
               '" style="grid-row:' + cell.r + ';grid-column:' + cell.c + '" data-club="' + esc(s.id) +
               '" title="' + esc(s.name + (s.where ? " — " + s.where : "") + " · " + tierLabel(tier)) + '">' +
               '<span class="band" style="background:' + tier.colour + '"></span>' +
-              '<span class="nm">' + esc(shortName(s.name)) + "</span>" +
+              '<span class="nm' + nmClass(shortName(s.name)) + '">' + esc(shortName(s.name)) + "</span>" +
               (marks ? '<span class="marks">' + marks + "</span>" : "") +
               (s.state === "done" && !marks ? '<span class="tick">✓</span>' : "") +
               (s.state === "out" ? '<span class="tick">✕</span>' : "") +
@@ -2512,7 +2520,7 @@
               (lead ? ' data-club="' + esc(lead.next.id) + '"' : "") +
               (title ? ' title="' + esc(title) + '"' : "") + ">" +
               '<span class="band" style="background:' + tier.colour + '"></span>' +
-              '<span class="nm">' + (lead ? esc(shortName(lead.next.entity_name)) : "") + "</span>" +
+              '<span class="nm' + (lead ? nmClass(shortName(lead.next.entity_name)) : "") + '">' + (lead ? esc(shortName(lead.next.entity_name)) : "") + "</span>" +
               (here.length
                 ? '<span class="you team' + (here.length > 1 ? " many" : "") + '">' +
                   here.map(function (p) { return tokenIcon(p.piece) || "🎲"; }).join("") + "</span>"
