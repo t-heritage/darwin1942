@@ -601,7 +601,7 @@
         font-size: 15px;
         line-height: 1.65;
       }
-      .train-card ul {
+      .train-card ul, .train-card ol {
         margin: 0 0 12px;
         padding-left: 22px;
       }
@@ -1719,12 +1719,23 @@
           {
             t: "Welcome to the Darwin 1942 campaign",
             h:
-              "<p><em>Darwin 1942</em> is a feature documentary telling the story of the largest military attack ever carried out on Australian soil, through the voices of the veterans who defended Australia. Heritage Films is producing it alongside Australian Television and Media Group, leading into the 85th anniversary of the Bombing of Darwin in February 2027.</p>" +
-              "<p>You are the first human voice most of these clubs will hear from the project. Your job on the phone is simple, and it is not selling:</p>" +
-              "<ul><li>find the right person at each club,</li>" +
-              "<li>earn permission to send them information, and</li>" +
-              "<li>open the door to a follow-up conversation.</li></ul>" +
-              "<p>This training takes about ten minutes. It covers what the campaign is, who we're calling, how we talk about it, and finishes with a walkthrough of this worksheet. Read it properly &mdash; the difference between a good call and a wasted one is almost always preparation.</p>",
+              "<p><em>Darwin 1942</em> is a feature commemorative documentary telling the story of the largest military attack ever carried out on Australian soil, through the voices of the veterans who defended Australia. Heritage Films is producing it alongside Australian Television and Media Group, leading into the 85th anniversary of the Bombing of Darwin in February 2027.</p>" +
+              "<p>The outbound campaign is the next step in our national RSL Club outreach program. You are the first human voice most of these clubs will hear from the project, and your job on the phone is simple. It is not selling.</p>" +
+              "<p>This training takes about fifteen minutes. It covers what the campaign is, what to have ready before you dial, who we're calling, the script line by line, how to handle pushback, and finishes with a walkthrough of this worksheet. Read it properly &mdash; the difference between a good call and a wasted one is almost always preparation.</p>",
+          },
+          {
+            t: "What this campaign is about",
+            h:
+              "<p>The purpose of the calls is <b>not</b> to sell the documentary or ask for funding on the first conversation. Our objective is to:</p>" +
+              "<ol><li>Identify the right decision maker.</li>" +
+              "<li>Build credibility and trust.</li>" +
+              "<li>Create curiosity about the project.</li>" +
+              "<li>Secure permission to send information.</li>" +
+              "<li>Establish the appropriate next step and, where possible, book a follow-up conversation.</li></ol>" +
+              "<h3>The biggest mistake we can make</h3>" +
+              "<p>Trying to explain the entire project in a three-minute phone call. You don't need to tell them everything. Your job is to create enough interest for them to say:</p>" +
+              '<div class="train-say"><b>The words you are listening for</b>&ldquo;Yes, send me some information.&rdquo;</div>' +
+              "<p>Once they have received the information and had an opportunity to look at it, we have earned the right to have a more detailed conversation.</p>",
           },
           {
             t: "The goal",
@@ -1740,6 +1751,31 @@
               "<p>A call that finds the right person and captures good intelligence is a success, even if that club never contributes a dollar.</p>",
           },
           {
+            t: "Before you make your first call",
+            h:
+              "<p>Use this as your pre-call checklist. Make sure you have:</p>" +
+              '<ul><li>Read the <a href="https://docs.google.com/document/d/1TFWuJ8Pl0XkVBWniJ3SjMDiQvb1Irja55BM5NZ2Idmo/edit?tab=t.0" target="_blank" rel="noopener">ClubGRANTS information</a>.</li>' +
+              '<li>Reviewed the Darwin 1942 project information at <a href="https://darwin1942.com/rsl/" target="_blank" rel="noopener">darwin1942.com/rsl</a>.</li>' +
+              '<li>Completed your Crazytel setup &mdash; <a href="https://docs.google.com/document/d/1rUX-jrYFoVp__Mfc_S0QN89F_xNZaBebmhxO9qkeQOg/edit?tab=t.0" target="_blank" rel="noopener">individual setup instructions are here</a>.</li>' +
+              "<li>Signed up to this call centre system (you have &mdash; you're reading this inside it).</li>" +
+              "<li>The script available. It sits on the left of the worksheet on every call.</li>" +
+              "<li>Know where to record call outcomes and contact information: the form beside the script, on every call.</li></ul>" +
+              "<h3>Logistics</h3>" +
+              "<ul><li>Calls are made from our centralised phone system, <b>Crazytel</b>, not your own mobile.</li>" +
+              "<li>A central database of around 200 RSL gaming licence sites is the initial focus. The system has allocated each team member their own share of those sites, and it hands them to you one at a time.</li>" +
+              "<li><b>Record the outcome of every call</b>, including the ones where nobody answered. If it isn't in the worksheet, it didn't happen.</li></ul>",
+          },
+          {
+            t: "Background you need to know",
+            h:
+              "<h3>Email outreach has already begun</h3>" +
+              "<p>Since <b>14 August 2026</b>, more than 1,000 RSL Clubs have been receiving a weekly eDM every Friday introducing the Darwin 1942 project and inviting clubs to Get Involved.</p>" +
+              "<p>So the phone call is not necessarily a cold introduction. Some clubs may have already seen the emails; others won't have noticed them.</p>" +
+              '<div class="train-dont"><b>Don&rsquo;t assume</b>Don&rsquo;t assume they&rsquo;ve read anything. Simply introduce yourself naturally and use the call to identify the right person.</div>' +
+              "<h3>ClubGRANTS</h3>" +
+              '<p>RSL gaming sites can provide community donations and funding through their ClubGRANTS process. Read the <a href="https://docs.google.com/document/d/1TFWuJ8Pl0XkVBWniJ3SjMDiQvb1Irja55BM5NZ2Idmo/edit?tab=t.0" target="_blank" rel="noopener">ClubGRANTS information</a> before making calls so you understand the opportunity and can recognise when it is relevant to the conversation. The next pages cover the essentials.</p>',
+          },
+          {
             t: "Who we're calling",
             h:
               "<h3>Tier one &mdash; RSL Clubs (the priority)</h3>" +
@@ -1752,60 +1788,143 @@
               "<p>No connection to the story, or they can't afford it &mdash; in which case a Sub-Branch will usually point to the local Club. Either way, understanding the reason is valuable. Record it.</p>",
           },
           {
-            t: "How we talk about it",
-            h:
-              '<div class="train-dont"><b>Never say</b>&ldquo;Please support our documentary&rdquo; &middot; &ldquo;We’re raising money for a film&rdquo;</div>' +
-              '<div class="train-say"><b>Instead</b>&ldquo;We’re inviting RSL Clubs to become founding partners in a national legacy project that will honour veterans, educate future generations, and ensure one of Australia’s most important wartime stories continues to be told.&rdquo;</div>' +
-              "<p>That shift moves the conversation from funding a film to participating in a mission &mdash; which is what RSL clubs actually exist for.</p>" +
-              "<h3>The three pillars</h3>" +
-              "<ul><li><b>Honour veterans.</b> Every dollar preserves veteran stories.</li>" +
-              "<li><b>Educate Australia.</b> Schools, study guides, community screenings, museums.</li>" +
-              "<li><b>Local community legacy.</b> Each club becomes the local home of Darwin 1942 in its own community.</li></ul>" +
-              "<h3>The biggest mistake</h3>" +
-              "<p>Trying to explain the whole project in three minutes. Don't. Leave them wanting to know more &mdash; the information pack and the follow-up call do the heavy lifting.</p>",
-          },
-          {
             t: "ClubGRANTS, in two minutes",
             h:
               "<p>In NSW, registered clubs with more than $1 million in annual gaming machine profits fund community work through the <b>ClubGRANTS</b> scheme. Category 2 of that scheme covers community development and support &mdash; and specifically includes veteran welfare activities. This is the most natural funding avenue for Darwin 1942.</p>" +
               "<p>So the proposition is never &ldquo;give us $20,000 to make a movie&rdquo;. A partnership funds a defined local community program: commemorative screenings, watch-at-home film gifts for members, the film and education resources delivered into local schools, and a community engagement campaign.</p>" +
-              '<div class="train-dont"><b>One important caution</b>Never tell a club their partnership <em>is</em> eligible for ClubGRANTS funding. Eligibility depends on the category, the purpose and the club’s own process. If it comes up, the most you can say is that it <em>may be eligible to be supported</em> through their ClubGRANTS program.</div>' +
+              '<div class="train-dont"><b>One important caution</b>Never tell a club their partnership <em>is</em> eligible for ClubGRANTS funding. Eligibility depends on the category, the purpose and the club&rsquo;s own process. If it comes up, the most you can say is that it <em>may be eligible to be supported</em> through their ClubGRANTS program.</div>' +
               "<p>On the call, simply ask whether the club runs ClubGRANTS or a community funding round, and when the relevant committee meets. Those two answers shape everything that follows.</p>",
           },
           {
-            t: "The first call",
+            t: "The language we use matters",
             h:
-              "<p>One objective: <b>identify the decision maker and earn permission to send information.</b> We are not trying to secure funding on this call.</p>" +
-              '<div class="train-say"><b>The mindset</b>&ldquo;I’m simply trying to identify the right person&rdquo; &mdash; not &ldquo;I’m trying to sell something.&rdquo;</div>' +
-              "<p>The right person is usually one of: the CEO, club general manager, community grants manager, marketing manager, board chair, or Sub-Branch president.</p>" +
-              "<h3>Use the script</h3>" +
-              "<p>The full script sits on the left of the worksheet on every call, with the club's details beside it. Two technique notes that make it work:</p>" +
-              "<ul><li>After you ask reception who oversees community grants and sponsorships &mdash; <b>stop talking</b>. People naturally help when asked for direction.</li>" +
-              "<li>After the founding-partner invitation &mdash; <b>pause</b>. Don't keep talking. Let them respond.</li></ul>" +
+              '<div class="train-dont"><b>Avoid saying</b>&ldquo;We&rsquo;re raising money for a documentary.&rdquo; &middot; &ldquo;Please support our film.&rdquo;</div>' +
+              '<div class="train-say"><b>Instead say</b>&ldquo;We&rsquo;re inviting RSL Clubs to become founding partners in a national legacy project that will honour veterans, educate future generations, and ensure one of Australia&rsquo;s most important wartime stories continues to be told.&rdquo;</div>' +
+              "<p>The difference is important. We are not simply asking clubs to fund a film. We are inviting them to consider participating in a legacy project that aligns with the values and purpose of the RSL community.</p>" +
+              "<h3>The three pillars</h3>" +
+              "<ul><li><b>Honour veterans.</b> Every dollar preserves veteran stories.</li>" +
+              "<li><b>Educate Australia.</b> Schools, study guides, community screenings, museums.</li>" +
+              "<li><b>Local community legacy.</b> Each club becomes the local home of Darwin 1942 in its own community.</li></ul>",
+          },
+          {
+            t: "You are opening a door, not closing a deal",
+            h:
+              "<p>Think of the initial call as a <b>permission-based introduction</b>.</p>" +
+              "<h3>You are not trying to</h3>" +
+              "<ul><li>Explain the entire documentary.</li>" +
+              "<li>Present the full proposal.</li>" +
+              "<li>Ask for a funding commitment.</li>" +
+              "<li>Overcome every possible objection.</li>" +
+              "<li>Have a 20-minute conversation with reception.</li></ul>" +
+              "<h3>You are trying to</h3>" +
+              "<ul><li>Find the right person.</li>" +
+              "<li>Establish who you are.</li>" +
+              "<li>Explain the opportunity in one or two sentences.</li>" +
+              "<li>Create enough curiosity for them to want more.</li>" +
+              "<li>Get permission to send the information.</li>" +
+              "<li>Secure a follow-up conversation where appropriate.</li></ul>" +
+              '<div class="train-say"><b>Your mindset</b>Brief. Confident. Respectful. Curious.</div>' +
+              "<p>Don't rush. Don't over-explain. Don't sound like you're reading a script. And most importantly, <b>stop talking when you've made your point</b>. A pause is powerful.</p>",
+          },
+          {
+            t: "Who we're trying to reach",
+            h:
+              "<p>The ideal decision maker may be the:</p>" +
+              "<ul><li>CEO</li>" +
+              "<li>Club General Manager</li>" +
+              "<li>Community Grants Manager</li>" +
+              "<li>Marketing Manager</li>" +
+              "<li>Board Chair</li>" +
+              "<li>Sub-Branch President</li>" +
+              "<li>Community Partnerships Manager</li>" +
+              "<li>Another person responsible for grants, sponsorships or community initiatives</li></ul>" +
+              "<p>If the person you reach isn't the decision maker, <b>don't try to sell them the project</b>. Simply ask:</p>" +
+              '<div class="train-say"><b>Say</b>&ldquo;Who would be the best person for me to speak with about community grants, sponsorships or special community initiatives?&rdquo;</div>' +
+              "<p>Your goal is to get the <b>name, position, email address and direct contact details</b> of the appropriate person. There is a field for each of those in the form.</p>",
+          },
+          {
+            t: "The script: reception and first contact",
+            h:
+              "<p>Use this as your starting point. Don't read it word-for-word if it makes you sound unnatural.</p>" +
+              "<h3>1. Reception / first contact</h3>" +
+              '<div class="train-say"><b>Say</b>&ldquo;Good morning. My name is [your name], calling from Heritage Films. We&rsquo;re working alongside Australian Television and Media Group on a feature commemorative documentary called Darwin 1942, which honours the veterans who defended Australia during the bombing of Darwin. We&rsquo;re beginning conversations with RSL Clubs and Sub-Branches around Australia, and I was wondering if you could point me towards the person who oversees community grants, sponsorships or special community initiatives?&rdquo;</div>' +
+              "<p><b>Then stop.</b> Let them answer. People are generally very willing to help when you're simply asking for direction.</p>" +
+              "<h3>2. If they ask: &ldquo;What is it regarding?&rdquo;</h3>" +
+              "<p>Keep it short.</p>" +
+              '<div class="train-say"><b>Say</b>&ldquo;Certainly. It&rsquo;s a national documentary leading into the 85th anniversary of the Bombing of Darwin in 2027. The project is being developed with military historians and RSL partners and includes community screenings, education resources and veteran storytelling. We&rsquo;re simply trying to speak with the right person before sending some information through.&rdquo;</div>' +
+              "<p>Then stop. Short. No pressure.</p>" +
+              "<h3>3. If they ask: &ldquo;Are you asking for sponsorship?&rdquo;</h3>" +
+              "<p>Don't immediately frame the conversation as a funding request. Instead:</p>" +
+              '<div class="train-say"><b>Say</b>&ldquo;We&rsquo;re inviting selected RSL Clubs to explore becoming part of a national legacy project. Depending on each club, that could involve community grant funding, sponsorship, hosting screenings or simply participating locally. At this stage, we&rsquo;re simply looking for the right person to introduce the project to.&rdquo;</div>' +
+              "<p>This changes the conversation from &ldquo;we're asking you for money&rdquo; to &ldquo;we're inviting you to explore an opportunity&rdquo;.</p>",
+          },
+          {
+            t: "The script: once you reach the right person",
+            h:
+              "<p>Start by lowering resistance.</p>" +
+              '<div class="train-say"><b>Say</b>&ldquo;Hi [name], thank you for taking my call. I&rsquo;ll keep this really brief.&rdquo;</div>' +
+              "<p>Then:</p>" +
+              '<div class="train-say"><b>Say</b>&ldquo;Heritage Films are working with Australian Television and Media Group on the national release of Darwin 1942. It&rsquo;s a feature commemorative documentary telling the story of the largest military attack ever carried out on Australian soil, through the voices and stories of the veterans who defended Australia. As we approach the 85th anniversary in 2027, we&rsquo;re inviting a select number of RSL Clubs to explore becoming founding partners in what we believe could become a significant national veteran legacy project.&rdquo;</div>' +
+              "<p><b>Pause.</b> Do not immediately fill the silence. If they're interested, continue:</p>" +
+              '<div class="train-say"><b>Say</b>&ldquo;The project extends well beyond the documentary itself. It includes local screenings, education resources, veteran speakers, museum partnerships and community engagement initiatives designed to preserve these stories for future generations.&rdquo;</div>' +
+              "<p>Then ask the key question:</p>" +
+              '<div class="train-say"><b>The key question</b>&ldquo;Would you be open to having a look at some information if I sent it through today?&rdquo;</div>' +
+              "<h3>If they say yes</h3>" +
+              "<p>Excellent. Move naturally to capturing their details:</p>" +
+              '<div class="train-say"><b>Say</b>&ldquo;Wonderful. What&rsquo;s the best email address for you?&rdquo; &hellip; &ldquo;Once you&rsquo;ve had a chance to look through it, could we organise fifteen or twenty minutes next week to answer any questions?&rdquo;</div>' +
+              "<p>You are now booking a conversation, not selling the project.</p>" +
               "<h3>Discovery questions</h3>" +
-              "<p>Ask naturally; don't interrogate. Priority: does the club have a community grants program? Should anyone else receive the information? Have they supported documentary or education projects before? If the door is open: is there a committee that reviews funding, and when does it meet?</p>" +
-              "<p>Every call should finish with more intelligence than it started with &mdash; names, roles, direct contacts, grant deadlines, board dates, and the agreed next step. That's what the form beside the script captures.</p>",
+              "<p>Don't interrogate the person. These are for when the conversation is open and receptive, and they help us understand the club and how it makes decisions. Prioritise:</p>" +
+              "<ul><li>&ldquo;Can I ask whether your club currently has a community grants program?&rdquo;</li>" +
+              "<li>&ldquo;Is there anyone else who should receive the information as well?&rdquo;</li>" +
+              "<li>&ldquo;When do those meetings normally take place?&rdquo;</li></ul>",
           },
           {
             t: "If they push back",
             h:
-              '<h3>&ldquo;We’re not interested.&rdquo;</h3>' +
-              '<div class="train-say"><b>Say</b>&ldquo;No problem at all. May I ask whether it’s simply not the right timing, or whether these kinds of projects generally aren’t something the club supports?&rdquo;</div>' +
-              '<h3>&ldquo;Just send some information.&rdquo;</h3>' +
-              '<div class="train-say"><b>Say</b>&ldquo;Perfect &mdash; I’d be delighted to. Is there anything in particular you’d like me to include?&rdquo; <em>(That question often creates another conversation.)</em></div>' +
-              '<h3>&ldquo;We already have too many requests.&rdquo;</h3>' +
-              '<div class="train-say"><b>Say</b>&ldquo;I completely understand &mdash; that’s exactly why we’re starting with a brief introduction rather than asking for a decision. We think this is a little different because it’s centred on preserving Australian military history through your own local community.&rdquo;</div>' +
-              '<h3>&ldquo;We’re not the right people.&rdquo;</h3>' +
-              '<div class="train-say"><b>Say</b>&ldquo;Would you mind pointing me toward whoever oversees community partnerships or grant funding?&rdquo;</div>' +
-              '<h3>If they push back on money</h3>' +
+              "<h3>&ldquo;We&rsquo;re not interested.&rdquo;</h3>" +
+              "<p>Don't argue.</p>" +
+              '<div class="train-say"><b>Say</b>&ldquo;No problem at all. May I ask whether it&rsquo;s simply not the right timing, or whether these kinds of projects generally aren&rsquo;t something the club supports?&rdquo;</div>' +
+              "<p>This gives you useful information without creating pressure.</p>" +
+              "<h3>&ldquo;Just send me some information.&rdquo;</h3>" +
+              "<p>That's a positive response.</p>" +
+              '<div class="train-say"><b>Say</b>&ldquo;Perfect. I&rsquo;d be delighted to. Is there anything in particular you&rsquo;d like me to include?&rdquo;</div>' +
+              "<p>Then capture the email and establish the next step.</p>" +
+              "<h3>&ldquo;We already have too many requests.&rdquo;</h3>" +
+              '<div class="train-say"><b>Say</b>&ldquo;I completely understand. That&rsquo;s exactly why we&rsquo;re starting with a brief introduction rather than asking for a decision. We think this is a little different because it&rsquo;s centred on preserving Australian military history and connecting that story with local communities.&rdquo;</div>' +
+              "<h3>&ldquo;We&rsquo;re not the right people.&rdquo;</h3>" +
+              '<div class="train-say"><b>Say</b>&ldquo;Of course. Would you mind pointing me towards whoever oversees community partnerships or grant funding?&rdquo;</div>' +
+              "<p>Then thank them and capture the details.</p>" +
+              "<h3>If they push back on money</h3>" +
               '<div class="train-say"><b>Say</b>&ldquo;Completely understand &mdash; nothing has to be decided today. Can I keep you posted as the film progresses?&rdquo;</div>' +
               "<p>Whatever the pushback, record the reason in your notes. Intelligence beats persistence.</p>",
+          },
+          {
+            t: "Every call should leave us with more information",
+            h:
+              "<p>At the end of each call, record as much of the following as possible:</p>" +
+              "<ul><li>Decision maker's name and title.</li>" +
+              "<li>Direct phone number.</li>" +
+              "<li>Email address.</li>" +
+              "<li>Whether they operate gaming-funded community grants.</li>" +
+              "<li>Board or committee meeting dates.</li>" +
+              "<li>Interest level: <b>Hot / Warm / Cold</b> &mdash; put this at the top of your notes.</li></ul>" +
+              "<p>A call that doesn't result in an immediate opportunity can still be a successful call if we learn something useful.</p>" +
+              "<h3>What a successful first call looks like</h3>" +
+              "<p>Don't try to tell them everything. Your job is to:</p>" +
+              "<ol><li>Open the door.</li>" +
+              "<li>Find the right person.</li>" +
+              "<li>Create curiosity.</li>" +
+              "<li>Get permission.</li>" +
+              "<li>Send the information.</li>" +
+              "<li>Book the next conversation.</li></ol>" +
+              "<p>That is a successful first call.</p>",
           },
           {
             t: "What happens after you hang up",
             h:
               "<p>The worksheet is wired into the campaign's email journey, which is why filling it in properly matters:</p>" +
-              "<ul><li>When you tick <b>&ldquo;they want to receive more information&rdquo;</b> with an email address, the introduction email goes out automatically within minutes &mdash; the overview, the poster, the teaser and the proposal, exactly as promised on the call. You never send anything yourself.</li>" +
+              "<ul><li>When you choose <b>&ldquo;Wants information &mdash; partnership pack&rdquo;</b> with an email address, the introduction email goes out automatically within minutes &mdash; the overview, the poster, the teaser and the proposal, exactly as promised on the call. You never send anything yourself.</li>" +
               "<li>From there a nurture sequence continues automatically over the following weeks. Replies come back to a central inbox and are handled by the core team.</li>" +
               "<li>A few days later the club appears in the <b>call-back queue</b> for the second call: &ldquo;I sent through the information &mdash; I was just interested to hear what you thought.&rdquo; Then stop, and let them talk.</li></ul>" +
               "<p>On that second call you're establishing which path they're on: <b>ready to explore</b> (book a 15&ndash;20 minute meeting), <b>interested but not ready</b> (the nurture journey continues), or <b>not interested</b> (find out why). The second-call form is built around exactly those paths.</p>" +
@@ -1818,9 +1937,9 @@
               "<h3>Getting a club</h3>" +
               "<p>The worksheet hands you one club at a time from your own list &mdash; it's yours for an hour, and nobody else will be offered it. <b>Skip for now</b> hands it back for later. The switch in the top-right corner flips between <b>1</b> (first calls) and <b>2</b> (call-backs).</p>" +
               "<h3>On a call</h3>" +
-              "<ul><li>The left pane has the club's details and the full script. Clicking the phone number copies it on a computer, or dials on a phone.</li>" +
+              "<ul><li>The left pane has the club's details and the full script. Clicking the phone number copies it on a computer, or dials on a phone &mdash; dial it from Crazytel.</li>" +
               "<li>Start the form with <b>who you spoke to</b>. If you only reached reception, choose gatekeeper &mdash; record whatever they told you about the right person, and the club automatically comes back around in the queue.</li>" +
-              "<li>Fill the form as you go: decision maker, role, direct email and phone, ClubGRANTS, who else is involved, when the committee meets.</li></ul>" +
+              "<li>Fill the form as you go: decision maker, role, direct email and phone, ClubGRANTS, who else is involved, when the committee meets. Interest level and anything else goes in the notes.</li></ul>" +
               "<h3>Outcomes</h3>" +
               "<ul><li><b>Wants information &mdash; partnership pack</b>: the pack is emailed automatically. It needs their email address.</li>" +
               "<li><b>Could not get to the decision maker</b>, <b>no answer</b> and <b>wrong number</b> put the club back in the pool to try again later.</li>" +
