@@ -4,312 +4,1169 @@
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <meta name="robots" content="noindex, nofollow" />
-    <title>Community Chest | Darwin 1942</title>
+    <title>Call Worksheet | Darwin 1942</title>
     <link rel="icon" href="/favicon.ico" />
     <style>
       :root {
-        --tea: #ceebcd;
-        --tea-deep: #b9dcb8;
-        --sky: #00acef;
-        --sky-deep: #0090c9;
-        --pollen: #fece50;
-        --pollen-deep: #e9b52a;
-        --ink: #222222;
-        --paper: #ffffff;
-        --paper-2: #f4f7f2;
-        --line: rgba(34, 34, 34, 0.14);
-        --muted: #5f6b64;
+        --sky-blue: #2b8cc4;
         --red: #c8102e;
-        /* Monopoly colour sets, cheapest to dearest. */
-        --set-brown: #955436;
-        --set-lightblue: #aae0fa;
-        --set-pink: #d93a96;
-        --set-orange: #f7941d;
-        --set-red: #ed1b24;
-        --set-yellow: #fef200;
-        --set-green: #1fb25a;
-        --set-darkblue: #0072bb;
-        --house: #1fb25a;
-        --hotel: #ed1b24;
-        --heading-font: "Futura", "Avenir Next", "Trebuchet MS", Arial, sans-serif;
-        --radius: 10px;
-        /* kept so nothing that references the old names breaks */
-        --sky-blue: var(--sky);
-        --white: var(--ink);
-        --dark: var(--tea);
-        --card-dark: var(--paper);
-        --card-darkest: var(--paper);
+        --white: #ffffff;
+        --dark: #0b1c2c;
+        --card-dark: #081524;
+        --card-darkest: #001021;
+        --line: rgba(255, 255, 255, 0.12);
+        --muted: #a8c4d8;
+        --heading-font: Arial, Helvetica, sans-serif;
+        --radius: 1rem;
       }
-      * { box-sizing: border-box; }
-      html, body { margin: 0; padding: 0; height: 100%; overflow: hidden; }
+      * {
+        box-sizing: border-box;
+      }
+      html,
       body {
-        background: var(--tea);
-        color: var(--ink);
-        font-family: "Avenir Next", "Helvetica Neue", Arial, sans-serif;
+        margin: 0;
+        padding: 0;
+        height: 100%;
+        overflow: hidden;
+      }
+      body {
+        background: var(--dark);
+        color: var(--white);
+        font-family: Arial, Helvetica, sans-serif;
         font-size: 15px;
-        line-height: 1.55;
+        line-height: 1.6;
         min-height: 100vh;
       }
-      h1, h2, h3, h4 { font-family: var(--heading-font); font-weight: 700; margin: 0; letter-spacing: normal; }
-      a { color: var(--sky-deep); }
-      button { font-family: var(--heading-font); font-weight: 700; cursor: pointer; border: 0; }
-      button:disabled { opacity: 0.5; cursor: not-allowed; }
+      h1,
+      h2,
+      h3,
+      h4 {
+        font-family: var(--heading-font);
+        font-weight: 700;
+        margin: 0;
+        letter-spacing: normal;
+      }
+      a {
+        color: var(--sky-blue);
+      }
+      button {
+        font-family: var(--heading-font);
+        font-weight: 700;
+        letter-spacing: 0.3px;
+        cursor: pointer;
+        border: 0;
+      }
+      button:disabled {
+        opacity: 0.5;
+        cursor: not-allowed;
+      }
 
       /* ---------------------------------------------------------------- shell */
-      #view-work { display: flex; flex-direction: column; height: 100%; }
-      #work-body, #admin-body, #training-body, #board-body { flex: 1 1 auto; min-height: 0; overflow: hidden; }
-      #admin-body, #training-body, #board-body { overflow-y: auto; }
+      #view-work {
+        display: flex;
+        flex-direction: column;
+        height: 100%;
+      }
+      #work-body,
+      #admin-body,
+      #training-body {
+        flex: 1 1 auto;
+        min-height: 0;
+        overflow: hidden;
+      }
+      #admin-body,
+      #training-body {
+        overflow-y: auto;
+      }
       .topbar {
-        display: flex; align-items: center; justify-content: space-between; gap: 12px 24px;
-        padding: 10px 20px; background: var(--paper); border-bottom: 3px solid var(--ink);
-        flex: 0 0 auto; z-index: 10; flex-wrap: wrap;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 16px;
+        padding: 12px 20px;
+        background: var(--card-darkest);
+        border-bottom: 0;
+        flex: 0 0 auto;
+        z-index: 10;
+        flex-wrap: wrap;
       }
-      .topbar h1 { font-size: 19px; display: flex; align-items: center; gap: 10px; flex: 1 1 0; min-width: max-content; }
-      .topbar h1 .logo { width: 34px; height: 34px; display: inline-grid; place-items: center; }
-      .topbar h1 .logo svg { width: 100%; height: 100%; display: block; }
-      .topbar .nav { display: flex; align-items: center; justify-content: center; gap: 16px; flex-wrap: wrap; }
-      .topbar .who { color: var(--muted); font-size: 13px; display: flex; align-items: center; gap: 10px; flex: 1 1 0; justify-content: flex-end; }
-      .round-select { font-family: var(--heading-font); font-weight: 700; font-size: 13px; padding: 7px 12px; border: 2px solid var(--ink); border-radius: 999px; background: var(--paper-2); color: var(--ink); cursor: pointer; }
-      .round-select:hover { background: var(--pollen); }
-      .round-select:focus { outline: 3px solid var(--sky); outline-offset: 0; }
-      .token-btn {
-        background: var(--paper-2); border: 2px solid var(--ink); border-radius: 999px;
-        padding: 2px 10px 2px 4px; font-size: 13px; font-weight: 400; color: var(--ink);
-        display: inline-flex; align-items: center; gap: 6px; font-family: inherit;
+      .topbar h1 {
+        font-size: 18px;
+        flex: 1 1 0;
+        min-width: max-content;
       }
-      .token-btn .tk { font-size: 20px; line-height: 1; display: inline-flex; }
-      .token-img { display: inline-block; width: 22px; height: 22px; object-fit: contain; vertical-align: middle; }
-      .token-btn .token-img { width: 24px; height: 24px; }
-      .token-opt .token-img { display: block; width: 52px; height: 52px; margin: 0 auto 4px; }
-      .rank-row .token-img { width: 24px; height: 24px; }
-      .sp .you .token-img { width: 78%; height: 78%; }
-      .token-btn:hover { background: var(--pollen); }
-      .counters { display: flex; gap: 18px; flex-wrap: wrap; color: var(--muted); font-size: 12px; }
-      .counters b { color: var(--ink); font-family: var(--heading-font); font-weight: 700; font-size: 18px; display: block; line-height: 1; }
-      .linkbtn { background: none; color: var(--muted); text-decoration: underline; font-size: 13px; font-family: inherit; letter-spacing: 0; padding: 0; font-weight: 400; }
+      .topbar .nav {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 16px;
+        flex-wrap: wrap;
+      }
+      .topbar .who {
+        color: var(--muted);
+        font-size: 13px;
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        flex: 1 1 0;
+        justify-content: flex-end;
+      }
+      .round-select {
+        font-family: var(--heading-font);
+        font-weight: 700;
+        font-size: 13px;
+        padding: 7px 12px;
+        border: 1px solid var(--line);
+        border-radius: 999px;
+        background: rgba(255, 255, 255, 0.07);
+        color: var(--white);
+        cursor: pointer;
+      }
+      .round-select option {
+        color: #000;
+      }
+      .round-select:hover {
+        background: rgba(255, 255, 255, 0.14);
+      }
+      .round-select:focus {
+        outline: 2px solid var(--sky-blue);
+        outline-offset: 0;
+      }
+      .counters {
+        display: flex;
+        gap: 18px;
+        flex-wrap: wrap;
+        color: var(--muted);
+        font-size: 13px;
+      }
+      .counters b {
+        color: var(--white);
+        font-family: var(--heading-font);
+        font-weight: 700;
+        font-size: 17px;
+        display: block;
+        line-height: 1;
+      }
+      .linkbtn {
+        background: none;
+        color: var(--muted);
+        text-decoration: underline;
+        font-size: 13px;
+        font-family: inherit;
+        letter-spacing: 0;
+        padding: 0;
+      }
 
       /* ------------------------------------------------------------ auth card */
-      .auth-wrap { display: flex; align-items: center; justify-content: center; height: 100%; overflow-y: auto; padding: 24px; }
+      .auth-wrap {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        height: 100%;
+        overflow-y: auto;
+        padding: 24px;
+      }
       .auth {
-        width: 100%; max-width: 420px; background: var(--paper); border: 3px solid var(--ink);
-        border-radius: var(--radius); padding: 0 32px 32px; box-shadow: 8px 8px 0 rgba(34,34,34,0.18);
+        width: 100%;
+        max-width: 400px;
+        background: var(--card-dark);
+        border-radius: var(--radius);
+        padding: 28px 32px 36px;
       }
-      .auth-band { margin: 0 -32px 22px; background: var(--pollen); border-bottom: 3px solid var(--ink); padding: 18px 32px 14px; border-radius: 6px 6px 0 0; }
-      .auth-band small { display: block; font-size: 12px; color: var(--ink); opacity: 0.8; margin-bottom: 2px; }
-      .auth h1 { font-size: 26px; margin: 0; }
-      .auth p.sub { color: var(--muted); margin: 0 0 20px; font-size: 14px; }
-      .hint { color: var(--muted); font-size: 13px; margin: 6px 0 0; }
-      label { display: block; font-family: var(--heading-font); font-weight: 700; font-size: 13px; margin-bottom: 6px; color: var(--ink); }
-      .req { color: var(--red); }
-      input[type="text"], input[type="password"], input[type="email"], input[type="tel"], select, textarea {
-        width: 100%; padding: 10px 12px; background: var(--paper); border: 2px solid var(--ink);
-        color: var(--ink); font-family: inherit; font-size: 15px; border-radius: 8px;
+      .auth h1 {
+        font-size: 25px;
+        margin-bottom: 6px;
       }
-      input:focus, select:focus, textarea:focus { outline: 3px solid var(--sky); outline-offset: 0; }
-      textarea { resize: vertical; min-height: 80px; }
-      .field { margin-bottom: 16px; }
-      .field-row { display: grid; grid-template-columns: 1fr 1fr; gap: 0 16px; }
-      @media (max-width: 1200px) { .field-row { grid-template-columns: 1fr; } }
+      .auth p.sub {
+        color: var(--muted);
+        margin: 0 0 24px;
+        font-size: 14px;
+      }
+      .hint {
+        color: var(--muted);
+        font-size: 13px;
+        margin: 6px 0 0;
+      }
+
+      label {
+        display: block;
+        font-family: var(--heading-font);
+        font-weight: 700;
+        font-size: 13px;
+        letter-spacing: normal;
+        margin-bottom: 6px;
+        color: #d6e6f2;
+      }
+      .req {
+        color: var(--red);
+      }
+      input[type="text"],
+      input[type="password"],
+      input[type="email"],
+      input[type="tel"],
+      select,
+      textarea {
+        width: 100%;
+        padding: 11px 13px;
+        background: rgba(255, 255, 255, 0.07);
+        border: 0;
+        color: var(--white);
+        font-family: inherit;
+        font-size: 15px;
+        border-radius: 0.7rem;
+      }
+      input:focus,
+      select:focus,
+      textarea:focus {
+        outline: 2px solid var(--sky-blue);
+        outline-offset: -2px;
+      }
+      textarea {
+        resize: vertical;
+        min-height: 80px;
+      }
+      select option {
+        background: var(--card-dark);
+        color: var(--white);
+      }
+      .field {
+        margin-bottom: 18px;
+      }
+      /* Short, related fields pair up; long ones stay full width. */
+      .field-row {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 0 16px;
+      }
+      @media (max-width: 1200px) {
+        .field-row {
+          grid-template-columns: 1fr;
+        }
+      }
       .btn-primary {
-        background: var(--sky); color: #fff; padding: 13px 26px; font-size: 15px; width: 100%;
-        border-radius: 8px; border: 2px solid var(--ink); box-shadow: 3px 3px 0 var(--ink);
+        background: var(--red);
+        color: var(--white);
+        padding: 14px 28px;
+        font-size: 15px;
+        width: 100%;
+        border-radius: var(--radius);
       }
-      .btn-primary:hover:not(:disabled) { background: var(--sky-deep); transform: translate(1px, 1px); box-shadow: 2px 2px 0 var(--ink); }
-      .msg { margin-top: 16px; padding: 12px 16px; font-size: 14px; display: none; border-radius: 8px; }
-      .msg.error { display: block; background: #fde7ea; border-left: 4px solid var(--red); color: #7a0b1c; }
-      .msg.ok { display: block; background: #e1f4fd; border-left: 4px solid var(--sky); color: #064a66; }
+      .btn-primary:hover:not(:disabled) {
+        background: #a50d26;
+      }
+      .msg {
+        margin-top: 18px;
+        padding: 12px 16px;
+        font-size: 14px;
+        display: none;
+        border-radius: var(--radius);
+      }
+      .msg.error {
+        display: block;
+        background: rgba(200, 16, 46, 0.12);
+        border-left: 3px solid var(--red);
+        color: #e8a0a8;
+      }
+      .msg.ok {
+        display: block;
+        background: rgba(43, 140, 196, 0.12);
+        border-left: 3px solid var(--sky-blue);
+        color: #c8dff0;
+      }
 
       /* ------------------------------------------------------------ worksheet */
-      .work { display: grid; grid-template-columns: 1fr 1fr; gap: 0; height: 100%; min-height: 0; }
-      .pane { padding: 24px; height: 100%; overflow-y: auto; overscroll-behavior: contain; }
-      .pane-left { border-right: 0; }
-      .pane-form { background: var(--tea-deep); }
+      /* The two panes scroll independently so the page itself never does: the
+     club you are calling and the form stay put while you read either side. */
+      .work {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 0;
+        height: 100%;
+        min-height: 0;
+      }
+      .pane {
+        padding: 24px;
+        height: 100%;
+        overflow-y: auto;
+        overscroll-behavior: contain;
+      }
+      .pane-left {
+        border-right: 0;
+      }
+      .pane-form {
+        background: var(--card-dark);
+      }
+
+      /* Below the breakpoint the panes stack, where independent scrolling would
+     trap the user in a short box — so the document scrolls normally again. */
       @media (max-width: 980px) {
-        html, body { height: auto; overflow: auto; }
-        #view-work { height: auto; }
-        #work-body, #admin-body, #board-body { overflow: visible; min-height: 0; }
-        .work { grid-template-columns: 1fr; height: auto; }
-        .pane { height: auto; overflow: visible; }
-        .topbar { position: sticky; top: 0; }
+        html,
+        body {
+          height: auto;
+          overflow: auto;
+        }
+        #view-work {
+          height: auto;
+        }
+        #work-body,
+        #admin-body {
+          overflow: visible;
+          min-height: 0;
+        }
+        .work {
+          grid-template-columns: 1fr;
+          height: auto;
+        }
+        .pane {
+          height: auto;
+          overflow: visible;
+        }
+        .pane-left {
+          border-right: 0;
+          border-bottom: 0;
+        }
+        .topbar {
+          position: sticky;
+          top: 0;
+        }
       }
 
-      /* ------------------------------------------------------------ title deed */
-      /* The club is presented as its own title deed: colour band for the set,
-         the "rent" table underneath. */
-      .deed {
-        background: var(--paper); border: 3px solid var(--ink); border-radius: var(--radius);
-        box-shadow: 8px 8px 0 rgba(34,34,34,0.18); margin-bottom: 20px; overflow: hidden;
+      /* nowrap + min-width:0 keeps the phone on the right and makes a long
+     address wrap onto a second line rather than shoving the button down. */
+      .club-head {
+        display: flex;
+        align-items: flex-start;
+        justify-content: space-between;
+        gap: 20px;
+        flex-wrap: nowrap;
+        margin-bottom: 20px;
       }
-      .deed-band { padding: 12px 18px 12px; border-bottom: 3px solid var(--ink); color: #fff; text-align: center; }
-      .deed-band.light { color: var(--ink); }
-      .deed-band small { display: block; font-size: 11px; letter-spacing: 0.08em; text-transform: uppercase; opacity: 0.85; margin-bottom: 2px; }
-      .deed-band h2 { font-size: 24px; line-height: 1.12; text-transform: uppercase; letter-spacing: 0.02em; }
-      .deed-body { padding: 14px 18px 16px; }
-      .deed-sub { color: var(--muted); font-size: 13px; text-align: center; margin: 0 0 12px; }
-      .deed-call { display: flex; justify-content: center; margin: 0 0 14px; }
+      @media (max-width: 700px) {
+        .club-head {
+          flex-wrap: wrap;
+        }
+      }
+      .club-name {
+        font-size: 27px;
+        line-height: 1.15;
+        margin-bottom: 4px;
+      }
+      .club-id {
+        min-width: 0;
+        flex: 1 1 auto;
+      }
+      .club-sub {
+        color: var(--muted);
+        margin: 0;
+        font-size: 14px;
+      }
+      .club-dist {
+        color: var(--muted);
+        margin: 2px 0 0;
+        font-size: 14px;
+      }
+      .club-web {
+        margin: 3px 0 0;
+        font-size: 14px;
+        overflow-wrap: anywhere;
+      }
       .phone-cta {
-        display: inline-block; background: var(--sky); color: #fff; text-decoration: none;
-        font-family: var(--heading-font); font-weight: 700; font-size: 22px; padding: 10px 26px;
-        border-radius: 8px; border: 2px solid var(--ink); box-shadow: 3px 3px 0 var(--ink); white-space: nowrap;
+        display: inline-block;
+        background: var(--sky-blue);
+        color: var(--white);
+        text-decoration: none;
+        font-family: var(--heading-font);
+        font-weight: 700;
+        font-size: 21px;
+        letter-spacing: normal;
+        padding: 11px 22px;
+        border-radius: var(--radius);
+        flex-shrink: 0;
+        white-space: nowrap;
       }
-      .phone-cta:hover { background: var(--sky-deep); transform: translate(1px,1px); box-shadow: 2px 2px 0 var(--ink); }
-      .phone-cta.none { background: var(--paper-2); color: var(--muted); pointer-events: none; font-size: 14px; font-weight: 400; white-space: normal; box-shadow: none; text-align: center; }
-      .phone-cta.inline { display: inline; background: none; color: var(--sky-deep); border: 0; border-radius: 0; box-shadow: none; padding: 0; font-family: inherit; font-size: inherit; font-weight: 700; white-space: nowrap; }
-      .phone-cta.inline:hover { background: none; transform: none; box-shadow: none; text-decoration: underline; }
-      .rent { width: 100%; border-collapse: collapse; font-size: 14px; }
-      .rent td { padding: 5px 0; border-bottom: 1px dotted var(--line); vertical-align: top; }
-      .rent tr:last-child td { border-bottom: 0; }
-      .rent td:first-child { color: var(--muted); padding-right: 12px; white-space: nowrap; }
-      .rent td:last-child { text-align: right; font-weight: 700; overflow-wrap: anywhere; }
-      .rent td:last-child a { color: var(--sky-deep); }
-      .rent .set-note { text-align: center; color: var(--muted); font-size: 12px; padding-top: 10px; font-weight: 400; }
-      .set-chip { display: inline-block; width: 12px; height: 12px; border: 1px solid var(--ink); border-radius: 2px; vertical-align: -1px; margin-right: 5px; }
-      /* legacy fact grid (drawer still uses it) */
-      .facts { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 12px 18px; font-size: 14px; margin: 0 0 20px; }
-      .fact { min-width: 0; } .fact.wide { grid-column: 1 / -1; }
-      .facts dt { color: var(--muted); font-size: 12px; margin-bottom: 2px; }
-      .facts dd { margin: 0; min-width: 0; overflow-wrap: anywhere; }
-      @media (max-width: 1200px) { .facts { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
+      .phone-cta:hover {
+        background: #1f6f9e;
+      }
+      .phone-cta.none {
+        background: rgba(255, 255, 255, 0.08);
+        color: var(--muted);
+        pointer-events: none;
+        font-size: 14px;
+        font-weight: 400;
+        white-space: normal;
+        max-width: 230px;
+      }
 
-      .script { background: var(--paper); border: 3px solid var(--ink); border-radius: var(--radius); padding: 20px 22px 22px; box-shadow: 8px 8px 0 rgba(34,34,34,0.18); }
-      .script h2 { font-size: 22px; line-height: 1.15; margin-bottom: 12px; }
-      .script .step { margin-bottom: 16px; }
-      .script .step:last-child { margin-bottom: 0; }
-      .script .step b { display: block; margin-bottom: 4px; color: var(--sky-deep); font-family: var(--heading-font); font-size: 15px; }
-      .script em { color: var(--ink); font-style: normal; font-weight: 700; background: var(--pollen); padding: 0 4px; border-radius: 3px; }
-      .script-do { display: block; margin-top: 8px; padding-left: 14px; border-left: 3px solid var(--pollen); color: var(--muted); }
-      .script-do span { display: block; margin-bottom: 3px; }
-      .history { margin-top: 20px; background: var(--paper); border: 2px solid var(--ink); border-radius: var(--radius); padding: 14px 18px; font-size: 14px; }
-      .history h4 { font-size: 13px; margin-bottom: 8px; color: var(--muted); }
-      .history li { margin-bottom: 6px; }
+      /* Each fact is its own cell with the label stacked above the value. */
+      .facts {
+        display: grid;
+        grid-template-columns: repeat(3, minmax(0, 1fr));
+        gap: 14px 20px;
+        font-size: 14px;
+        margin: 0 0 22px;
+      }
+      .fact {
+        min-width: 0;
+      }
+      .fact.wide {
+        grid-column: 1 / -1;
+      }
+      .facts dt {
+        color: var(--muted);
+        font-size: 12px;
+        margin-bottom: 2px;
+      }
+      .facts dd {
+        margin: 0;
+        min-width: 0;
+        overflow-wrap: anywhere;
+      }
+      @media (max-width: 1200px) {
+        .facts {
+          grid-template-columns: repeat(2, minmax(0, 1fr));
+        }
+      }
 
-      /* ------------------------------------------------------------ the form */
-      .form-card { background: var(--paper); border: 3px solid var(--ink); border-radius: var(--radius); box-shadow: 8px 8px 0 rgba(34,34,34,0.18); overflow: hidden; }
-      .form-head { display: flex; align-items: center; justify-content: space-between; gap: 12px; padding: 12px 20px; background: var(--pollen); border-bottom: 3px solid var(--ink); margin: 0; }
-      .form-head h2 { font-size: 18px; }
-      .form-head .chest { font-size: 20px; }
-      .form-card form { padding: 18px 20px 20px; }
-      .checkbox { display: flex; gap: 10px; align-items: flex-start; }
-      .checkbox input { margin-top: 3px; width: 18px; height: 18px; flex-shrink: 0; accent-color: var(--sky); }
-      .checkbox label { margin: 0; font-family: inherit; font-weight: 400; font-size: 14px; color: var(--muted); line-height: 1.5; }
-      .paths { display: flex; flex-direction: column; gap: 8px; }
+      /* Same ground as the form fields. Negative margins cancel the pane's padding
+     so it meets the left, right and bottom edges of the column. */
+      .script {
+        background: rgba(255, 255, 255, 0.07);
+        border: 0;
+        border-radius: 0;
+        margin: 0 -24px -24px;
+        padding: 20px 24px 24px;
+      }
+      .script h2 {
+        font-size: 27px;
+        line-height: 1.15;
+        margin-bottom: 14px;
+        color: var(--white);
+      }
+      .script .step {
+        margin-bottom: 18px;
+      }
+      .script .step:last-child {
+        margin-bottom: 0;
+      }
+      /* Colour and weight separate the step title from the words to say,
+     without resorting to uppercase. */
+      .script .step b {
+        display: block;
+        margin-bottom: 5px;
+        color: var(--sky-blue);
+        font-family: var(--heading-font);
+        font-size: 15px;
+        font-weight: 700;
+      }
+      .script em {
+        color: var(--white);
+        font-style: normal;
+        font-weight: 700;
+      }
+      /* The things to actually ask, set apart from the words to say. */
+      .script-do {
+        display: block;
+        margin-top: 8px;
+        padding-left: 14px;
+        border-left: 2px solid rgba(255, 255, 255, 0.14);
+        color: var(--muted);
+      }
+      .script-do span {
+        display: block;
+        margin-bottom: 3px;
+      }
+
+      .history {
+        margin-top: 20px;
+        background: rgba(255, 255, 255, 0.04);
+        border: 1px solid var(--line);
+        padding: 14px 18px;
+        font-size: 14px;
+      }
+      .history h4 {
+        font-size: 13px;
+        margin-bottom: 8px;
+        color: var(--muted);
+      }
+      .history li {
+        margin-bottom: 6px;
+      }
+
+      .form-head {
+        display: flex;
+        align-items: baseline;
+        justify-content: space-between;
+        gap: 12px;
+        margin-bottom: 18px;
+      }
+      .form-head h2 {
+        font-size: 20px;
+      }
+      .checkbox {
+        display: flex;
+        gap: 10px;
+        align-items: flex-start;
+        background: none;
+        border: 0;
+        padding: 0;
+      }
+      .checkbox input {
+        margin-top: 3px;
+        width: 18px;
+        height: 18px;
+        flex-shrink: 0;
+        accent-color: var(--sky-blue);
+      }
+      .checkbox label {
+        margin: 0;
+        font-family: inherit;
+        font-weight: 400;
+        letter-spacing: 0;
+        font-size: 14px;
+        color: var(--muted);
+        line-height: 1.5;
+      }
+      /* Second-call paths: one card per path, picked like a radio group. */
+      .paths {
+        display: flex;
+        flex-direction: column;
+        gap: 8px;
+      }
       .path {
-        display: grid; grid-template-columns: 18px 1fr; column-gap: 10px; align-items: start;
-        background: var(--paper); border: 2px solid var(--line); border-radius: 8px; padding: 10px 14px;
-        cursor: pointer; margin: 0; font-weight: 400;
+        display: grid;
+        grid-template-columns: 18px 1fr;
+        column-gap: 10px;
+        align-items: start;
+        background: rgba(255, 255, 255, 0.05);
+        border: 1px solid var(--line);
+        border-radius: 10px;
+        padding: 10px 14px;
+        cursor: pointer;
+        margin: 0;
+        font-weight: 400;
+        letter-spacing: 0;
       }
-      .path:hover { border-color: var(--ink); }
-      .path:has(input:checked) { border-color: var(--ink); background: #e1f4fd; }
-      .path input { margin-top: 4px; width: 16px; height: 16px; accent-color: var(--sky); grid-row: span 2; }
-      .path b { font-size: 14px; }
-      .path span { grid-column: 2; color: var(--muted); font-size: 13px; line-height: 1.45; }
-      .path-extra { margin: -6px 0 16px; padding: 14px 14px 4px; border-left: 3px solid var(--sky); background: var(--paper-2); }
-      .path-extra .field { margin-bottom: 14px; }
-      .path-hint { color: var(--muted); font-size: 13px; line-height: 1.5; margin: 0 0 10px; }
-      .actions { display: flex; gap: 12px; margin-top: 20px; flex-wrap: wrap; }
-      .actions .btn-primary { width: auto; flex: 1; min-width: 180px; }
-      .btn-ghost { background: var(--paper); border: 2px solid var(--ink); color: var(--ink); padding: 12px 20px; font-size: 14px; font-weight: 400; border-radius: 8px; font-family: inherit; }
-      .btn-ghost:hover:not(:disabled) { background: var(--paper-2); }
-
+      .path:hover {
+        border-color: var(--sky-blue);
+      }
+      .path:has(input:checked) {
+        border-color: var(--sky-blue);
+        background: rgba(43, 140, 196, 0.12);
+      }
+      .path input {
+        margin-top: 4px;
+        width: 16px;
+        height: 16px;
+        accent-color: var(--sky-blue);
+        grid-row: span 2;
+      }
+      .path b {
+        font-size: 14px;
+      }
+      .path span {
+        grid-column: 2;
+        color: var(--muted);
+        font-size: 13px;
+        line-height: 1.45;
+      }
+      .path-extra {
+        margin: -6px 0 18px;
+        padding: 14px 14px 4px;
+        border-left: 2px solid var(--sky-blue);
+        background: rgba(255, 255, 255, 0.03);
+      }
+      .path-extra .field {
+        margin-bottom: 14px;
+      }
+      .path-hint {
+        color: var(--muted);
+        font-size: 13px;
+        line-height: 1.5;
+        margin: 0 0 10px;
+      }
       /* ------------------------------------------------------------ training */
-      .train-wrap { max-width: 760px; margin: 0 auto; padding: 28px 20px 60px; }
-      .train-progress { display: flex; align-items: center; gap: 14px; margin-bottom: 18px; color: var(--muted); font-size: 13px; white-space: nowrap; }
-      .train-bar { flex: 1 1 auto; height: 8px; border-radius: 4px; background: var(--paper); border: 1px solid var(--ink); overflow: hidden; }
-      .train-bar span { display: block; height: 100%; background: var(--sky); transition: width 0.2s; }
-      .train-card { background: var(--paper); border: 3px solid var(--ink); border-radius: var(--radius); padding: 26px 30px 30px; box-shadow: 8px 8px 0 rgba(34,34,34,0.18); }
-      .train-card h2 { font-size: 22px; margin-bottom: 4px; }
-      .train-kicker { color: var(--muted); font-size: 13px; margin: 0 0 16px; }
-      .train-card h3 { font-size: 15px; margin: 22px 0 6px; }
-      .train-card p { margin: 0 0 12px; font-size: 15px; line-height: 1.65; }
-      .train-card ul, .train-card ol { margin: 0 0 12px; padding-left: 22px; }
-      .train-card li { margin-bottom: 5px; font-size: 15px; line-height: 1.55; }
-      .train-say { border-left: 4px solid var(--sky); background: #e1f4fd; padding: 12px 16px; border-radius: 0 8px 8px 0; margin: 0 0 12px; font-size: 15px; line-height: 1.6; }
-      .train-dont { border-left: 4px solid var(--red); background: #fde7ea; padding: 12px 16px; border-radius: 0 8px 8px 0; margin: 0 0 12px; font-size: 15px; line-height: 1.6; }
-      .train-say b, .train-dont b { display: block; font-size: 12px; color: var(--muted); margin-bottom: 4px; }
-      .train-nav { display: flex; justify-content: space-between; gap: 12px; margin-top: 22px; }
-      .train-nav .btn-primary { width: auto; padding: 13px 26px; }
-      .train-note { color: var(--muted); font-size: 13px; margin-top: 14px; text-align: center; }
+      .train-wrap {
+        max-width: 760px;
+        margin: 0 auto;
+        padding: 28px 20px 60px;
+      }
+      .train-progress {
+        display: flex;
+        align-items: center;
+        gap: 14px;
+        margin-bottom: 18px;
+        color: var(--muted);
+        font-size: 13px;
+        white-space: nowrap;
+      }
+      .train-bar {
+        flex: 1 1 auto;
+        height: 6px;
+        border-radius: 3px;
+        background: rgba(255, 255, 255, 0.1);
+        overflow: hidden;
+      }
+      .train-bar span {
+        display: block;
+        height: 100%;
+        background: var(--sky-blue);
+        transition: width 0.2s;
+      }
+      .train-card {
+        background: var(--card-dark);
+        border: 1px solid var(--line);
+        border-radius: var(--radius);
+        padding: 26px 30px 30px;
+      }
+      .train-card h2 {
+        font-size: 22px;
+        margin-bottom: 4px;
+      }
+      .train-kicker {
+        color: var(--muted);
+        font-size: 13px;
+        margin: 0 0 16px;
+      }
+      .train-card h3 {
+        font-size: 15px;
+        margin: 22px 0 6px;
+      }
+      .train-card p {
+        margin: 0 0 12px;
+        font-size: 15px;
+        line-height: 1.65;
+      }
+      .train-card ul, .train-card ol {
+        margin: 0 0 12px;
+        padding-left: 22px;
+      }
+      .train-card li {
+        margin-bottom: 5px;
+        font-size: 15px;
+        line-height: 1.55;
+      }
+      .train-say {
+        border-left: 3px solid var(--sky-blue);
+        background: rgba(43, 140, 196, 0.1);
+        padding: 12px 16px;
+        border-radius: 0 8px 8px 0;
+        margin: 0 0 12px;
+        font-size: 15px;
+        line-height: 1.6;
+      }
+      .train-dont {
+        border-left: 3px solid var(--red);
+        background: rgba(200, 16, 46, 0.1);
+        padding: 12px 16px;
+        border-radius: 0 8px 8px 0;
+        margin: 0 0 12px;
+        font-size: 15px;
+        line-height: 1.6;
+      }
+      .train-say b,
+      .train-dont b {
+        display: block;
+        font-size: 12px;
+        color: var(--muted);
+        margin-bottom: 4px;
+      }
+      .train-nav {
+        display: flex;
+        justify-content: space-between;
+        gap: 12px;
+        margin-top: 22px;
+      }
+      .train-nav .btn-primary {
+        width: auto;
+        padding: 14px 26px;
+      }
+      .train-note {
+        color: var(--muted);
+        font-size: 13px;
+        margin-top: 14px;
+        text-align: center;
+      }
+      .actions {
+        display: flex;
+        gap: 12px;
+        margin-top: 22px;
+        flex-wrap: wrap;
+      }
+      .actions .btn-primary {
+        width: auto;
+        flex: 1;
+        min-width: 180px;
+        background: var(--sky-blue);
+      }
+      .actions .btn-primary:hover:not(:disabled) {
+        background: #1f6f9e;
+      }
+      .btn-ghost {
+        background: none;
+        border: 1px solid var(--line);
+        color: var(--muted);
+        padding: 14px 20px;
+        font-size: 14px;
+        font-weight: 400;
+        border-radius: var(--radius);
+      }
+      .btn-ghost:hover:not(:disabled) {
+        border-color: var(--sky-blue);
+        color: var(--white);
+      }
 
       /* ---------------------------------------------------------- admin view */
-      .tabs { display: inline-flex; background: var(--paper); border: 2px solid var(--ink); border-radius: 999px; padding: 3px; gap: 0; }
-      .tab { background: none; border: 0; color: var(--muted); padding: 6px 18px; font-size: 13px; font-weight: 400; border-radius: 999px; font-family: inherit; transition: background 0.15s, color 0.15s; }
-      .tab:hover:not(.on) { color: var(--ink); }
-      .tab.on { background: var(--ink); color: #fff; font-weight: 700; }
-      .admin { padding: 24px; max-width: 1200px; margin: 0 auto; }
-      .admin h2 { font-size: 17px; margin: 30px 0 12px; }
-      .admin h2:first-child { margin-top: 0; }
-      .cards { display: grid; grid-template-columns: repeat(auto-fit, minmax(140px, 1fr)); gap: 12px; }
-      .card { background: var(--paper); border: 2px solid var(--ink); border-radius: var(--radius); padding: 14px 16px; }
-      .card b { display: block; font-family: var(--heading-font); font-weight: 700; font-size: 28px; line-height: 1; margin-bottom: 5px; }
-      .card span { color: var(--muted); font-size: 13px; }
-      .card.warn { border-color: var(--red); } .card.warn b { color: var(--red); }
-      .card.good { background: var(--pollen); }
-      table { width: 100%; border-collapse: collapse; font-size: 14px; }
-      th, td { text-align: left; padding: 9px 14px; border-bottom: 1px solid var(--line); vertical-align: top; }
-      tbody tr:last-child td { border-bottom: 0; }
-      th { font-family: var(--heading-font); color: var(--muted); font-weight: 700; font-size: 13px; white-space: nowrap; background: var(--paper-2); }
-      tbody tr:hover { background: var(--paper-2); }
-      .scroll { overflow-x: auto; border: 2px solid var(--ink); border-radius: var(--radius); background: var(--paper); }
-      .pill { display: inline-block; padding: 1px 9px; font-size: 12px; background: var(--paper-2); border: 1px solid var(--line); white-space: nowrap; border-radius: 999px; }
-      .pill.ok { background: #e1f4fd; color: #064a66; }
-      .pill.bad { background: #fde7ea; color: #7a0b1c; }
-      .pill.hot { background: var(--pollen); color: var(--ink); border-color: var(--ink); }
-      .banner { padding: 12px 18px; margin-bottom: 16px; font-size: 14px; border-radius: var(--radius); border: 2px solid var(--ink); background: var(--paper); }
-      .banner.ok { background: #e1f4fd; }
-      .banner.bad { background: #fde7ea; border-color: var(--red); }
-      .nowrap { white-space: nowrap; }
+      /* One segmented control, not two buttons: a single track with the active
+     half filled, so it reads as a state switch rather than two actions. */
+      .tabs {
+        display: inline-flex;
+        background: rgba(255, 255, 255, 0.07);
+        border-radius: 999px;
+        padding: 3px;
+        gap: 0;
+      }
+      .tab {
+        background: none;
+        border: 0;
+        color: var(--muted);
+        padding: 7px 20px;
+        font-size: 13px;
+        font-weight: 400;
+        border-radius: 999px;
+        transition:
+          background 0.15s,
+          color 0.15s;
+      }
+      .tab:hover:not(.on) {
+        color: var(--white);
+      }
+      .tab.on {
+        background: var(--sky-blue);
+        color: var(--white);
+        font-weight: 700;
+      }
+      .admin {
+        padding: 24px;
+        max-width: 1400px;
+      }
+      .admin h2 {
+        font-size: 17px;
+        margin: 30px 0 12px;
+      }
+      .admin h2:first-child {
+        margin-top: 0;
+      }
+      .cards {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+        gap: 12px;
+      }
+      .card {
+        background: var(--card-dark);
+        border: 0;
+        border-radius: var(--radius);
+        padding: 16px 18px;
+      }
+      .card b {
+        display: block;
+        font-family: var(--heading-font);
+        font-weight: 700;
+        font-size: 28px;
+        line-height: 1;
+        margin-bottom: 5px;
+      }
+      .card span {
+        color: var(--muted);
+        font-size: 13px;
+      }
+      .card.warn {
+        box-shadow: inset 0 0 0 1px var(--red);
+      }
+      .card.warn b {
+        color: #e8a0a8;
+      }
+      .card.good {
+        box-shadow: inset 0 0 0 1px rgba(43, 140, 196, 0.6);
+      }
+      table {
+        width: 100%;
+        border-collapse: collapse;
+        font-size: 14px;
+      }
+      th,
+      td {
+        text-align: left;
+        padding: 10px 14px;
+        border-bottom: 1px solid var(--line);
+        vertical-align: top;
+      }
+      tbody tr:last-child td {
+        border-bottom: 0;
+      }
+      th {
+        font-family: var(--heading-font);
+        letter-spacing: normal;
+        color: var(--muted);
+        font-weight: 700;
+        font-size: 13px;
+        white-space: nowrap;
+      }
+      tbody tr:hover {
+        background: rgba(255, 255, 255, 0.03);
+      }
+      /* Rounded, borderless table shell. overflow:hidden clips the first and last
+     rows to the corner radius; the row separators are kept. */
+      .scroll {
+        overflow-x: auto;
+        border: 0;
+        border-radius: var(--radius);
+        background: var(--card-dark);
+      }
+      .pill {
+        display: inline-block;
+        padding: 2px 9px;
+        font-size: 12px;
+        background: rgba(255, 255, 255, 0.09);
+        white-space: nowrap;
+        border-radius: var(--radius);
+      }
+      .pill.ok {
+        background: rgba(43, 140, 196, 0.22);
+        color: #c8dff0;
+      }
+      .pill.bad {
+        background: rgba(200, 16, 46, 0.22);
+        color: #e8a0a8;
+      }
+      .banner {
+        padding: 14px 18px;
+        margin-bottom: 16px;
+        font-size: 14px;
+        border-radius: 10px;
+      }
+      .banner.ok {
+        background: rgba(43, 140, 196, 0.12);
+        border-left: 0;
+        color: #c8dff0;
+      }
+      .banner.bad {
+        background: rgba(200, 16, 46, 0.12);
+        border-left: 3px solid var(--red);
+        color: #e8a0a8;
+      }
+      .nowrap {
+        white-space: nowrap;
+      }
 
       /* ------------------------------------------------------------- charts */
-      .panel { background: var(--paper); border: 2px solid var(--ink); border-radius: var(--radius); padding: 20px 22px; position: relative; }
-      .panel-title { font-size: 15px; margin-bottom: 14px; }
-      .progress-split { display: grid; grid-template-columns: 6fr 4fr; gap: 12px; align-items: stretch; }
-      .progress-split > .panel { display: flex; flex-direction: column; }
-      .progress-split > .panel .chart-row { flex: 1 1 auto; }
-      .cards-tight { grid-template-columns: repeat(3, minmax(0, 1fr)); }
-      @media (max-width: 1100px) { .progress-split { grid-template-columns: 1fr; } .cards-tight { grid-template-columns: repeat(auto-fit, minmax(140px, 1fr)); } }
-      .chart-empty { color: var(--muted); font-size: 14px; flex: 1 1 auto; display: flex; align-items: center; }
-      .chart-row { display: flex; gap: 24px; align-items: center; flex-wrap: wrap; }
-      .funnel { list-style: none; margin: 0; padding: 0; display: grid; grid-template-columns: repeat(5, minmax(0, 1fr)); }
-      .funnel li { position: relative; text-align: center; padding: 0 6px; }
-      .fn-seg { display: block; height: 8px; margin: 0 -6px; border-top: 1px solid var(--ink); border-bottom: 1px solid var(--ink); }
-      .funnel li:first-child .fn-seg { margin-left: 0; border-radius: 4px 0 0 4px; border-left: 1px solid var(--ink); }
-      .funnel li:last-child .fn-seg { margin-right: 0; border-radius: 0 4px 4px 0; border-right: 1px solid var(--ink); }
-      .fn-label { display: block; color: var(--muted); font-size: 12px; margin-bottom: 12px; min-height: 2.4em; }
-      .fn-num { display: block; font-weight: 700; font-size: 26px; line-height: 1.1; margin-top: 12px; }
-      .fn-pct { display: block; color: var(--muted); font-size: 12px; margin-top: 2px; }
-      .info-i { position: absolute; top: 12px; right: 14px; width: 20px; height: 20px; border-radius: 50%; background: var(--paper-2); border: 1px solid var(--ink); color: var(--ink); font-size: 12px; font-weight: 700; display: inline-flex; align-items: center; justify-content: center; cursor: help; font-style: italic; }
-      .info-i:hover, .info-i:focus, .info-i.open { background: var(--pollen); outline: none; }
-      .info-i .tip { position: absolute; top: 26px; right: 0; width: 270px; background: var(--ink); color: #fff; font-size: 12px; font-weight: 400; font-style: normal; line-height: 1.5; padding: 10px 12px; border-radius: 8px; text-align: left; box-shadow: 0 6px 20px rgba(0,0,0,0.25); opacity: 0; visibility: hidden; transition: opacity 0.12s; z-index: 5; }
-      .info-i:hover .tip, .info-i:focus .tip, .info-i.open .tip { opacity: 1; visibility: visible; }
-      @media (max-width: 860px) { .funnel { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 22px 0; } }
+      .panel {
+        background: var(--card-dark);
+        border-radius: var(--radius);
+        padding: 22px 24px;
+        position: relative;
+      }
+      .panel-title {
+        font-size: 15px;
+        margin-bottom: 16px;
+      }
+      /* Counters take the greater share; the pie needs less room to read. */
+      /* stretch, not start: the chart panel matches the counter block's height
+     even before any calls exist, so the row does not look half-built. */
+      .progress-split {
+        display: grid;
+        grid-template-columns: 6fr 4fr;
+        gap: 12px;
+        align-items: stretch;
+      }
+      .progress-split > .panel {
+        display: flex;
+        flex-direction: column;
+      }
+      .progress-split > .panel .chart-row {
+        flex: 1 1 auto;
+      }
+      .cards-tight {
+        grid-template-columns: repeat(3, minmax(0, 1fr));
+      }
+      @media (max-width: 1100px) {
+        .progress-split {
+          grid-template-columns: 1fr;
+        }
+        .cards-tight {
+          grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+        }
+      }
+      .chart-empty {
+        color: var(--muted);
+        font-size: 14px;
+        flex: 1 1 auto;
+        display: flex;
+        align-items: center;
+      }
+      .chart-row {
+        display: flex;
+        gap: 24px;
+        align-items: center;
+        flex-wrap: wrap;
+      }
+      /* Five stages across one line. Each stage's detail sits under its own
+     stretch of the coloured line. */
+      .funnel {
+        list-style: none;
+        margin: 0;
+        padding: 0;
+        display: grid;
+        grid-template-columns: repeat(5, minmax(0, 1fr));
+      }
+      .funnel li {
+        position: relative;
+        text-align: center;
+        padding: 0 6px;
+      }
+      /* One continuous line across the panel; each stage fills its stretch of it
+     with the next step of the white-to-blue ramp. */
+      .fn-seg {
+        display: block;
+        height: 6px;
+        margin: 0 -6px;
+      }
+      .funnel li:first-child .fn-seg {
+        margin-left: 0;
+        border-radius: 3px 0 0 3px;
+      }
+      .funnel li:last-child .fn-seg {
+        margin-right: 0;
+        border-radius: 0 3px 3px 0;
+      }
+      .fn-label {
+        display: block;
+        color: var(--muted);
+        font-size: 12px;
+        margin-bottom: 12px;
+        min-height: 2.4em;
+      }
+      .fn-num {
+        display: block;
+        font-weight: 700;
+        font-size: 26px;
+        line-height: 1.1;
+        margin-top: 12px;
+      }
+      .fn-pct {
+        display: block;
+        color: var(--muted);
+        font-size: 12px;
+        margin-top: 2px;
+      }
+      /* Explanatory note, tucked into the panel corner. Focusable so it is
+     reachable without a mouse. */
+      .info-i {
+        position: absolute;
+        top: 14px;
+        right: 16px;
+        width: 20px;
+        height: 20px;
+        border-radius: 50%;
+        background: rgba(255, 255, 255, 0.12);
+        color: var(--muted);
+        font-size: 12px;
+        font-weight: 700;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        cursor: help;
+        font-style: italic;
+      }
+      .info-i:hover,
+      .info-i:focus,
+      .info-i.open {
+        background: var(--sky-blue);
+        color: var(--white);
+        outline: none;
+      }
+      .info-i .tip {
+        position: absolute;
+        top: 26px;
+        right: 0;
+        width: 270px;
+        background: #0b1c2c;
+        color: var(--muted);
+        font-size: 12px;
+        font-weight: 400;
+        font-style: normal;
+        line-height: 1.5;
+        padding: 10px 12px;
+        border-radius: 8px;
+        text-align: left;
+        box-shadow: 0 6px 20px rgba(0, 0, 0, 0.45);
+        opacity: 0;
+        visibility: hidden;
+        transition: opacity 0.12s;
+        z-index: 5;
+      }
+      /* .open covers touch, where hover never fires and the icon would
+     otherwise be dead. */
+      .info-i:hover .tip,
+      .info-i:focus .tip,
+      .info-i.open .tip {
+        opacity: 1;
+        visibility: visible;
+      }
+      @media (max-width: 860px) {
+        .funnel {
+          grid-template-columns: repeat(2, minmax(0, 1fr));
+          gap: 22px 0;
+        }
+        .funnel li::before,
+        .funnel li::after {
+          display: none;
+        }
+      }
 
       /* --------------------------------------------------------- pagination */
-      .pager { display: flex; align-items: center; justify-content: flex-end; gap: 14px; padding: 10px 14px; color: var(--muted); font-size: 13px; }
-      .pg-btn { background: var(--paper-2); border: 1px solid var(--ink); color: var(--ink); padding: 5px 14px; border-radius: 6px; font-size: 13px; font-weight: 400; font-family: inherit; }
-      .pg-btn:hover:not(:disabled) { background: var(--pollen); }
-      tr.rowlink { cursor: pointer; }
-      tr.rowlink:hover { background: #e1f4fd; }
-      .list-note { color: var(--muted); font-size: 13px; margin: 6px 0 14px; }
+      .pager {
+        display: flex;
+        align-items: center;
+        justify-content: flex-end;
+        gap: 14px;
+        padding: 10px 14px;
+        color: var(--muted);
+        font-size: 13px;
+      }
+      .pg-btn {
+        background: rgba(255, 255, 255, 0.08);
+        border: 0;
+        color: var(--white);
+        padding: 6px 14px;
+        border-radius: 6px;
+        font-size: 13px;
+        font-weight: 400;
+      }
+      .pg-btn:hover:not(:disabled) {
+        background: var(--sky-blue);
+      }
+
+      /* --------------------------------------------------------- round lists */
+      tr.rowlink {
+        cursor: pointer;
+      }
+      tr.rowlink:hover {
+        background: rgba(43, 140, 196, 0.1);
+      }
+      .pill.hot {
+        background: rgba(63, 191, 111, 0.22);
+        color: #9fe0bb;
+      }
+      .list-note {
+        color: var(--muted);
+        font-size: 13px;
+        margin: 6px 0 14px;
+      }
 
       /* ---------------------------------------------------------- club drawer */
-      #drawer-backdrop { position: fixed; inset: 0; background: rgba(34,34,34,0.45); z-index: 55; opacity: 0; visibility: hidden; transition: opacity 0.2s; }
-      #drawer-backdrop.open { opacity: 1; visibility: visible; }
-      #drawer { position: fixed; top: 0; right: 0; bottom: 0; width: min(620px, 100vw); z-index: 60; background: var(--paper); border-left: 3px solid var(--ink); overflow-y: auto; overscroll-behavior: contain; transform: translateX(100%); transition: transform 0.22s ease; }
-      #drawer.open { transform: none; }
-      .drawer-inner { padding: 24px; }
-      .drawer-top { display: flex; justify-content: space-between; align-items: flex-start; gap: 16px; margin-bottom: 6px; }
-      .drawer-top h2 { font-size: 22px; line-height: 1.2; }
-      .drawer-band { display: inline-block; width: 100%; height: 14px; border: 2px solid var(--ink); border-radius: 4px; margin-bottom: 10px; }
-      .drawer-close { background: none; color: var(--muted); font-size: 26px; line-height: 1; padding: 2px 8px; border-radius: 6px; }
-      .drawer-close:hover { color: var(--ink); background: var(--paper-2); }
-      .drawer-sub { color: var(--muted); font-size: 14px; margin: 0 0 16px; }
-      .drawer h3 { font-size: 15px; margin: 26px 0 10px; }
-      .drawer-phone { display: inline-block; background: var(--sky); color: #fff; text-decoration: none; font-weight: 700; font-size: 17px; padding: 8px 18px; border-radius: 8px; border: 2px solid var(--ink); box-shadow: 3px 3px 0 var(--ink); margin-bottom: 16px; font-family: var(--heading-font); }
-      .drawer-phone:hover { background: var(--sky-deep); }
-      .call-item { background: var(--paper-2); border: 1px solid var(--line); border-radius: var(--radius); padding: 12px 16px; margin-bottom: 10px; font-size: 14px; }
-      .call-item .ci-head { display: flex; justify-content: space-between; gap: 10px; flex-wrap: wrap; margin-bottom: 6px; }
-      .call-item .ci-when { color: var(--muted); font-size: 13px; }
-      .call-item .ci-notes { color: var(--muted); margin-top: 6px; white-space: pre-wrap; }
+      #drawer-backdrop {
+        position: fixed;
+        inset: 0;
+        background: rgba(0, 0, 0, 0.55);
+        z-index: 55;
+        opacity: 0;
+        visibility: hidden;
+        transition: opacity 0.2s;
+      }
+      #drawer-backdrop.open {
+        opacity: 1;
+        visibility: visible;
+      }
+      #drawer {
+        position: fixed;
+        top: 0;
+        right: 0;
+        bottom: 0;
+        width: min(620px, 100vw);
+        z-index: 60;
+        background: var(--card-dark);
+        overflow-y: auto;
+        overscroll-behavior: contain;
+        transform: translateX(100%);
+        transition: transform 0.22s ease;
+        box-shadow: -16px 0 48px rgba(0, 0, 0, 0.5);
+      }
+      #drawer.open {
+        transform: none;
+      }
+      .drawer-inner {
+        padding: 24px;
+      }
+      .drawer-top {
+        display: flex;
+        justify-content: space-between;
+        align-items: flex-start;
+        gap: 16px;
+        margin-bottom: 6px;
+      }
+      .drawer-top h2 {
+        font-size: 23px;
+        line-height: 1.2;
+      }
+      .drawer-close {
+        background: none;
+        color: var(--muted);
+        font-size: 26px;
+        line-height: 1;
+        padding: 2px 8px;
+        border-radius: 6px;
+      }
+      .drawer-close:hover {
+        color: var(--white);
+        background: rgba(255, 255, 255, 0.08);
+      }
+      .drawer-sub {
+        color: var(--muted);
+        font-size: 14px;
+        margin: 0 0 16px;
+      }
+      .drawer h3 {
+        font-size: 15px;
+        margin: 26px 0 10px;
+      }
+      .drawer-phone {
+        display: inline-block;
+        background: var(--sky-blue);
+        color: var(--white);
+        text-decoration: none;
+        font-weight: 700;
+        font-size: 17px;
+        padding: 9px 18px;
+        border-radius: var(--radius);
+        margin-bottom: 16px;
+      }
+      .drawer-phone:hover {
+        background: #1f6f9e;
+      }
+      /* One call = one block in the timeline. */
+      .call-item {
+        background: rgba(255, 255, 255, 0.05);
+        border-radius: var(--radius);
+        padding: 14px 16px;
+        margin-bottom: 10px;
+        font-size: 14px;
+      }
+      .call-item .ci-head {
+        display: flex;
+        justify-content: space-between;
+        gap: 10px;
+        flex-wrap: wrap;
+        margin-bottom: 6px;
+      }
+      .call-item .ci-when {
+        color: var(--muted);
+        font-size: 13px;
+      }
+      .call-item .ci-notes {
+        color: var(--muted);
+        margin-top: 6px;
+        white-space: pre-wrap;
+      }
       .ci-facts { display: grid; grid-template-columns: 82px minmax(0, 1fr); gap: 4px 12px; margin: 8px 0 0; }
       .ci-facts dt { color: var(--muted); font-size: 12px; padding-top: 1px; }
       .ci-facts dd { margin: 0; white-space: pre-wrap; overflow-wrap: anywhere; }
@@ -317,117 +1174,107 @@
       .pg-search { display: flex; align-items: center; gap: 12px; margin: 0 0 8px; }
       .pg-search .pg-q { flex: 0 1 320px; width: auto; padding: 7px 12px; font-size: 13px; }
       .pg-search .pg-count { color: var(--muted); font-size: 13px; }
-      .email-msg { background: var(--paper-2); border: 1px solid var(--line); border-radius: var(--radius); padding: 12px 16px; margin-bottom: 10px; font-size: 14px; }
-      .email-msg .em-chips { margin: 7px 0 5px; display: flex; gap: 6px; flex-wrap: wrap; }
-      .email-ev { display: flex; gap: 12px; align-items: baseline; padding: 7px 0; border-bottom: 1px solid var(--line); font-size: 14px; }
-      .email-ev:last-child { border-bottom: 0; }
-      .email-ev .ev-when { color: var(--muted); font-size: 13px; white-space: nowrap; }
-      .email-ev .ev-addr { color: var(--muted); font-size: 13px; overflow-wrap: anywhere; }
-      .ev-pill { display: inline-block; padding: 1px 9px; font-size: 12px; border-radius: 999px; background: var(--paper-2); border: 1px solid var(--line); white-space: nowrap; }
-      .ev-pill.delivered, .ev-pill.sent { background: #e1f4fd; color: #064a66; }
-      .ev-pill.opened { background: var(--pollen); }
-      .ev-pill.clicked, .ev-pill.converted { background: #dff5e7; color: #0d5a2e; }
-      .ev-pill.bounced, .ev-pill.failed, .ev-pill.spam, .ev-pill.suppressed, .ev-pill.unsubscribed { background: #fde7ea; color: #7a0b1c; }
-      .drawer .btn-primary { width: auto; padding: 10px 20px; }
-      .drawer .field { margin-bottom: 14px; }
-
-      /* ------------------------------------------------------------- tokens */
-      #token-modal { position: fixed; inset: 0; z-index: 70; background: rgba(34,34,34,0.5); display: flex; align-items: center; justify-content: center; padding: 20px; }
-      .token-card { background: var(--paper); border: 3px solid var(--ink); border-radius: var(--radius); box-shadow: 10px 10px 0 rgba(34,34,34,0.25); width: 100%; max-width: 520px; overflow: hidden; }
-      .token-card .band { background: var(--sky); color: #fff; padding: 14px 22px; border-bottom: 3px solid var(--ink); }
-      .token-card .band h2 { font-size: 20px; }
-      .token-card .band p { margin: 2px 0 0; font-size: 13px; opacity: 0.9; }
-      .token-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 10px; padding: 18px 22px 22px; }
-      .token-opt { background: var(--paper-2); border: 2px solid var(--line); border-radius: 10px; padding: 12px 6px 8px; text-align: center; font-family: inherit; font-weight: 400; font-size: 12px; color: var(--muted); }
-      .token-opt .tk { display: block; font-size: 34px; line-height: 1.1; margin-bottom: 4px; }
-      .token-opt:hover { border-color: var(--ink); background: var(--pollen); color: var(--ink); }
-      .token-opt.on { border-color: var(--ink); background: var(--pollen); color: var(--ink); box-shadow: 3px 3px 0 var(--ink); }
-      .token-opt.taken { opacity: 0.45; cursor: not-allowed; }
-      .token-opt.taken:hover { border-color: var(--line); background: var(--paper-2); color: var(--muted); }
-      .token-opt .owner { display: block; font-size: 11px; color: var(--muted); margin-top: 2px; }
-      .token-note { margin: 0; padding: 0 22px 18px; font-size: 13px; color: var(--muted); }
-      .token-note.bad { color: var(--red); }
-      .demo-bar { background: var(--red); color: #fff; text-align: center; padding: 8px 16px; font-size: 14px; border-bottom: 3px solid var(--ink); }
-      .demo-bar a { color: #fff; font-weight: 700; }
-
-      /* --------------------------------------------------------------- toast */
-      .toast {
-        position: fixed; left: 50%; bottom: 26px; transform: translateX(-50%) translateY(20px);
-        background: var(--pollen); border: 3px solid var(--ink); border-radius: var(--radius);
-        box-shadow: 6px 6px 0 var(--ink); padding: 12px 20px; font-size: 14px; z-index: 80;
-        opacity: 0; transition: opacity 0.2s, transform 0.2s; max-width: 420px; text-align: center;
+      .email-msg {
+        background: rgba(255, 255, 255, 0.05);
+        border-radius: var(--radius);
+        padding: 12px 16px;
+        margin-bottom: 10px;
+        font-size: 14px;
       }
-      .toast.show { opacity: 1; transform: translateX(-50%) translateY(0); }
-      .toast b { display: block; font-family: var(--heading-font); font-size: 16px; }
+      .email-msg .em-head b {
+        font-weight: 700;
+      }
+      .email-msg .em-chips {
+        margin: 7px 0 5px;
+        display: flex;
+        gap: 6px;
+        flex-wrap: wrap;
+      }
+      .email-ev {
+        display: flex;
+        gap: 12px;
+        align-items: baseline;
+        padding: 7px 0;
+        border-bottom: 1px solid var(--line);
+        font-size: 14px;
+      }
+      .email-ev:last-child {
+        border-bottom: 0;
+      }
+      .email-ev .ev-when {
+        color: var(--muted);
+        font-size: 13px;
+        white-space: nowrap;
+      }
+      .email-ev .ev-addr {
+        color: var(--muted);
+        font-size: 13px;
+        overflow-wrap: anywhere;
+      }
+      .ev-pill {
+        display: inline-block;
+        padding: 1px 9px;
+        font-size: 12px;
+        border-radius: var(--radius);
+        background: rgba(255, 255, 255, 0.09);
+        white-space: nowrap;
+      }
+      .ev-pill.delivered,
+      .ev-pill.sent {
+        background: rgba(43, 140, 196, 0.22);
+        color: #c8dff0;
+      }
+      .ev-pill.opened {
+        background: rgba(216, 163, 63, 0.22);
+        color: #ecd2a0;
+      }
+      .ev-pill.clicked,
+      .ev-pill.converted {
+        background: rgba(63, 191, 111, 0.22);
+        color: #9fe0bb;
+      }
+      .ev-pill.bounced,
+      .ev-pill.failed,
+      .ev-pill.spam,
+      .ev-pill.suppressed,
+      .ev-pill.unsubscribed {
+        background: rgba(200, 16, 46, 0.22);
+        color: #e8a0a8;
+      }
+      .drawer .btn-primary {
+        width: auto;
+        background: var(--sky-blue);
+        padding: 11px 20px;
+      }
+      .drawer .btn-primary:hover:not(:disabled) {
+        background: #1f6f9e;
+      }
+      .drawer .field {
+        margin-bottom: 14px;
+      }
 
-      /* --------------------------------------------------------------- board */
-      .board-wrap { padding: 20px; display: grid; grid-template-columns: minmax(0, 720px) minmax(240px, 1fr); gap: 20px; max-width: 1200px; margin: 0 auto; align-items: start; }
-      @media (max-width: 900px) { .board-wrap { grid-template-columns: 1fr; } }
-      .board { display: grid; grid-template-columns: 1.6fr repeat(9, 1fr) 1.6fr; grid-template-rows: 1.6fr repeat(9, 1fr) 1.6fr; aspect-ratio: 1; background: var(--tea); border: 3px solid var(--ink); gap: 0; width: 100%; }
-      .sp { position: relative; border: 2px solid var(--ink); background: var(--paper); font-size: 7.5px; line-height: 1.1; overflow: hidden; display: flex; flex-direction: column; cursor: pointer; min-width: 0; }
-      .sp:hover { background: var(--pollen); }
-      .sp .band { flex: 0 0 22%; border-bottom: 2px solid var(--ink); }
-      .sp.side-l .band, .sp.side-r .band { flex: 0 0 auto; width: 22%; height: 100%; border-bottom: 0; }
-      .sp.side-l .band { border-left: 2px solid var(--ink); order: 2; }
-      .sp.side-r .band { border-right: 2px solid var(--ink); }
-      .sp.side-t .band { order: 2; border-bottom: 0; border-top: 2px solid var(--ink); }
-      .sp.side-l, .sp.side-r { flex-direction: row; }
-      .sp .nm { flex: 1 1 auto; padding: 2px; text-align: center; display: flex; align-items: center; justify-content: center; font-family: var(--heading-font); font-weight: 700; text-transform: uppercase; letter-spacing: 0; overflow-wrap: break-word; hyphens: auto; min-width: 0; }
-      .sp.done { background: var(--paper-2); }
-      .sp.done .nm { color: var(--muted); }
-      .sp.out .nm { text-decoration: line-through; color: #9aa39d; }
-      .sp .marks { position: absolute; bottom: 2px; left: 0; right: 0; display: flex; justify-content: center; gap: 2px; pointer-events: none; }
-      .sp.side-t .marks { bottom: auto; top: 2px; }
-      .sp.side-l .marks { left: auto; right: 4px; top: 0; bottom: 0; flex-direction: column; justify-content: center; }
-      .sp.side-r .marks { right: auto; left: 4px; top: 0; bottom: 0; flex-direction: column; justify-content: center; }
-      .house { width: 8px; height: 8px; background: var(--house); border: 1px solid var(--ink); }
-      .hotel { width: 14px; height: 8px; background: var(--hotel); border: 1px solid var(--ink); }
-      .sp .tick { position: absolute; top: 1px; right: 3px; font-size: 8px; color: var(--muted); pointer-events: none; }
-      .sp .you { position: absolute; inset: 0; display: grid; place-items: center; font-size: clamp(18px, 3vw, 34px); pointer-events: none; filter: drop-shadow(2px 3px 0 rgba(34,34,34,0.35)); animation: bob 1.6s ease-in-out infinite; }
-      @keyframes bob { 0%,100% { transform: translateY(0); } 50% { transform: translateY(-3px); } }
-      .sp.current { background: var(--pollen); }
-      .corner { border: 1px solid var(--ink); background: var(--paper); display: flex; flex-direction: column; align-items: center; justify-content: center; text-align: center; padding: 4px; font-family: var(--heading-font); font-weight: 700; font-size: 11px; line-height: 1.15; text-transform: uppercase; }
-      .corner b { font-size: clamp(16px, 2.4vw, 26px); line-height: 1; display: block; }
-      .corner small { display: block; font-weight: 400; text-transform: none; color: var(--muted); font-size: 10px; margin-top: 2px; }
-      .corner.go { background: var(--pollen); }
-      .corner.go b { color: var(--red); font-size: clamp(20px, 3.4vw, 40px); }
-      .corner.jail { background: var(--paper); }
-      .corner.jail .bars { font-size: clamp(14px, 2.2vw, 24px); }
-      .centre { grid-area: 2 / 2 / 11 / 11; display: flex; flex-direction: column; align-items: center; justify-content: center; text-align: center; padding: 6%; gap: 6px; }
-      .centre .nameplate { position: relative; width: min(340px, 92%); aspect-ratio: 1662 / 602; background: url("assets/name-plate.png") center/contain no-repeat; }
-      .centre .nameplate span { position: absolute; left: 7%; right: 7%; top: 77%; transform: translateY(-50%); text-align: center; font-family: var(--heading-font); font-weight: 700; color: #fff; text-transform: uppercase; font-size: clamp(13px, 2.2vw, 24px); line-height: 1.05; letter-spacing: 0.02em; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-      .centre .lap { color: var(--muted); font-size: 13px; margin-top: 8px; }
-      .centre .big { font-family: var(--heading-font); font-size: clamp(24px, 5vw, 52px); font-weight: 700; line-height: 1; }
-      .centre .big small { display: block; font-size: 13px; font-weight: 400; color: var(--muted); }
-      .centre .tally { font-family: var(--heading-font); font-size: 13px; font-weight: 400; color: var(--muted); margin-top: 8px; }
-      .centre .cc { margin-top: 8px; background: var(--paper); border: 2px solid var(--ink); border-radius: 8px; padding: 8px 12px; font-size: 12px; max-width: 260px; color: var(--muted); }
-      .centre .cc b { color: var(--ink); display: block; font-family: var(--heading-font); }
-      .board-side .panel { margin-bottom: 14px; }
-      .legend { list-style: none; margin: 0; padding: 0; font-size: 13px; }
-      .legend li { display: flex; align-items: center; gap: 8px; padding: 4px 0; }
-      .legend .set-chip { margin: 0; width: 22px; height: 12px; }
-      .legend b { font-family: var(--heading-font); }
-      .laps { display: flex; gap: 6px; flex-wrap: wrap; margin-top: 8px; }
-      .laps .pg-btn.on { background: var(--ink); color: #fff; }
-      .rank-row { display: flex; align-items: center; gap: 10px; padding: 6px 0; border-bottom: 1px dotted var(--line); font-size: 13px; }
-      .rank-row:last-child { border-bottom: 0; }
-      .rank-row .tk { font-size: 20px; width: 26px; text-align: center; }
-      .rank-row .bar { flex: 1; height: 8px; background: var(--paper-2); border: 1px solid var(--ink); border-radius: 4px; overflow: hidden; }
-      .rank-row .bar span { display: block; height: 100%; background: var(--sky); }
-      .rank-row .n { width: 34px; text-align: right; font-family: var(--heading-font); font-weight: 700; }
-
-      .empty { padding: 80px 24px; text-align: center; }
-      .empty h2 { font-size: 24px; margin-bottom: 10px; }
-      .empty p { color: var(--muted); }
-      .hidden { display: none !important; }
+      .empty {
+        padding: 80px 24px;
+        text-align: center;
+      }
+      .empty h2 {
+        font-size: 24px;
+        margin-bottom: 10px;
+      }
+      .empty p {
+        color: var(--muted);
+      }
+      .hidden {
+        display: none !important;
+      }
     </style>
   </head>
   <body>
     <!-- ============================================================== LOGIN -->
     <div class="auth-wrap" id="view-login">
       <div class="auth">
-        <div class="auth-band"><small>Darwin 1942 &mdash; RSL club outreach</small><h1>Community Chest</h1></div>
-        <p class="sub">Log in to draw your next club.</p>
+        <h1>Call worksheet</h1>
+        <p class="sub">Darwin 1942 &mdash; RSL club outreach</p>
         <form id="login-form">
           <div class="field">
             <label for="username">Username or email</label>
@@ -560,12 +1407,11 @@
     <!-- ========================================================== WORKSHEET -->
     <div class="hidden" id="view-work">
       <div class="topbar">
-        <h1><span class="logo"><img src="assets/community-chest.png" alt="" width="34" height="34"></span>Community Chest</h1>
+        <h1>Call worksheet</h1>
         <div class="nav">
           <div id="round-wrap"></div>
           <div class="tabs" id="admin-tabs">
             <button class="tab on" id="tab-work">Worksheet</button>
-            <button class="tab" id="tab-board">Board</button>
             <button class="tab" id="tab-admin">Overview</button>
             <button class="tab" id="tab-training">Training</button>
           </div>
@@ -577,7 +1423,7 @@
           </div>
         </div>
         <div class="who">
-          <button type="button" class="token-btn" id="token-btn" title="Change your token"><span class="tk" id="who-token">&#10067;</span><span id="who-name"></span></button>
+          <span id="who-name"></span>
           <button class="linkbtn" id="logout-btn">log out</button>
         </div>
       </div>
@@ -585,7 +1431,6 @@
       <div id="work-body"></div>
       <div id="admin-body" class="hidden"></div>
       <div id="training-body" class="hidden"></div>
-      <div id="board-body" class="hidden"></div>
     </div>
 
     <!-- ======================================================== CLUB DRAWER -->
@@ -593,8 +1438,6 @@
     <aside id="drawer" class="drawer" aria-label="Club details">
       <div class="drawer-inner" id="drawer-inner"></div>
     </aside>
-    <div id="token-modal" class="hidden"></div>
-    <div class="toast" id="toast"></div>
 
     <script>
       (function () {
@@ -609,7 +1452,7 @@
           token = localStorage.getItem(TOKEN_KEY);
         } catch (e) {}
         var current = null; // the club currently on screen
-        // Sessions live in localStorage, which /calls/ and /calls/chest/ share.
+        // Sessions live in localStorage, which /calls/ and /calls/classic/ share.
         // When another tab logs in or out, follow it instead of carrying on as
         // whoever this tab was opened as.
         window.addEventListener("storage", function (e) {
@@ -631,7 +1474,6 @@
         } catch (e) {}
 
         function api(action, payload) {
-          if (DEMO) return demoApi(action, payload);
           var body = Object.assign({ action: action }, payload || {});
           if (token) body.token = token;
           return fetch(API, {
@@ -818,7 +1660,6 @@
             })
               .then(function (r) {
                 if (r.error) throw new Error(r.error);
-                if (!r.caller) throw new Error("Login succeeded but no account was returned. Please try again.");
                 token = r.token;
                 try {
                   localStorage.setItem(TOKEN_KEY, token);
@@ -859,8 +1700,11 @@
 
         function startWork(caller) {
           meCaller = caller;
-          initToken();
-          document.getElementById("who-name").textContent = caller.name;
+          document.getElementById("who-name").textContent =
+            caller.name +
+            (caller.call_group
+              ? "  ·  list " + caller.call_group + " of 5"
+              : "");
           show("view-work");
           // Callers see their own numbers; the do-not-call figure is admin plumbing.
           document
@@ -886,11 +1730,6 @@
               .addEventListener("click", function () {
                 switchTab("training");
               });
-            document
-              .getElementById("tab-board")
-              .addEventListener("click", function () {
-                switchTab("board");
-              });
           }
           if (needsTraining()) {
             // Don't claim a club yet — the worksheet unlocks when they finish.
@@ -902,16 +1741,21 @@
 
         function switchTab(which) {
           if (needsTraining()) which = "training";
-          ["work", "admin", "training", "board"].forEach(function (t) {
+          ["work", "admin", "training"].forEach(function (t) {
             document
               .getElementById("tab-" + t)
               .classList.toggle("on", t === which);
             document
-              .getElementById(t + "-body")
+              .getElementById(
+                t === "work"
+                  ? "work-body"
+                  : t === "admin"
+                    ? "admin-body"
+                    : "training-body",
+              )
               .classList.toggle("hidden", t !== which);
           });
           if (which === "admin") loadOverview();
-          if (which === "board") loadBoard();
           if (which === "training") renderTraining();
         }
 
@@ -1267,20 +2111,18 @@
         // Monochrome ramp from white down to the site blue (--sky-blue), stable per
         // outcome so a slice keeps its colour as the numbers move: the best outcomes
         // are lightest, the dead ends sit at the blue end.
-        // Drawn from the board's property-set palette so the chart reads like the
-        // rest of the game — vivid, no greys.
         var OUTCOME_COLOURS = {
-          committed: "#1fb25a",        // green
-          interested_followup: "#0072bb", // dark blue
-          referred_to_board: "#f7941d",   // orange
-          callback_scheduled: "#00acef",  // sky
-          wants_updates: "#d93a96",       // pink
-          wants_info_only: "#fece50",     // yellow
-          not_interested: "#ed1b24",      // red
-          no_answer: "#955436",           // brown
-          gatekeeper: "#aae0fa",          // light blue
-          wrong_number: "#7a3fa0",        // violet
-          other: "#17a398",               // teal
+          committed: "#ffffff",
+          interested_followup: "#e7f2f8",
+          referred_to_board: "#d0e5f2",
+          callback_scheduled: "#b8d9eb",
+          wants_updates: "#a1cce5",
+          wants_info_only: "#89bfde",
+          not_interested: "#72b2d8",
+          no_answer: "#5aa6d1",
+          gatekeeper: "#4399cb",
+          wrong_number: "#2b8cc4",
+          other: "#8fa3b3",
         };
         var OUTCOME_LABELS = {
           committed: "Committed",
@@ -1444,12 +2286,12 @@
                   (x + 16) +
                   '" y="' +
                   (y + 4).toFixed(1) +
-                  '" text-anchor="start" font-family="Arial" font-size="12" fill="#222222">' +
+                  '" text-anchor="start" font-family="Arial" font-size="12" fill="#a8c4d8">' +
                   esc(name) +
-                  ' <tspan fill="#222222" font-weight="bold">' +
+                  ' <tspan fill="#ffffff" font-weight="bold">' +
                   l.n +
                   "</tspan>" +
-                  ' <tspan fill="#5f6b64">(' +
+                  ' <tspan fill="#7f97a8">(' +
                   l.pct +
                   "%)</tspan></text>"
                 );
@@ -1473,14 +2315,14 @@
             cx +
             '" y="' +
             (cy - 4) +
-            '" text-anchor="middle" fill="#222222" font-size="28" font-family="Arial" font-weight="bold">' +
+            '" text-anchor="middle" fill="#ffffff" font-size="28" font-family="Arial" font-weight="bold">' +
             total +
             "</text>" +
             '<text x="' +
             cx +
             '" y="' +
             (cy + 16) +
-            '" text-anchor="middle" fill="#5f6b64" font-size="12" font-family="Arial">calls</text>' +
+            '" text-anchor="middle" fill="#a8c4d8" font-size="12" font-family="Arial">calls</text>' +
             "</svg>"
           );
         }
@@ -1592,11 +2434,11 @@
         // white-to-blue steps to show the stages, each with its count and
         // description underneath.
         var FUNNEL_COLOURS = [
-          "#ceebcd",
-          "#9bdcf9",
-          "#5cc8f5",
-          "#00acef",
-          "#fece50",
+          "#ffffff",
+          "#cae2f0",
+          "#95c6e2",
+          "#60a9d3",
+          "#2b8cc4",
         ];
         function funnelChart(f, totalClubs) {
           var stages = [
@@ -2101,486 +2943,6 @@
           }
         });
 
-        // ======================================================= community chest
-        // Everything Monopoly lives here: colour sets, the title deed, tokens,
-        // the board, and the demo fixtures behind ?demo=1.
-        var DEMO = new URLSearchParams(location.search).get("demo") === "1";
-
-        // Colour sets by size of the club (poker machines), cheapest to dearest.
-        // Ranks only exist for NSW, machine counts exist for every state.
-        var TIERS = [
-          { key: "darkblue", name: "Dark blue", min: 300, colour: "#0072bb", light: false },
-          { key: "green", name: "Green", min: 200, colour: "#1fb25a", light: false },
-          { key: "yellow", name: "Yellow", min: 150, colour: "#fef200", light: true },
-          { key: "red", name: "Red", min: 100, colour: "#ed1b24", light: false },
-          { key: "orange", name: "Orange", min: 75, colour: "#f7941d", light: true },
-          { key: "pink", name: "Pink", min: 50, colour: "#d93a96", light: false },
-          { key: "lightblue", name: "Light blue", min: 25, colour: "#aae0fa", light: true },
-          { key: "brown", name: "Brown", min: 0, colour: "#955436", light: false },
-        ];
-        function tierOf(egm) {
-          var n = Number(egm || 0);
-          for (var i = 0; i < TIERS.length; i++) if (n >= TIERS[i].min) return TIERS[i];
-          return TIERS[TIERS.length - 1];
-        }
-        function tierRange(tier) {
-          var i = TIERS.indexOf(tier);
-          return i > 0 ? tier.min + "–" + (TIERS[i - 1].min - 1) : tier.min + "+";
-        }
-        function tierLabel(tier) {
-          return tier.name + " set — " + tierRange(tier) + " machines";
-        }
-
-        // The club as a title deed: colour band for its set, then the "rent" table.
-        function deedHtml(t, round, phone, telHref, websites, webLabel, place, distance) {
-          var tier = tierOf(t.egm_count);
-          function row(label, value, raw) {
-            if (!value && value !== 0) return "";
-            return "<tr><td>" + esc(label) + "</td><td>" + (raw ? value : esc(value)) + "</td></tr>";
-          }
-          return (
-            '<div class="deed">' +
-            '<div class="deed-band' + (tier.light ? " light" : "") + '" style="background:' + tier.colour + '">' +
-            "<small>Title deed" + (round >= 2 ? " · call back" : "") + "</small>" +
-            "<h2>" + esc(t.entity_name) + "</h2></div>" +
-            '<div class="deed-body">' +
-            '<p class="deed-sub">' + esc(place) + (distance ? " · " + esc(distance) : "") + "</p>" +
-            '<table class="rent">' +
-            (phone
-              ? row("Phone number", '<a class="phone-cta inline" href="' + esc(telHref) + '">' + esc(phone) + "</a>", true)
-              : row("Phone number", '<span style="color:var(--muted);font-weight:400">Not on file</span>', true)) +
-            row("Contact on file", t.primary_person) +
-            row("Email on file", t.primary_email) +
-            (websites
-              ? row("Website", '<a href="' + esc(websites) + '" target="_blank" rel="noopener">' + esc(webLabel) + "</a>", true)
-              : "") +
-            row("Gaming machines", t.egm_count) +
-            row("Gaming revenue", money(t.gaming_revenue)) +
-            row("State profit rank", t.gaming_rank) +
-            "</table></div></div>"
-          );
-        }
-
-        // ---------------------------------------------------------------- tokens
-        // The eight classic metal pieces. Each is a PNG in assets/, referenced by
-        // slug. The piece lives on d1942_callers.piece, which carries a unique
-        // index — so it follows the caller across devices, everyone else's shows
-        // on the board, and two people can never hold the same one.
-        var TOKENS = [
-          ["top-hat", "Top hat"], ["dog", "Dog"], ["race-car", "Race car"], ["battleship", "Battleship"],
-          ["boot", "Boot"], ["iron", "Iron"], ["wheelbarrow", "Wheelbarrow"], ["thimble", "Thimble"],
-        ];
-        var takenPieces = []; // [{piece, name, username}] from the server
-        var tokenPickerFirst = false;
-        function myToken() {
-          return (meCaller && meCaller.piece) || "";
-        }
-        function tokenName(slug) {
-          for (var i = 0; i < TOKENS.length; i++) if (TOKENS[i][0] === slug) return TOKENS[i][1];
-          return "";
-        }
-        // Who else holds this piece, or "" if it's free (or mine).
-        function pieceOwner(slug) {
-          for (var i = 0; i < takenPieces.length; i++) {
-            var p = takenPieces[i];
-            if (p.piece === slug && !(meCaller && p.username === meCaller.username)) return p.name || "someone";
-          }
-          return "";
-        }
-        // An <img> of the piece, or "" when no valid token is set.
-        function tokenIcon(slug, cls) {
-          if (!slug || !tokenName(slug)) return "";
-          return '<img class="token-img' + (cls ? " " + cls : "") + '" src="assets/' + slug + '.png" alt="' + esc(tokenName(slug)) + '">';
-        }
-        function paintToken() {
-          var tk = myToken();
-          document.getElementById("who-token").innerHTML = tokenIcon(tk) || "❔";
-          var you = document.querySelector(".sp .you");
-          if (you) you.innerHTML = tokenIcon(tk) || "📍";
-        }
-        function initToken() {
-          paintToken();
-          if (tokenName(myToken())) return;
-          // Pieces used to be remembered per browser. Carry one across if it's
-          // still free; otherwise ask.
-          var old = "";
-          try { old = localStorage.getItem("d1942_token_" + meCaller.username) || ""; } catch (e) {}
-          if (!tokenName(old)) return openTokenPicker(true);
-          api("set_piece", { piece: old })
-            .then(function (r) {
-              takenPieces = r.pieces || [];
-              if (r.ok) { meCaller.piece = r.piece; paintToken(); }
-              else openTokenPicker(true, r.pieces);
-            })
-            .catch(function () { openTokenPicker(true); });
-        }
-        function openTokenPicker(first, list) {
-          tokenPickerFirst = !!first;
-          var m = document.getElementById("token-modal");
-          m.innerHTML = '<div class="token-card"><div class="band"><h2>' +
-            (first ? "Choose your token" : "Change your token") + "</h2><p>Checking which pieces are free&hellip;</p></div></div>";
-          m.classList.remove("hidden");
-          (list ? Promise.resolve({ pieces: list }) : api("pieces", {}))
-            .then(function (r) { takenPieces = r.pieces || []; renderTokenPicker(""); })
-            .catch(function (e) { renderTokenPicker(e.message, true); });
-        }
-        function renderTokenPicker(note, bad) {
-          var cur = myToken();
-          var m = document.getElementById("token-modal");
-          m.innerHTML =
-            '<div class="token-card"><div class="band"><h2>' +
-            (tokenPickerFirst ? "Choose your token" : "Change your token") +
-            "</h2><p>It moves around the board as you work through your list. One piece per player.</p></div>" +
-            '<div class="token-grid">' +
-            TOKENS.map(function (t) {
-              var owner = pieceOwner(t[0]);
-              return '<button type="button" class="token-opt' + (t[0] === cur ? " on" : "") + (owner ? " taken" : "") +
-                '" data-token="' + t[0] + '"' + (owner ? ' disabled title="Taken by ' + esc(owner) + '"' : "") + '><span class="tk">' + tokenIcon(t[0]) + "</span>" + t[1] +
-                (owner ? '<span class="owner">' + esc(owner) + "</span>" : "") + "</button>";
-            }).join("") +
-            "</div>" +
-            (note ? '<p class="token-note' + (bad ? " bad" : "") + '">' + esc(note) + "</p>" : "") +
-            "</div>";
-          m.classList.remove("hidden");
-        }
-        document.addEventListener("click", function (e) {
-          var opt = e.target.closest && e.target.closest(".token-opt");
-          if (opt) {
-            if (opt.disabled) return;
-            var tk = opt.getAttribute("data-token");
-            opt.classList.add("on");
-            api("set_piece", { piece: tk })
-              .then(function (r) {
-                takenPieces = r.pieces || [];
-                if (!r.ok) {
-                  renderTokenPicker("Too slow — " + (r.taken_by || "someone") + " just took the " + tokenName(tk).toLowerCase() + ". Pick another.", true);
-                  return;
-                }
-                meCaller.piece = r.piece;
-                try { localStorage.removeItem("d1942_token_" + meCaller.username); } catch (err) {}
-                paintToken();
-                document.getElementById("token-modal").classList.add("hidden");
-              })
-              .catch(function (err) { renderTokenPicker(err.message, true); });
-            return;
-          }
-          if (e.target.id === "token-modal" && myToken()) e.target.classList.add("hidden");
-          if (e.target.closest && e.target.closest("#token-btn")) openTokenPicker(false);
-        });
-
-        // ----------------------------------------------------------------- toast
-        var CHEST_CARDS = [
-          "Bank error in your favour: one more club off the list.",
-          "Advance to the next club. Do not stop at reception.",
-          "You have won second prize in a beauty contest. The prize is another phone call.",
-          "Grand opera night: the whole team applauds your persistence.",
-          "Get out of voicemail free. Keep this card until needed.",
-          "It is your birthday. Every club puts you through to the decision maker.",
-          "Income tax refund: collect one small sense of achievement.",
-          "Doctor's fee: pay nothing, keep dialling.",
-        ];
-        var toastTimer;
-        function toast(title, text) {
-          var t = document.getElementById("toast");
-          t.innerHTML = "<b>" + esc(title) + "</b>" + esc(text);
-          t.classList.add("show");
-          clearTimeout(toastTimer);
-          toastTimer = setTimeout(function () { t.classList.remove("show"); }, 3400);
-        }
-        function passGo() {
-          var n = Number(document.getElementById("c-mine").textContent || 0) + 1;
-          toast(
-            (tokenName(myToken()) || "You") + " pass GO — call " + n + " in the bank",
-            CHEST_CARDS[Math.floor(Math.random() * CHEST_CARDS.length)],
-          );
-        }
-
-        // ----------------------------------------------------------------- board
-        // The caller's list laid out as a board: 36 club spaces a lap plus the four
-        // corners. Clubs already dealt with come first in the order they were
-        // called, then the ones still to call, biggest first, so the token walks
-        // forward one space per club.
-        var SPACES = 36;
-        var boardLap = -1; // -1 = the lap the token is on
-        var NO_CONTACT = ["no_answer", "gatekeeper", "wrong_number"];
-
-        function loadBoard() {
-          var el = document.getElementById("board-body");
-          el.innerHTML = '<div class="empty"><p>Setting up the board...</p></div>';
-          boardLap = -1;
-          api("overview", {})
-            .then(function (d) { renderBoard(el, d); })
-            .catch(function (e) {
-              el.innerHTML = '<div class="empty"><h2>Could not load</h2><p>' + esc(e.message) + "</p></div>";
-            });
-        }
-
-        function shortName(n) {
-          var s = String(n || "")
-            .replace(/\b(RSL|R\.S\.L\.?|Club|Clubs|Ltd|Limited|Memorial|Sub[- ]?Branch|Community|Services|Inc\.?|Co-?operative|Pty|The)\b/gi, "")
-            .replace(/[,()]/g, "")
-            .replace(/\s+/g, " ")
-            .trim();
-          return s || n;
-        }
-
-        function boardSpaces(d) {
-          var byId = {}, order = [];
-          (d.recent || []).slice().reverse().forEach(function (r) {
-            if (!r.target_id) return;
-            var s = byId[r.target_id];
-            if (!s) {
-              s = byId[r.target_id] = { id: r.target_id, name: r.club, where: r.where, egm: r.egm_count, state: "tried", houses: 0, hotel: false, calls: 0 };
-              order.push(s);
-            }
-            s.calls++;
-            if (NO_CONTACT.indexOf(r.outcome) < 0) s.state = r.outcome === "not_interested" ? "out" : "done";
-            if (r.wants_info) s.houses = Math.max(s.houses, 1);
-            if (["interested_followup", "referred_to_board", "callback_scheduled"].indexOf(r.outcome) >= 0) s.houses = Math.max(s.houses, 2);
-            if (r.outcome === "committed") s.hotel = true;
-          });
-          var lists = d.lists || {};
-          (lists.round2 || []).forEach(function (t) {
-            var s = byId[t.id];
-            if (!s) {
-              s = byId[t.id] = { id: t.id, name: t.entity_name, where: t.where, egm: t.egm_count, state: "done", houses: t.direct ? 1 : 0, hotel: false, calls: t.calls || 1 };
-              order.push(s);
-            } else if (s.state !== "out") s.state = "done";
-          });
-          var done = order.filter(function (s) { return s.state !== "tried"; });
-          var todo = (lists.round1 || []).map(function (t) {
-            return { id: t.id, name: t.entity_name, where: t.where, egm: t.egm_count, state: t.attempts ? "tried" : "todo", houses: 0, hotel: false, calls: t.attempts || 0 };
-          });
-          return { done: done, todo: todo, all: done.concat(todo) };
-        }
-
-        function renderBoard(el, d) {
-          var b = boardSpaces(d);
-          var all = b.all, pos = b.done.length;
-          var laps = Math.max(1, Math.ceil(all.length / SPACES));
-          if (boardLap < 0) boardLap = Math.min(laps - 1, Math.floor(pos / SPACES));
-          var start = boardLap * SPACES;
-          var tk = myToken();
-          var houses = 0, hotels = 0, out = 0, tried = 0;
-          all.forEach(function (s) {
-            if (s.hotel) hotels++; else houses += s.houses;
-            if (s.state === "out") out++;
-            if (s.state === "tried") tried++;
-          });
-          var st = d.stats || d.counters || {};
-          var isMine = d.scope === "mine";
-          var next = all[pos];
-
-          function space(s, i) {
-            var side, r, c;
-            if (i < 9) { side = "b"; r = 11; c = 10 - i; }
-            else if (i < 18) { side = "l"; c = 1; r = 10 - (i - 9); }
-            else if (i < 27) { side = "t"; r = 1; c = 2 + (i - 18); }
-            else { side = "r"; c = 11; r = 2 + (i - 27); }
-            var tier = tierOf(s.egm);
-            var isCurrent = start + i === pos;
-            var marks = s.hotel
-              ? '<span class="hotel"></span>'
-              : new Array(s.houses + 1).join('<span class="house"></span>');
-            return (
-              '<div class="sp side-' + side +
-              (s.state === "done" ? " done" : "") + (s.state === "out" ? " out" : "") + (isCurrent ? " current" : "") +
-              '" style="grid-row:' + r + ';grid-column:' + c + '" data-club="' + esc(s.id) +
-              '" title="' + esc(s.name + (s.where ? " — " + s.where : "") + " · " + tierLabel(tier)) + '">' +
-              '<span class="band" style="background:' + tier.colour + '"></span>' +
-              '<span class="nm">' + esc(shortName(s.name)) + "</span>" +
-              (marks ? '<span class="marks">' + marks + "</span>" : "") +
-              (s.state === "done" && !marks ? '<span class="tick">✓</span>' : "") +
-              (s.state === "out" ? '<span class="tick">✕</span>' : "") +
-              (isCurrent ? '<span class="you">' + (tokenIcon(tk) || "📍") + "</span>" : "") +
-              "</div>"
-            );
-          }
-
-          var spaces = "";
-          for (var i = 0; i < SPACES; i++) {
-            var s = all[start + i];
-            if (s) spaces += space(s, i);
-          }
-          var corners =
-            '<div class="corner go" style="grid-row:11;grid-column:11"><small>collect a call</small><b>GO</b><small>&larr; this way</small></div>' +
-            '<div class="corner jail" style="grid-row:11;grid-column:1"><span class="bars">&#128683;</span>Do not call<small>' + esc(st.do_not_call != null ? st.do_not_call + " came to us" : "already enquired") + "</small></div>" +
-            '<div class="corner" style="grid-row:1;grid-column:1">&#128663; Free parking<small>' + tried + " to try again</small></div>" +
-            '<div class="corner" style="grid-row:1;grid-column:11">Not interested<small>' + out + " passed for now</small></div>";
-
-          var centre =
-            '<div class="centre">' +
-            '<div class="nameplate"><span>' + esc((meCaller && meCaller.name) || "You") + "</span></div>" +
-            '<div class="tally">' + pos + " of " + all.length + (isMine ? " clubs in your list called" : " clubs called") +
-            (laps > 1 ? '<span class="lap"> &middot; Lap ' + (boardLap + 1) + " of " + laps + "</span>" : "") + "</div>" +
-            '<div class="cc"><b>' + (next ? "Next up" : "Board complete") + "</b>" +
-            (next ? esc(next.name) + (next.where ? " · " + esc(next.where) : "") : "Every club in this list has been called.") +
-            "</div></div>";
-
-          var legend =
-            '<div class="panel"><h3 class="panel-title">Colour sets</h3><ul class="legend">' +
-            TIERS.map(function (t) {
-              return '<li><span class="set-chip" style="background:' + t.colour + '"></span><b>' + t.name + "</b><span style='color:var(--muted)'>" + tierRange(t) + " machines</span></li>";
-            }).join("") +
-            "</ul></div>" +
-            '<div class="panel"><h3 class="panel-title">Pieces on the board</h3><ul class="legend">' +
-            '<li><span class="house"></span> House &mdash; wants the partnership pack<b style="margin-left:auto">' + houses + "</b></li>" +
-            '<li><span class="hotel"></span> Hotel &mdash; committed<b style="margin-left:auto">' + hotels + "</b></li>" +
-            '<li><span style="width:14px;text-align:center">✓</span> Called, decision maker reached</li>' +
-            '<li><span style="width:14px;text-align:center">✕</span> Not interested</li>' +
-            "</ul>" +
-            (laps > 1
-              ? '<div class="laps">' + Array.apply(null, Array(laps)).map(function (_, i) {
-                  return '<button type="button" class="pg-btn lap-btn' + (i === boardLap ? " on" : "") + '" data-lap="' + i + '">Lap ' + (i + 1) + "</button>";
-                }).join("") + "</div>"
-              : "") +
-            "</div>";
-
-          var callers = "";
-          if (!isMine && d.callers && d.callers.length) {
-            var max = Math.max.apply(null, d.callers.map(function (c) { return c.calls || 0; }).concat([1]));
-            callers =
-              '<div class="panel"><h3 class="panel-title">Players</h3>' +
-              d.callers.slice().sort(function (a, b) { return (b.calls || 0) - (a.calls || 0); }).map(function (c) {
-                var mine = meCaller && c.username === meCaller.username;
-                return '<div class="rank-row' + (mine ? " me" : "") + '"><span class="tk">' + (tokenIcon(c.piece) || "🎲") + "</span><span style='flex:0 0 120px'>" + esc(c.name) + '</span><span class="bar"><span style="width:' + Math.round(((c.calls || 0) / max) * 100) + '%"></span></span><span class="n">' + (c.calls || 0) + "</span></div>";
-              }).join("") +
-              "</div>";
-          }
-
-          el.innerHTML =
-            '<div class="board-wrap">' +
-            (all.length
-              ? '<div class="board">' + corners + spaces + centre + "</div>"
-              : '<div class="panel"><p style="margin:0;color:var(--muted)">No clubs in this list yet.</p></div>') +
-            '<div class="board-side">' + legend + callers + "</div>" +
-            "</div>";
-          el.__boardData = d;
-        }
-        document.addEventListener("click", function (e) {
-          var b = e.target.closest && e.target.closest(".lap-btn");
-          if (!b) return;
-          boardLap = parseInt(b.getAttribute("data-lap"), 10) || 0;
-          var el = document.getElementById("board-body");
-          if (el.__boardData) renderBoard(el, el.__boardData);
-        });
-
-        // ------------------------------------------------------------ demo mode
-        // ?demo=1 runs the whole page against fixtures so the design can be looked
-        // at without a login. Nothing is sent anywhere.
-        var DEMO_CALLER = { id: "demo", name: "Demo caller", username: "demo", is_admin: false, call_group: 2, onboarded_at: "2026-09-01T00:00:00Z", piece: null };
-        var DEMO_PIECES = [{ piece: "dog", name: "Danella", username: "danella" }, { piece: "top-hat", name: "Taylor", username: "taylor" }];
-        var DEMO_CLUBS = [
-          ["Rooty Hill RSL Club", "ROOTY HILL", "NSW", 699, 6, "$203,883,454", "(02) 9625 5500", "www.rootyhillrsl.com.au", "Reception", "info@rootyhillrsl.com.au", 43],
-          ["Merrylands RSL Club Ltd", "MERRYLANDS", "NSW", 308, 14, "$291,724,968", "(02) 9760 8888", "www.merrylandsrsl.com.au", "", "", 24],
-          ["Castle Hill RSL Club", "CASTLE HILL", "NSW", 390, 15, "$67,073,908", "(02) 9634 4000", "www.castlehillrsl.com.au", "", "", 31],
-          ["Burwood RSL Club", "BURWOOD", "NSW", 293, 23, "$87,154,232", "(02) 9744 0000", "", "", "", 11],
-          ["Smithfield RSL", "SMITHFIELD", "NSW", 325, 26, "$482,648,979", "(02) 9604 8888", "", "", "", 33],
-          ["Campsie RSL Sub-branch Club Limited", "CAMPSIE", "NSW", 263, 28, "$435,045,140", "(02) 9789 1111", "", "", "", 13],
-          ["North Ryde RSL Community Club Ltd", "NORTH RYDE", "NSW", 295, 43, "$65,443,236", "(02) 9888 5555", "", "", "", 15],
-          ["Ramsgate RSL Memorial Club Limited", "RAMSGATE", "NSW", 234, 44, "$76,666,899", "(02) 9529 7111", "", "", "", 17],
-          ["Dee Why RSL Club Limited", "DEE WHY", "NSW", 494, 17, "$108,567,867", "(02) 9454 4000", "", "", "", 18],
-          ["Bathurst RSL Club", "BATHURST", "NSW", 180, 96, "$22,400,120", "(02) 6331 2211", "", "", "", 200],
-          ["Shepparton RSL Sub-Branch", "SHEPPARTON", "VIC", 95, null, "$9,102,300", "(03) 5821 2233", "", "", "", null],
-          ["Waverley RSL", "GLEN WAVERLEY", "VIC", 60, null, "$4,880,000", "(03) 9560 7788", "", "", "", null],
-          ["Hervey Bay RSL", "PIALBA", "QLD", 210, null, "", "(07) 4128 1133", "", "", "", null],
-          ["Geebung RSL Club", "GEEBUNG", "QLD", 160, null, "", "(07) 3265 4211", "", "", "", null],
-          ["Wagga RSL Club", "WAGGA WAGGA", "NSW", 140, 130, "$18,300,000", "(02) 6921 3624", "", "", "", 452],
-          ["Dubbo RSL Memorial Club", "DUBBO", "NSW", 120, 150, "$15,200,000", "(02) 6882 4411", "", "", "", 390],
-          ["Tamworth RSL", "TAMWORTH", "NSW", 88, 210, "$8,900,000", "(02) 6766 4888", "", "", "", 410],
-          ["Kingscliff RSL", "KINGSCLIFF", "NSW", 70, 260, "$6,100,000", "(02) 6674 1122", "", "", "", 780],
-          ["Cronulla RSL Memorial Club", "CRONULLA", "NSW", 110, 170, "$12,800,000", "(02) 9523 1111", "", "", "", 26],
-          ["Mooney Mooney Club", "MOONEY MOONEY", "NSW", 22, 700, "$1,100,000", "(02) 4985 5555", "", "", "", 55],
-          ["Frankston RSL", "FRANKSTON", "VIC", 103, null, "$11,000,000", "(03) 9783 3277", "", "", "", null],
-          ["Dandenong RSL", "DANDENONG", "VIC", 80, null, "$7,200,000", "(03) 9793 3311", "", "", "", null],
-          ["Caloundra RSL", "CALOUNDRA", "QLD", 300, null, "", "(07) 5438 5800", "", "", "", null],
-          ["Redcliffe RSL", "REDCLIFFE", "QLD", 260, null, "", "(07) 3283 2011", "", "", "", null],
-          ["Bribie Island RSL", "BONGAREE", "QLD", 180, null, "", "(07) 3408 1288", "", "", "", null],
-          ["Ballina RSL Club", "BALLINA", "NSW", 150, 150, "$9,700,000", "(02) 6686 2544", "", "", "", 740],
-          ["Coffs Harbour Ex-Services", "COFFS HARBOUR", "NSW", 95, 220, "$8,100,000", "(02) 6652 3888", "", "", "", 530],
-          ["Port Macquarie RSL", "PORT MACQUARIE", "NSW", 76, 240, "$6,000,000", "(02) 6580 2300", "", "", "", 390],
-          ["Goulburn Soldiers Club", "GOULBURN", "NSW", 55, 320, "$4,100,000", "(02) 4821 3300", "", "", "", 195],
-          ["Nowra RSL", "NOWRA", "NSW", 48, 360, "$3,300,000", "(02) 4421 2722", "", "", "", 160],
-          ["Bega RSL Club", "BEGA", "NSW", 30, 520, "$1,900,000", "(02) 6492 1155", "", "", "", 420],
-          ["Cooma Ex-Services Club", "COOMA", "NSW", 27, 560, "$1,700,000", "(02) 6452 1144", "", "", "", 400],
-          ["Moree RSL", "MOREE", "NSW", 18, 760, "$900,000", "(02) 6752 1288", "", "", "", 620],
-          ["Bendigo RSL", "BENDIGO", "VIC", 50, null, "$3,900,000", "(03) 5442 2950", "", "", "", null],
-          ["Ballarat RSL", "BALLARAT", "VIC", 45, null, "$3,400,000", "(03) 5331 5344", "", "", "", null],
-          ["Mildura RSL", "MILDURA", "VIC", 40, null, "$2,800,000", "(03) 5023 0621", "", "", "", null],
-          ["Gympie RSL", "GYMPIE", "QLD", 35, null, "", "(07) 5482 1231", "", "", "", null],
-          ["Yeppoon RSL", "YEPPOON", "QLD", 12, null, "", "(07) 4939 1100", "", "", "", null],
-        ].map(function (r, i) {
-          return {
-            id: "demo-" + i, entity_name: r[0], suburb: r[1], state: r[2], egm_count: r[3], gaming_rank: r[4],
-            gaming_revenue: r[5], primary_phone: r[6], websites: r[7], primary_person: r[8], primary_email: r[9],
-            distance_km: r[10], postcode: "", full_address: "", where: r[1] + " " + r[2],
-          };
-        });
-        var DEMO_CALLS = [
-          [0, "wants_info_only", true, "Rebecca Ward", "Community & grants manager", "rward@example.com", 3],
-          [1, "committed", false, "Tony Marsh", "CEO", "tony@example.com", 2],
-          [2, "not_interested", false, "Front desk", "", "", 5],
-          [3, "wants_info_only", true, "Kylie Dunn", "Marketing manager", "kylie@example.com", 6],
-          [4, "referred_to_board", false, "Bill Prior", "Secretary manager", "bill@example.com", 7],
-          [5, "wants_info_only", true, "Sam O'Neil", "Grants officer", "sam@example.com", 8],
-          [6, "other", false, "", "", "", 9],
-          [7, "wants_info_only", true, "Jess Tan", "Operations", "jess@example.com", 10],
-          [8, "no_answer", false, "", "", "", 1],
-          [10, "gatekeeper", false, "", "", "", 1],
-        ].map(function (c, i) {
-          var t = DEMO_CLUBS[c[0]];
-          return {
-            target_id: t.id, club: t.entity_name, where: t.where, egm_count: t.egm_count, outcome: c[1], wants_info: c[2],
-            decision_maker: c[3], decision_maker_name: c[3], decision_maker_role: c[4], decision_maker_email: c[5],
-            round: 1, sheet_synced: true, notes: c[1] === "committed" ? "Keen to host a screening for members." : "",
-            created_at: new Date(Date.now() - c[6] * 3600e3 * 5).toISOString(), d1942_callers: { name: DEMO_CALLER.name },
-          };
-        });
-        function demoApi(action, payload) {
-          return new Promise(function (resolve, reject) {
-            setTimeout(function () {
-              try { resolve(demoData(action, payload || {})); } catch (e) { reject(e); }
-            }, 220);
-          });
-        }
-        function demoData(action, p) {
-          var doneIds = {};
-          DEMO_CALLS.forEach(function (c) { if (NO_CONTACT.indexOf(c.outcome) < 0) doneIds[c.target_id] = c; });
-          var stats = { my_calls: DEMO_CALLS.length, remaining: DEMO_CLUBS.length - Object.keys(doneIds).length, done: Object.keys(doneIds).length, total: DEMO_CLUBS.length, do_not_call: 2, call_group: 2 };
-          var round1 = DEMO_CLUBS.filter(function (t) { return !doneIds[t.id]; }).map(function (t) {
-            var tries = DEMO_CALLS.filter(function (c) { return c.target_id === t.id; }).length;
-            return Object.assign({}, t, { attempts: tries });
-          });
-          var round2 = DEMO_CLUBS.filter(function (t) { return doneIds[t.id] && doneIds[t.id].outcome !== "not_interested"; }).map(function (t) {
-            var c = doneIds[t.id];
-            return Object.assign({}, t, { direct: !!c.decision_maker_email, last_outcome: c.outcome, decision_maker: c.decision_maker, calls: 1, called_again: false });
-          });
-          switch (action) {
-            case "login": return { token: "demo", caller: DEMO_CALLER };
-            case "logout": return { ok: true };
-            case "me": return { caller: DEMO_CALLER, stats: stats };
-            case "pieces": return { pieces: DEMO_PIECES.concat(DEMO_CALLER.piece ? [{ piece: DEMO_CALLER.piece, name: DEMO_CALLER.name, username: DEMO_CALLER.username }] : []) };
-            case "set_piece": {
-              var held = DEMO_PIECES.filter(function (x) { return x.piece === p.piece; })[0];
-              if (held) return { ok: false, taken_by: held.name, pieces: DEMO_PIECES };
-              DEMO_CALLER.piece = p.piece;
-              return { ok: true, piece: p.piece, pieces: DEMO_PIECES.concat([{ piece: p.piece, name: DEMO_CALLER.name, username: DEMO_CALLER.username }]) };
-            }
-            case "next": {
-              var r2 = Number(p.round) === 2;
-              var t = r2 ? DEMO_CLUBS[4] : round1[0];
-              return { target: t, round: r2 ? 2 : 1, stats: stats, history: r2 ? DEMO_CALLS.filter(function (c) { return c.target_id === t.id; }) : [] };
-            }
-            case "overview": return { scope: "mine", stats: stats, by_outcome: DEMO_CALLS.reduce(function (a, c) { a[c.outcome] = (a[c.outcome] || 0) + 1; return a; }, {}), lists: { round1: round1, round2: round2 }, recent: DEMO_CALLS.slice().reverse() };
-            case "club_detail": {
-              var tt = DEMO_CLUBS.filter(function (x) { return x.id === p.target_id; })[0] || DEMO_CLUBS[0];
-              return { caller: DEMO_CALLER, target: tt, calls: DEMO_CALLS.filter(function (c) { return c.target_id === tt.id; }).map(function (c, i) { return Object.assign({ id: "c" + i }, c); }), emails: { available: true, addresses: [], deliveries: [], events: [] } };
-            }
-            case "save": case "log_call": return { ok: true, saved: "Demo" };
-            default: return { ok: true };
-          }
-        }
-
         // ------------------------------------------------------------ worksheet
         // Lives in the topbar's top-right corner: which calling round the
         // worksheet serves from.
@@ -2623,7 +2985,7 @@
               "You have unsaved answers on this call. Switch rounds and lose them?",
             )
           ) {
-            renderRoundSwitch(); // put the dropdown back on the current round
+            renderRoundSwitch(); // put the select back to the round we're on
             return;
           }
           roundMode = m;
@@ -2870,7 +3232,39 @@
             '<div class="work">' +
             // -------------------------------------------------- left: who + script
             '<div class="pane pane-left">' +
-            deedHtml(t, round, phone, telHref, websites, webLabel, place, distance) +
+            '<div class="club-head">' +
+            '<div class="club-id">' +
+            '<h2 class="club-name">' +
+            esc(t.entity_name) +
+            (round >= 2 ? ' <span class="pill hot">call back</span>' : "") +
+            "</h2>" +
+            '<p class="club-sub">' +
+            esc(place) +
+            "</p>" +
+            (distance ? '<p class="club-dist">' + esc(distance) + "</p>" : "") +
+            "</div>" +
+            (phone
+              ? '<a class="phone-cta" href="' +
+                esc(telHref) +
+                '">' +
+                esc(phone) +
+                "</a>"
+              : '<span class="phone-cta none">No phone number on file &mdash; try the website</span>') +
+            "</div>" +
+            '<dl class="facts">' +
+            fact("Contact on file", t.primary_person) +
+            fact("Email on file", t.primary_email) +
+            (websites
+              ? '<div class="fact"><dt>Website</dt><dd><a href="' +
+                esc(websites) +
+                '" target="_blank" rel="noopener">' +
+                esc(webLabel) +
+                "</a></dd></div>"
+              : '<div class="fact"></div>') +
+            fact("Gaming machines", t.egm_count) +
+            fact("Gaming revenue", money(t.gaming_revenue)) +
+            fact("State profit rank", t.gaming_rank) +
+            "</dl>" +
             // The script is deliberately plain HTML you can edit in this file.
             '<div class="script">' +
             "<h2>Call script</h2>" +
@@ -2913,8 +3307,8 @@
             historyHtml +
             "</div>" +
             // ------------------------------------------------------- right: form
-            '<div class="pane pane-form"><div class="form-card">' +
-            '<div class="form-head"><h2>Record the call</h2><span class="chest">&#129520;</span></div>' +
+            '<div class="pane pane-form">' +
+            '<div class="form-head"><h2>Record the call</h2></div>' +
             '<form id="call-form">' +
             fieldsHtml +
             outcomeHtml +
@@ -2926,7 +3320,7 @@
             "</div>" +
             '<div class="msg" id="save-msg"></div>' +
             "</form>" +
-            "</div></div>" +
+            "</div>" +
             "</div>";
 
           document.getElementById("work-body").innerHTML = html;
@@ -3111,7 +3505,6 @@
             outcome: outcome,
           })
             .then(function (r) {
-              passGo();
               // Rare: the claim expired mid-call and the club went to someone else. The
               // call is still saved, but say so rather than moving on silently.
               if (r && r.warning) {
@@ -3355,9 +3748,6 @@
           }
 
           document.getElementById("drawer-inner").innerHTML =
-            '<span class="drawer-band" style="background:' +
-            tierOf(t.egm_count).colour +
-            '"></span>' +
             '<div class="drawer-top"><h2>' +
             esc(t.entity_name) +
             "</h2>" +
@@ -3500,16 +3890,7 @@
         }
 
         // ------------------------------------------------------- resume session
-        if (DEMO) {
-          // Make it unmistakable that nothing here is real, and give a way out.
-          var demoBar = document.createElement("div");
-          demoBar.className = "demo-bar";
-          demoBar.innerHTML =
-            "<b>Demo mode</b> &mdash; fake clubs and calls, nobody is logged in. " +
-            '<a href="' + esc(location.pathname) + '">Exit demo and log in</a>';
-          document.body.insertBefore(demoBar, document.body.firstChild);
-          startWork(DEMO_CALLER);
-        } else if (token) {
+        if (token) {
           api("me", {})
             .then(function (r) {
               setStats(r.stats);
