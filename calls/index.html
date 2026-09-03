@@ -1167,6 +1167,13 @@
         margin-top: 6px;
         white-space: pre-wrap;
       }
+      .ci-facts { display: grid; grid-template-columns: 82px minmax(0, 1fr); gap: 4px 12px; margin: 8px 0 0; }
+      .ci-facts dt { color: var(--muted); font-size: 12px; padding-top: 1px; }
+      .ci-facts dd { margin: 0; white-space: pre-wrap; overflow-wrap: anywhere; }
+      .ci-extra { color: var(--muted); font-size: 13px; margin-top: 8px; overflow-wrap: anywhere; }
+      .pg-search { display: flex; align-items: center; gap: 12px; margin: 0 0 8px; }
+      .pg-search .pg-q { flex: 0 1 320px; width: auto; padding: 7px 12px; font-size: 13px; }
+      .pg-search .pg-count { color: var(--muted); font-size: 13px; }
       .email-msg {
         background: rgba(255, 255, 255, 0.05);
         border-radius: var(--radius);
@@ -2327,12 +2334,26 @@
         function pagedTable(key, head, rows, opts) {
           PAGERS[key] = {
             head: head,
+            all: rows,
             rows: rows,
             pageSize: (opts && opts.pageSize) || 10,
             empty: (opts && opts.empty) || "Nothing here yet.",
             page: 0,
+            q: "",
           };
+          // A search box for any list long enough to need one. Matches on the
+          // visible text of the row, so club, town, contact, outcome and notes
+          // all count.
+          var search =
+            rows.length > 5
+              ? '<div class="pg-search"><input type="search" class="pg-q" data-pg="' +
+                key +
+                '" placeholder="Search this list" autocomplete="off"><span class="pg-count" data-pgc="' +
+                key +
+                '"></span></div>'
+              : "";
           return (
+            search +
             '<div class="scroll" data-pager="' +
             key +
             '">' +
@@ -2340,8 +2361,17 @@
             "</div>"
           );
         }
+        function rowText(html) {
+          return html.replace(/<[^>]+>/g, " ").replace(/&[a-z]+;/g, " ").toLowerCase();
+        }
         function pagedInner(key) {
           var o = PAGERS[key];
+          if (o.q) {
+            var q = o.q;
+            o.rows = o.all.filter(function (r) { return rowText(r).indexOf(q) >= 0; });
+          } else {
+            o.rows = o.all;
+          }
           var total = o.rows.length;
           var pages = Math.max(1, Math.ceil(total / o.pageSize));
           if (o.page > pages - 1) o.page = pages - 1;
@@ -2352,7 +2382,7 @@
             "</tr></thead><tbody>" +
             (total
               ? o.rows.slice(s, s + o.pageSize).join("")
-              : '<tr><td colspan="99">' + o.empty + "</td></tr>") +
+              : '<tr><td colspan="99">' + (o.q ? "No matches." : o.empty) + "</td></tr>") +
             "</tbody></table>" +
             (pages > 1
               ? '<div class="pager">' +
@@ -2385,6 +2415,19 @@
           PAGERS[key].page += parseInt(b.getAttribute("data-dir"), 10);
           var host = document.querySelector('[data-pager="' + key + '"]');
           if (host) host.innerHTML = pagedInner(key);
+        });
+        document.addEventListener("input", function (e) {
+          var i = e.target.closest && e.target.closest(".pg-q");
+          if (!i) return;
+          var key = i.getAttribute("data-pg");
+          var o = PAGERS[key];
+          if (!o) return;
+          o.q = i.value.trim().toLowerCase();
+          o.page = 0;
+          var host = document.querySelector('[data-pager="' + key + '"]');
+          if (host) host.innerHTML = pagedInner(key);
+          var n = document.querySelector('[data-pgc="' + key + '"]');
+          if (n) n.textContent = o.q ? o.rows.length + " of " + o.all.length : "";
         });
 
         // Horizontal stage timeline: one line across the panel, coloured in
@@ -3568,42 +3611,42 @@
 
           var callsHtml = (d.calls || []).length
             ? d.calls
-                .map(function (c) {
+                .map(function (c, i) {
                   var who = (c.d1942_callers && c.d1942_callers.name) || "";
-                  var bits = [];
-                  if (c.decision_maker_name)
-                    bits.push(
-                      "Spoke to " +
-                        c.decision_maker_name +
-                        (c.decision_maker_role
-                          ? " (" + c.decision_maker_role + ")"
-                          : ""),
-                    );
-                  if (c.decision_maker_email) bits.push(c.decision_maker_email);
-                  if (c.decision_maker_phone) bits.push(c.decision_maker_phone);
-                  if (c.clubgrants) bits.push("ClubGRANTS: " + c.clubgrants);
-                  if (c.others_involved)
-                    bits.push("Also involved: " + c.others_involved);
-                  if (c.board_meeting)
-                    bits.push("Committee meets: " + c.board_meeting);
+                  // Oldest call is call 1; d.calls arrives newest first.
+                  var n = d.calls.length - i;
+                  var noContact = ["no_answer", "gatekeeper", "wrong_number"].indexOf(c.outcome) >= 0;
+                  var spokeTo = c.decision_maker_name || (noContact ? "Nobody reached" : "");
+                  var extras = [];
+                  if (c.decision_maker_email) extras.push(c.decision_maker_email);
+                  if (c.decision_maker_phone) extras.push(c.decision_maker_phone);
+                  if (c.clubgrants) extras.push("ClubGRANTS: " + c.clubgrants);
+                  if (c.others_involved) extras.push("Also involved: " + c.others_involved);
+                  if (c.board_meeting) extras.push("Committee meets: " + c.board_meeting);
+                  function fact(label, value, raw) {
+                    if (!value) return "";
+                    return "<dt>" + label + "</dt><dd>" + (raw ? value : esc(value)) + "</dd>";
+                  }
                   return (
                     '<div class="call-item">' +
-                    '<div class="ci-head"><b>' +
-                    esc(outcomeLabel(c.outcome)) +
-                    (c.round > 1 ? " (call " + esc(c.round) + ")" : "") +
-                    "</b>" +
+                    '<div class="ci-head"><b>Call ' + n + "</b>" +
                     '<span class="ci-when">' +
                     esc(when(c.created_at)) +
                     (who ? " · " + esc(who) : "") +
                     "</span></div>" +
-                    (bits.length
-                      ? "<div>" + bits.map(esc).join("<br>") + "</div>"
-                      : "") +
-                    (c.wants_info
-                      ? '<div><span class="pill ok">wants more info</span></div>'
-                      : "") +
-                    (c.notes
-                      ? '<div class="ci-notes">' + esc(c.notes) + "</div>"
+                    '<dl class="ci-facts">' +
+                    fact("Spoke to", spokeTo) +
+                    fact("Their role", c.decision_maker_role) +
+                    fact(
+                      "Outcome",
+                      esc(outcomeLabel(c.outcome)) +
+                        (c.wants_info ? ' <span class="pill ok">wants more info</span>' : ""),
+                      true,
+                    ) +
+                    fact("Notes", c.notes) +
+                    "</dl>" +
+                    (extras.length
+                      ? '<div class="ci-extra">' + extras.map(esc).join(" · ") + "</div>"
                       : "") +
                     "</div>"
                   );
