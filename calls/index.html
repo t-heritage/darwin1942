@@ -1410,6 +1410,12 @@
           token = localStorage.getItem(TOKEN_KEY);
         } catch (e) {}
         var current = null; // the club currently on screen
+        // Sessions live in localStorage, which /calls/ and /calls/chest/ share.
+        // When another tab logs in or out, follow it instead of carrying on as
+        // whoever this tab was opened as.
+        window.addEventListener("storage", function (e) {
+          if (e.key === TOKEN_KEY && e.newValue !== token) location.reload();
+        });
         var formRound = 1; // which round the on-screen form was built for
         var formCarryEmail = ""; // DM email from an earlier call, reused on round-2 saves
         var meCaller = null; // the logged-in caller, used in the script
