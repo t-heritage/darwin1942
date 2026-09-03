@@ -1,0 +1,3469 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="robots" content="noindex, nofollow" />
+    <title>Community Chest | Darwin 1942</title>
+    <link rel="icon" href="/favicon.ico" />
+    <style>
+      :root {
+        --tea: #ceebcd;
+        --tea-deep: #b9dcb8;
+        --sky: #00acef;
+        --sky-deep: #0090c9;
+        --pollen: #fece50;
+        --pollen-deep: #e9b52a;
+        --ink: #222222;
+        --paper: #ffffff;
+        --paper-2: #f4f7f2;
+        --line: rgba(34, 34, 34, 0.14);
+        --muted: #5f6b64;
+        --red: #c8102e;
+        /* Monopoly colour sets, cheapest to dearest. */
+        --set-brown: #955436;
+        --set-lightblue: #aae0fa;
+        --set-pink: #d93a96;
+        --set-orange: #f7941d;
+        --set-red: #ed1b24;
+        --set-yellow: #fef200;
+        --set-green: #1fb25a;
+        --set-darkblue: #0072bb;
+        --house: #1fb25a;
+        --hotel: #ed1b24;
+        --heading-font: "Futura", "Avenir Next", "Trebuchet MS", Arial, sans-serif;
+        --radius: 10px;
+        /* kept so nothing that references the old names breaks */
+        --sky-blue: var(--sky);
+        --white: var(--ink);
+        --dark: var(--tea);
+        --card-dark: var(--paper);
+        --card-darkest: var(--paper);
+      }
+      * { box-sizing: border-box; }
+      html, body { margin: 0; padding: 0; height: 100%; overflow: hidden; }
+      body {
+        background: var(--tea);
+        color: var(--ink);
+        font-family: "Avenir Next", "Helvetica Neue", Arial, sans-serif;
+        font-size: 15px;
+        line-height: 1.55;
+        min-height: 100vh;
+      }
+      h1, h2, h3, h4 { font-family: var(--heading-font); font-weight: 700; margin: 0; letter-spacing: normal; }
+      a { color: var(--sky-deep); }
+      button { font-family: var(--heading-font); font-weight: 700; cursor: pointer; border: 0; }
+      button:disabled { opacity: 0.5; cursor: not-allowed; }
+
+      /* ---------------------------------------------------------------- shell */
+      #view-work { display: flex; flex-direction: column; height: 100%; }
+      #work-body, #admin-body, #training-body, #board-body { flex: 1 1 auto; min-height: 0; overflow: hidden; }
+      #admin-body, #training-body, #board-body { overflow-y: auto; }
+      .topbar {
+        display: flex; align-items: center; justify-content: space-between; gap: 12px 24px;
+        padding: 10px 20px; background: var(--paper); border-bottom: 3px solid var(--ink);
+        flex: 0 0 auto; z-index: 10; flex-wrap: wrap;
+      }
+      .topbar h1 { font-size: 19px; display: flex; align-items: center; gap: 10px; flex: 1 1 0; min-width: max-content; }
+      .topbar h1 .logo { width: 34px; height: 34px; display: inline-grid; place-items: center; }
+      .topbar h1 .logo svg { width: 100%; height: 100%; display: block; }
+      .topbar .nav { display: flex; align-items: center; justify-content: center; gap: 16px; flex-wrap: wrap; }
+      .topbar .who { color: var(--muted); font-size: 13px; display: flex; align-items: center; gap: 10px; flex: 1 1 0; justify-content: flex-end; }
+      .round-select { font-family: var(--heading-font); font-weight: 700; font-size: 13px; padding: 7px 12px; border: 2px solid var(--ink); border-radius: 999px; background: var(--paper-2); color: var(--ink); cursor: pointer; }
+      .round-select:hover { background: var(--pollen); }
+      .round-select:focus { outline: 3px solid var(--sky); outline-offset: 0; }
+      .token-btn {
+        background: var(--paper-2); border: 2px solid var(--ink); border-radius: 999px;
+        padding: 2px 10px 2px 4px; font-size: 13px; font-weight: 400; color: var(--ink);
+        display: inline-flex; align-items: center; gap: 6px; font-family: inherit;
+      }
+      .token-btn .tk { font-size: 20px; line-height: 1; display: inline-flex; }
+      .token-img { display: inline-block; width: 22px; height: 22px; object-fit: contain; vertical-align: middle; }
+      .token-btn .token-img { width: 24px; height: 24px; }
+      .token-opt .token-img { display: block; width: 52px; height: 52px; margin: 0 auto 4px; }
+      .rank-row .token-img { width: 24px; height: 24px; }
+      .sp .you .token-img { width: 78%; height: 78%; }
+      .token-btn:hover { background: var(--pollen); }
+      .counters { display: flex; gap: 18px; flex-wrap: wrap; color: var(--muted); font-size: 12px; }
+      .counters b { color: var(--ink); font-family: var(--heading-font); font-weight: 700; font-size: 18px; display: block; line-height: 1; }
+      .linkbtn { background: none; color: var(--muted); text-decoration: underline; font-size: 13px; font-family: inherit; letter-spacing: 0; padding: 0; font-weight: 400; }
+
+      /* ------------------------------------------------------------ auth card */
+      .auth-wrap { display: flex; align-items: center; justify-content: center; height: 100%; overflow-y: auto; padding: 24px; }
+      .auth {
+        width: 100%; max-width: 420px; background: var(--paper); border: 3px solid var(--ink);
+        border-radius: var(--radius); padding: 0 32px 32px; box-shadow: 8px 8px 0 rgba(34,34,34,0.18);
+      }
+      .auth-band { margin: 0 -32px 22px; background: var(--pollen); border-bottom: 3px solid var(--ink); padding: 18px 32px 14px; border-radius: 6px 6px 0 0; }
+      .auth-band small { display: block; font-size: 12px; color: var(--ink); opacity: 0.8; margin-bottom: 2px; }
+      .auth h1 { font-size: 26px; margin: 0; }
+      .auth p.sub { color: var(--muted); margin: 0 0 20px; font-size: 14px; }
+      .hint { color: var(--muted); font-size: 13px; margin: 6px 0 0; }
+      label { display: block; font-family: var(--heading-font); font-weight: 700; font-size: 13px; margin-bottom: 6px; color: var(--ink); }
+      .req { color: var(--red); }
+      input[type="text"], input[type="password"], input[type="email"], input[type="tel"], select, textarea {
+        width: 100%; padding: 10px 12px; background: var(--paper); border: 2px solid var(--ink);
+        color: var(--ink); font-family: inherit; font-size: 15px; border-radius: 8px;
+      }
+      input:focus, select:focus, textarea:focus { outline: 3px solid var(--sky); outline-offset: 0; }
+      textarea { resize: vertical; min-height: 80px; }
+      .field { margin-bottom: 16px; }
+      .field-row { display: grid; grid-template-columns: 1fr 1fr; gap: 0 16px; }
+      @media (max-width: 1200px) { .field-row { grid-template-columns: 1fr; } }
+      .btn-primary {
+        background: var(--sky); color: #fff; padding: 13px 26px; font-size: 15px; width: 100%;
+        border-radius: 8px; border: 2px solid var(--ink); box-shadow: 3px 3px 0 var(--ink);
+      }
+      .btn-primary:hover:not(:disabled) { background: var(--sky-deep); transform: translate(1px, 1px); box-shadow: 2px 2px 0 var(--ink); }
+      .msg { margin-top: 16px; padding: 12px 16px; font-size: 14px; display: none; border-radius: 8px; }
+      .msg.error { display: block; background: #fde7ea; border-left: 4px solid var(--red); color: #7a0b1c; }
+      .msg.ok { display: block; background: #e1f4fd; border-left: 4px solid var(--sky); color: #064a66; }
+
+      /* ------------------------------------------------------------ worksheet */
+      .work { display: grid; grid-template-columns: 1fr 1fr; gap: 0; height: 100%; min-height: 0; }
+      .pane { padding: 24px; height: 100%; overflow-y: auto; overscroll-behavior: contain; }
+      .pane-left { border-right: 0; }
+      .pane-form { background: var(--tea-deep); }
+      @media (max-width: 980px) {
+        html, body { height: auto; overflow: auto; }
+        #view-work { height: auto; }
+        #work-body, #admin-body, #board-body { overflow: visible; min-height: 0; }
+        .work { grid-template-columns: 1fr; height: auto; }
+        .pane { height: auto; overflow: visible; }
+        .topbar { position: sticky; top: 0; }
+      }
+
+      /* ------------------------------------------------------------ title deed */
+      /* The club is presented as its own title deed: colour band for the set,
+         the "rent" table underneath. */
+      .deed {
+        background: var(--paper); border: 3px solid var(--ink); border-radius: var(--radius);
+        box-shadow: 8px 8px 0 rgba(34,34,34,0.18); margin-bottom: 20px; overflow: hidden;
+      }
+      .deed-band { padding: 12px 18px 12px; border-bottom: 3px solid var(--ink); color: #fff; text-align: center; }
+      .deed-band.light { color: var(--ink); }
+      .deed-band small { display: block; font-size: 11px; letter-spacing: 0.08em; text-transform: uppercase; opacity: 0.85; margin-bottom: 2px; }
+      .deed-band h2 { font-size: 24px; line-height: 1.12; text-transform: uppercase; letter-spacing: 0.02em; }
+      .deed-body { padding: 14px 18px 16px; }
+      .deed-sub { color: var(--muted); font-size: 13px; text-align: center; margin: 0 0 12px; }
+      .deed-call { display: flex; justify-content: center; margin: 0 0 14px; }
+      .phone-cta {
+        display: inline-block; background: var(--sky); color: #fff; text-decoration: none;
+        font-family: var(--heading-font); font-weight: 700; font-size: 22px; padding: 10px 26px;
+        border-radius: 8px; border: 2px solid var(--ink); box-shadow: 3px 3px 0 var(--ink); white-space: nowrap;
+      }
+      .phone-cta:hover { background: var(--sky-deep); transform: translate(1px,1px); box-shadow: 2px 2px 0 var(--ink); }
+      .phone-cta.none { background: var(--paper-2); color: var(--muted); pointer-events: none; font-size: 14px; font-weight: 400; white-space: normal; box-shadow: none; text-align: center; }
+      .phone-cta.inline { display: inline; background: none; color: var(--sky-deep); border: 0; border-radius: 0; box-shadow: none; padding: 0; font-family: inherit; font-size: inherit; font-weight: 700; white-space: nowrap; }
+      .phone-cta.inline:hover { background: none; transform: none; box-shadow: none; text-decoration: underline; }
+      .rent { width: 100%; border-collapse: collapse; font-size: 14px; }
+      .rent td { padding: 5px 0; border-bottom: 1px dotted var(--line); vertical-align: top; }
+      .rent tr:last-child td { border-bottom: 0; }
+      .rent td:first-child { color: var(--muted); padding-right: 12px; white-space: nowrap; }
+      .rent td:last-child { text-align: right; font-weight: 700; overflow-wrap: anywhere; }
+      .rent td:last-child a { color: var(--sky-deep); }
+      .rent .set-note { text-align: center; color: var(--muted); font-size: 12px; padding-top: 10px; font-weight: 400; }
+      .set-chip { display: inline-block; width: 12px; height: 12px; border: 1px solid var(--ink); border-radius: 2px; vertical-align: -1px; margin-right: 5px; }
+      /* legacy fact grid (drawer still uses it) */
+      .facts { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 12px 18px; font-size: 14px; margin: 0 0 20px; }
+      .fact { min-width: 0; } .fact.wide { grid-column: 1 / -1; }
+      .facts dt { color: var(--muted); font-size: 12px; margin-bottom: 2px; }
+      .facts dd { margin: 0; min-width: 0; overflow-wrap: anywhere; }
+      @media (max-width: 1200px) { .facts { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
+
+      .script { background: var(--paper); border: 3px solid var(--ink); border-radius: var(--radius); padding: 20px 22px 22px; box-shadow: 8px 8px 0 rgba(34,34,34,0.18); }
+      .script h2 { font-size: 22px; line-height: 1.15; margin-bottom: 12px; }
+      .script .step { margin-bottom: 16px; }
+      .script .step:last-child { margin-bottom: 0; }
+      .script .step b { display: block; margin-bottom: 4px; color: var(--sky-deep); font-family: var(--heading-font); font-size: 15px; }
+      .script em { color: var(--ink); font-style: normal; font-weight: 700; background: var(--pollen); padding: 0 4px; border-radius: 3px; }
+      .script-do { display: block; margin-top: 8px; padding-left: 14px; border-left: 3px solid var(--pollen); color: var(--muted); }
+      .script-do span { display: block; margin-bottom: 3px; }
+      .history { margin-top: 20px; background: var(--paper); border: 2px solid var(--ink); border-radius: var(--radius); padding: 14px 18px; font-size: 14px; }
+      .history h4 { font-size: 13px; margin-bottom: 8px; color: var(--muted); }
+      .history li { margin-bottom: 6px; }
+
+      /* ------------------------------------------------------------ the form */
+      .form-card { background: var(--paper); border: 3px solid var(--ink); border-radius: var(--radius); box-shadow: 8px 8px 0 rgba(34,34,34,0.18); overflow: hidden; }
+      .form-head { display: flex; align-items: center; justify-content: space-between; gap: 12px; padding: 12px 20px; background: var(--pollen); border-bottom: 3px solid var(--ink); margin: 0; }
+      .form-head h2 { font-size: 18px; }
+      .form-head .chest { font-size: 20px; }
+      .form-card form { padding: 18px 20px 20px; }
+      .checkbox { display: flex; gap: 10px; align-items: flex-start; }
+      .checkbox input { margin-top: 3px; width: 18px; height: 18px; flex-shrink: 0; accent-color: var(--sky); }
+      .checkbox label { margin: 0; font-family: inherit; font-weight: 400; font-size: 14px; color: var(--muted); line-height: 1.5; }
+      .paths { display: flex; flex-direction: column; gap: 8px; }
+      .path {
+        display: grid; grid-template-columns: 18px 1fr; column-gap: 10px; align-items: start;
+        background: var(--paper); border: 2px solid var(--line); border-radius: 8px; padding: 10px 14px;
+        cursor: pointer; margin: 0; font-weight: 400;
+      }
+      .path:hover { border-color: var(--ink); }
+      .path:has(input:checked) { border-color: var(--ink); background: #e1f4fd; }
+      .path input { margin-top: 4px; width: 16px; height: 16px; accent-color: var(--sky); grid-row: span 2; }
+      .path b { font-size: 14px; }
+      .path span { grid-column: 2; color: var(--muted); font-size: 13px; line-height: 1.45; }
+      .path-extra { margin: -6px 0 16px; padding: 14px 14px 4px; border-left: 3px solid var(--sky); background: var(--paper-2); }
+      .path-extra .field { margin-bottom: 14px; }
+      .path-hint { color: var(--muted); font-size: 13px; line-height: 1.5; margin: 0 0 10px; }
+      .actions { display: flex; gap: 12px; margin-top: 20px; flex-wrap: wrap; }
+      .actions .btn-primary { width: auto; flex: 1; min-width: 180px; }
+      .btn-ghost { background: var(--paper); border: 2px solid var(--ink); color: var(--ink); padding: 12px 20px; font-size: 14px; font-weight: 400; border-radius: 8px; font-family: inherit; }
+      .btn-ghost:hover:not(:disabled) { background: var(--paper-2); }
+
+      /* ------------------------------------------------------------ training */
+      .train-wrap { max-width: 760px; margin: 0 auto; padding: 28px 20px 60px; }
+      .train-progress { display: flex; align-items: center; gap: 14px; margin-bottom: 18px; color: var(--muted); font-size: 13px; white-space: nowrap; }
+      .train-bar { flex: 1 1 auto; height: 8px; border-radius: 4px; background: var(--paper); border: 1px solid var(--ink); overflow: hidden; }
+      .train-bar span { display: block; height: 100%; background: var(--sky); transition: width 0.2s; }
+      .train-card { background: var(--paper); border: 3px solid var(--ink); border-radius: var(--radius); padding: 26px 30px 30px; box-shadow: 8px 8px 0 rgba(34,34,34,0.18); }
+      .train-card h2 { font-size: 22px; margin-bottom: 4px; }
+      .train-kicker { color: var(--muted); font-size: 13px; margin: 0 0 16px; }
+      .train-card h3 { font-size: 15px; margin: 22px 0 6px; }
+      .train-card p { margin: 0 0 12px; font-size: 15px; line-height: 1.65; }
+      .train-card ul, .train-card ol { margin: 0 0 12px; padding-left: 22px; }
+      .train-card li { margin-bottom: 5px; font-size: 15px; line-height: 1.55; }
+      .train-say { border-left: 4px solid var(--sky); background: #e1f4fd; padding: 12px 16px; border-radius: 0 8px 8px 0; margin: 0 0 12px; font-size: 15px; line-height: 1.6; }
+      .train-dont { border-left: 4px solid var(--red); background: #fde7ea; padding: 12px 16px; border-radius: 0 8px 8px 0; margin: 0 0 12px; font-size: 15px; line-height: 1.6; }
+      .train-say b, .train-dont b { display: block; font-size: 12px; color: var(--muted); margin-bottom: 4px; }
+      .train-nav { display: flex; justify-content: space-between; gap: 12px; margin-top: 22px; }
+      .train-nav .btn-primary { width: auto; padding: 13px 26px; }
+      .train-note { color: var(--muted); font-size: 13px; margin-top: 14px; text-align: center; }
+
+      /* ---------------------------------------------------------- admin view */
+      .tabs { display: inline-flex; background: var(--paper); border: 2px solid var(--ink); border-radius: 999px; padding: 3px; gap: 0; }
+      .tab { background: none; border: 0; color: var(--muted); padding: 6px 18px; font-size: 13px; font-weight: 400; border-radius: 999px; font-family: inherit; transition: background 0.15s, color 0.15s; }
+      .tab:hover:not(.on) { color: var(--ink); }
+      .tab.on { background: var(--ink); color: #fff; font-weight: 700; }
+      .admin { padding: 24px; max-width: 1200px; margin: 0 auto; }
+      .admin h2 { font-size: 17px; margin: 30px 0 12px; }
+      .admin h2:first-child { margin-top: 0; }
+      .cards { display: grid; grid-template-columns: repeat(auto-fit, minmax(140px, 1fr)); gap: 12px; }
+      .card { background: var(--paper); border: 2px solid var(--ink); border-radius: var(--radius); padding: 14px 16px; }
+      .card b { display: block; font-family: var(--heading-font); font-weight: 700; font-size: 28px; line-height: 1; margin-bottom: 5px; }
+      .card span { color: var(--muted); font-size: 13px; }
+      .card.warn { border-color: var(--red); } .card.warn b { color: var(--red); }
+      .card.good { background: var(--pollen); }
+      table { width: 100%; border-collapse: collapse; font-size: 14px; }
+      th, td { text-align: left; padding: 9px 14px; border-bottom: 1px solid var(--line); vertical-align: top; }
+      tbody tr:last-child td { border-bottom: 0; }
+      th { font-family: var(--heading-font); color: var(--muted); font-weight: 700; font-size: 13px; white-space: nowrap; background: var(--paper-2); }
+      tbody tr:hover { background: var(--paper-2); }
+      .scroll { overflow-x: auto; border: 2px solid var(--ink); border-radius: var(--radius); background: var(--paper); }
+      .pill { display: inline-block; padding: 1px 9px; font-size: 12px; background: var(--paper-2); border: 1px solid var(--line); white-space: nowrap; border-radius: 999px; }
+      .pill.ok { background: #e1f4fd; color: #064a66; }
+      .pill.bad { background: #fde7ea; color: #7a0b1c; }
+      .pill.hot { background: var(--pollen); color: var(--ink); border-color: var(--ink); }
+      .banner { padding: 12px 18px; margin-bottom: 16px; font-size: 14px; border-radius: var(--radius); border: 2px solid var(--ink); background: var(--paper); }
+      .banner.ok { background: #e1f4fd; }
+      .banner.bad { background: #fde7ea; border-color: var(--red); }
+      .nowrap { white-space: nowrap; }
+
+      /* ------------------------------------------------------------- charts */
+      .panel { background: var(--paper); border: 2px solid var(--ink); border-radius: var(--radius); padding: 20px 22px; position: relative; }
+      .panel-title { font-size: 15px; margin-bottom: 14px; }
+      .progress-split { display: grid; grid-template-columns: 6fr 4fr; gap: 12px; align-items: stretch; }
+      .progress-split > .panel { display: flex; flex-direction: column; }
+      .progress-split > .panel .chart-row { flex: 1 1 auto; }
+      .cards-tight { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+      @media (max-width: 1100px) { .progress-split { grid-template-columns: 1fr; } .cards-tight { grid-template-columns: repeat(auto-fit, minmax(140px, 1fr)); } }
+      .chart-empty { color: var(--muted); font-size: 14px; flex: 1 1 auto; display: flex; align-items: center; }
+      .chart-row { display: flex; gap: 24px; align-items: center; flex-wrap: wrap; }
+      .funnel { list-style: none; margin: 0; padding: 0; display: grid; grid-template-columns: repeat(5, minmax(0, 1fr)); }
+      .funnel li { position: relative; text-align: center; padding: 0 6px; }
+      .fn-seg { display: block; height: 8px; margin: 0 -6px; border-top: 1px solid var(--ink); border-bottom: 1px solid var(--ink); }
+      .funnel li:first-child .fn-seg { margin-left: 0; border-radius: 4px 0 0 4px; border-left: 1px solid var(--ink); }
+      .funnel li:last-child .fn-seg { margin-right: 0; border-radius: 0 4px 4px 0; border-right: 1px solid var(--ink); }
+      .fn-label { display: block; color: var(--muted); font-size: 12px; margin-bottom: 12px; min-height: 2.4em; }
+      .fn-num { display: block; font-weight: 700; font-size: 26px; line-height: 1.1; margin-top: 12px; }
+      .fn-pct { display: block; color: var(--muted); font-size: 12px; margin-top: 2px; }
+      .info-i { position: absolute; top: 12px; right: 14px; width: 20px; height: 20px; border-radius: 50%; background: var(--paper-2); border: 1px solid var(--ink); color: var(--ink); font-size: 12px; font-weight: 700; display: inline-flex; align-items: center; justify-content: center; cursor: help; font-style: italic; }
+      .info-i:hover, .info-i:focus, .info-i.open { background: var(--pollen); outline: none; }
+      .info-i .tip { position: absolute; top: 26px; right: 0; width: 270px; background: var(--ink); color: #fff; font-size: 12px; font-weight: 400; font-style: normal; line-height: 1.5; padding: 10px 12px; border-radius: 8px; text-align: left; box-shadow: 0 6px 20px rgba(0,0,0,0.25); opacity: 0; visibility: hidden; transition: opacity 0.12s; z-index: 5; }
+      .info-i:hover .tip, .info-i:focus .tip, .info-i.open .tip { opacity: 1; visibility: visible; }
+      @media (max-width: 860px) { .funnel { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 22px 0; } }
+
+      /* --------------------------------------------------------- pagination */
+      .pager { display: flex; align-items: center; justify-content: flex-end; gap: 14px; padding: 10px 14px; color: var(--muted); font-size: 13px; }
+      .pg-btn { background: var(--paper-2); border: 1px solid var(--ink); color: var(--ink); padding: 5px 14px; border-radius: 6px; font-size: 13px; font-weight: 400; font-family: inherit; }
+      .pg-btn:hover:not(:disabled) { background: var(--pollen); }
+      tr.rowlink { cursor: pointer; }
+      tr.rowlink:hover { background: #e1f4fd; }
+      .list-note { color: var(--muted); font-size: 13px; margin: 6px 0 14px; }
+
+      /* ---------------------------------------------------------- club drawer */
+      #drawer-backdrop { position: fixed; inset: 0; background: rgba(34,34,34,0.45); z-index: 55; opacity: 0; visibility: hidden; transition: opacity 0.2s; }
+      #drawer-backdrop.open { opacity: 1; visibility: visible; }
+      #drawer { position: fixed; top: 0; right: 0; bottom: 0; width: min(620px, 100vw); z-index: 60; background: var(--paper); border-left: 3px solid var(--ink); overflow-y: auto; overscroll-behavior: contain; transform: translateX(100%); transition: transform 0.22s ease; }
+      #drawer.open { transform: none; }
+      .drawer-inner { padding: 24px; }
+      .drawer-top { display: flex; justify-content: space-between; align-items: flex-start; gap: 16px; margin-bottom: 6px; }
+      .drawer-top h2 { font-size: 22px; line-height: 1.2; }
+      .drawer-band { display: inline-block; width: 100%; height: 14px; border: 2px solid var(--ink); border-radius: 4px; margin-bottom: 10px; }
+      .drawer-close { background: none; color: var(--muted); font-size: 26px; line-height: 1; padding: 2px 8px; border-radius: 6px; }
+      .drawer-close:hover { color: var(--ink); background: var(--paper-2); }
+      .drawer-sub { color: var(--muted); font-size: 14px; margin: 0 0 16px; }
+      .drawer h3 { font-size: 15px; margin: 26px 0 10px; }
+      .drawer-phone { display: inline-block; background: var(--sky); color: #fff; text-decoration: none; font-weight: 700; font-size: 17px; padding: 8px 18px; border-radius: 8px; border: 2px solid var(--ink); box-shadow: 3px 3px 0 var(--ink); margin-bottom: 16px; font-family: var(--heading-font); }
+      .drawer-phone:hover { background: var(--sky-deep); }
+      .call-item { background: var(--paper-2); border: 1px solid var(--line); border-radius: var(--radius); padding: 12px 16px; margin-bottom: 10px; font-size: 14px; }
+      .call-item .ci-head { display: flex; justify-content: space-between; gap: 10px; flex-wrap: wrap; margin-bottom: 6px; }
+      .call-item .ci-when { color: var(--muted); font-size: 13px; }
+      .call-item .ci-notes { color: var(--muted); margin-top: 6px; white-space: pre-wrap; }
+      .email-msg { background: var(--paper-2); border: 1px solid var(--line); border-radius: var(--radius); padding: 12px 16px; margin-bottom: 10px; font-size: 14px; }
+      .email-msg .em-chips { margin: 7px 0 5px; display: flex; gap: 6px; flex-wrap: wrap; }
+      .email-ev { display: flex; gap: 12px; align-items: baseline; padding: 7px 0; border-bottom: 1px solid var(--line); font-size: 14px; }
+      .email-ev:last-child { border-bottom: 0; }
+      .email-ev .ev-when { color: var(--muted); font-size: 13px; white-space: nowrap; }
+      .email-ev .ev-addr { color: var(--muted); font-size: 13px; overflow-wrap: anywhere; }
+      .ev-pill { display: inline-block; padding: 1px 9px; font-size: 12px; border-radius: 999px; background: var(--paper-2); border: 1px solid var(--line); white-space: nowrap; }
+      .ev-pill.delivered, .ev-pill.sent { background: #e1f4fd; color: #064a66; }
+      .ev-pill.opened { background: var(--pollen); }
+      .ev-pill.clicked, .ev-pill.converted { background: #dff5e7; color: #0d5a2e; }
+      .ev-pill.bounced, .ev-pill.failed, .ev-pill.spam, .ev-pill.suppressed, .ev-pill.unsubscribed { background: #fde7ea; color: #7a0b1c; }
+      .drawer .btn-primary { width: auto; padding: 10px 20px; }
+      .drawer .field { margin-bottom: 14px; }
+
+      /* ------------------------------------------------------------- tokens */
+      #token-modal { position: fixed; inset: 0; z-index: 70; background: rgba(34,34,34,0.5); display: flex; align-items: center; justify-content: center; padding: 20px; }
+      .token-card { background: var(--paper); border: 3px solid var(--ink); border-radius: var(--radius); box-shadow: 10px 10px 0 rgba(34,34,34,0.25); width: 100%; max-width: 520px; overflow: hidden; }
+      .token-card .band { background: var(--sky); color: #fff; padding: 14px 22px; border-bottom: 3px solid var(--ink); }
+      .token-card .band h2 { font-size: 20px; }
+      .token-card .band p { margin: 2px 0 0; font-size: 13px; opacity: 0.9; }
+      .token-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 10px; padding: 18px 22px 22px; }
+      .token-opt { background: var(--paper-2); border: 2px solid var(--line); border-radius: 10px; padding: 12px 6px 8px; text-align: center; font-family: inherit; font-weight: 400; font-size: 12px; color: var(--muted); }
+      .token-opt .tk { display: block; font-size: 34px; line-height: 1.1; margin-bottom: 4px; }
+      .token-opt:hover { border-color: var(--ink); background: var(--pollen); color: var(--ink); }
+      .token-opt.on { border-color: var(--ink); background: var(--pollen); color: var(--ink); box-shadow: 3px 3px 0 var(--ink); }
+      .token-opt.taken { opacity: 0.45; cursor: not-allowed; }
+      .token-opt.taken:hover { border-color: var(--line); background: var(--paper-2); color: var(--muted); }
+      .token-opt .owner { display: block; font-size: 11px; color: var(--muted); margin-top: 2px; }
+      .token-note { margin: 0; padding: 0 22px 18px; font-size: 13px; color: var(--muted); }
+      .token-note.bad { color: var(--red); }
+
+      /* --------------------------------------------------------------- toast */
+      .toast {
+        position: fixed; left: 50%; bottom: 26px; transform: translateX(-50%) translateY(20px);
+        background: var(--pollen); border: 3px solid var(--ink); border-radius: var(--radius);
+        box-shadow: 6px 6px 0 var(--ink); padding: 12px 20px; font-size: 14px; z-index: 80;
+        opacity: 0; transition: opacity 0.2s, transform 0.2s; max-width: 420px; text-align: center;
+      }
+      .toast.show { opacity: 1; transform: translateX(-50%) translateY(0); }
+      .toast b { display: block; font-family: var(--heading-font); font-size: 16px; }
+
+      /* --------------------------------------------------------------- board */
+      .board-wrap { padding: 20px; display: grid; grid-template-columns: minmax(0, 720px) minmax(240px, 1fr); gap: 20px; max-width: 1200px; margin: 0 auto; align-items: start; }
+      @media (max-width: 900px) { .board-wrap { grid-template-columns: 1fr; } }
+      .board { display: grid; grid-template-columns: 1.6fr repeat(9, 1fr) 1.6fr; grid-template-rows: 1.6fr repeat(9, 1fr) 1.6fr; aspect-ratio: 1; background: var(--tea); border: 3px solid var(--ink); gap: 0; width: 100%; }
+      .sp { position: relative; border: 2px solid var(--ink); background: var(--paper); font-size: 7.5px; line-height: 1.1; overflow: hidden; display: flex; flex-direction: column; cursor: pointer; min-width: 0; }
+      .sp:hover { background: var(--pollen); }
+      .sp .band { flex: 0 0 22%; border-bottom: 2px solid var(--ink); }
+      .sp.side-l .band, .sp.side-r .band { flex: 0 0 auto; width: 22%; height: 100%; border-bottom: 0; }
+      .sp.side-l .band { border-left: 2px solid var(--ink); order: 2; }
+      .sp.side-r .band { border-right: 2px solid var(--ink); }
+      .sp.side-t .band { order: 2; border-bottom: 0; border-top: 2px solid var(--ink); }
+      .sp.side-l, .sp.side-r { flex-direction: row; }
+      .sp .nm { flex: 1 1 auto; padding: 2px; text-align: center; display: flex; align-items: center; justify-content: center; font-family: var(--heading-font); font-weight: 700; text-transform: uppercase; letter-spacing: 0; overflow-wrap: break-word; hyphens: auto; min-width: 0; }
+      .sp.done { background: var(--paper-2); }
+      .sp.done .nm { color: var(--muted); }
+      .sp.out .nm { text-decoration: line-through; color: #9aa39d; }
+      .sp .marks { position: absolute; bottom: 2px; left: 0; right: 0; display: flex; justify-content: center; gap: 2px; pointer-events: none; }
+      .sp.side-t .marks { bottom: auto; top: 2px; }
+      .sp.side-l .marks { left: auto; right: 4px; top: 0; bottom: 0; flex-direction: column; justify-content: center; }
+      .sp.side-r .marks { right: auto; left: 4px; top: 0; bottom: 0; flex-direction: column; justify-content: center; }
+      .house { width: 8px; height: 8px; background: var(--house); border: 1px solid var(--ink); }
+      .hotel { width: 14px; height: 8px; background: var(--hotel); border: 1px solid var(--ink); }
+      .sp .tick { position: absolute; top: 1px; right: 3px; font-size: 8px; color: var(--muted); pointer-events: none; }
+      .sp .you { position: absolute; inset: 0; display: grid; place-items: center; font-size: clamp(18px, 3vw, 34px); pointer-events: none; filter: drop-shadow(2px 3px 0 rgba(34,34,34,0.35)); animation: bob 1.6s ease-in-out infinite; }
+      @keyframes bob { 0%,100% { transform: translateY(0); } 50% { transform: translateY(-3px); } }
+      .sp.current { background: var(--pollen); }
+      .corner { border: 1px solid var(--ink); background: var(--paper); display: flex; flex-direction: column; align-items: center; justify-content: center; text-align: center; padding: 4px; font-family: var(--heading-font); font-weight: 700; font-size: 11px; line-height: 1.15; text-transform: uppercase; }
+      .corner b { font-size: clamp(16px, 2.4vw, 26px); line-height: 1; display: block; }
+      .corner small { display: block; font-weight: 400; text-transform: none; color: var(--muted); font-size: 10px; margin-top: 2px; }
+      .corner.go { background: var(--pollen); }
+      .corner.go b { color: var(--red); font-size: clamp(20px, 3.4vw, 40px); }
+      .corner.jail { background: var(--paper); }
+      .corner.jail .bars { font-size: clamp(14px, 2.2vw, 24px); }
+      .centre { grid-area: 2 / 2 / 11 / 11; display: flex; flex-direction: column; align-items: center; justify-content: center; text-align: center; padding: 6%; gap: 6px; }
+      .centre .nameplate { position: relative; width: min(340px, 92%); aspect-ratio: 1662 / 602; background: url("assets/name-plate.png") center/contain no-repeat; }
+      .centre .nameplate span { position: absolute; left: 7%; right: 7%; top: 77%; transform: translateY(-50%); text-align: center; font-family: var(--heading-font); font-weight: 700; color: #fff; text-transform: uppercase; font-size: clamp(13px, 2.2vw, 24px); line-height: 1.05; letter-spacing: 0.02em; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+      .centre .lap { color: var(--muted); font-size: 13px; margin-top: 8px; }
+      .centre .big { font-family: var(--heading-font); font-size: clamp(24px, 5vw, 52px); font-weight: 700; line-height: 1; }
+      .centre .big small { display: block; font-size: 13px; font-weight: 400; color: var(--muted); }
+      .centre .tally { font-family: var(--heading-font); font-size: 13px; font-weight: 400; color: var(--muted); margin-top: 8px; }
+      .centre .cc { margin-top: 8px; background: var(--paper); border: 2px solid var(--ink); border-radius: 8px; padding: 8px 12px; font-size: 12px; max-width: 260px; color: var(--muted); }
+      .centre .cc b { color: var(--ink); display: block; font-family: var(--heading-font); }
+      .board-side .panel { margin-bottom: 14px; }
+      .legend { list-style: none; margin: 0; padding: 0; font-size: 13px; }
+      .legend li { display: flex; align-items: center; gap: 8px; padding: 4px 0; }
+      .legend .set-chip { margin: 0; width: 22px; height: 12px; }
+      .legend b { font-family: var(--heading-font); }
+      .laps { display: flex; gap: 6px; flex-wrap: wrap; margin-top: 8px; }
+      .laps .pg-btn.on { background: var(--ink); color: #fff; }
+      .rank-row { display: flex; align-items: center; gap: 10px; padding: 6px 0; border-bottom: 1px dotted var(--line); font-size: 13px; }
+      .rank-row:last-child { border-bottom: 0; }
+      .rank-row .tk { font-size: 20px; width: 26px; text-align: center; }
+      .rank-row .bar { flex: 1; height: 8px; background: var(--paper-2); border: 1px solid var(--ink); border-radius: 4px; overflow: hidden; }
+      .rank-row .bar span { display: block; height: 100%; background: var(--sky); }
+      .rank-row .n { width: 34px; text-align: right; font-family: var(--heading-font); font-weight: 700; }
+
+      .empty { padding: 80px 24px; text-align: center; }
+      .empty h2 { font-size: 24px; margin-bottom: 10px; }
+      .empty p { color: var(--muted); }
+      .hidden { display: none !important; }
+    </style>
+  </head>
+  <body>
+    <!-- ============================================================== LOGIN -->
+    <div class="auth-wrap" id="view-login">
+      <div class="auth">
+        <div class="auth-band"><small>Darwin 1942 &mdash; RSL club outreach</small><h1>Community Chest</h1></div>
+        <p class="sub">Log in to draw your next club.</p>
+        <form id="login-form">
+          <div class="field">
+            <label for="username">Username or email</label>
+            <input
+              type="text"
+              id="username"
+              autocomplete="username"
+              autocapitalize="none"
+              spellcheck="false"
+              required
+            />
+          </div>
+          <div class="field">
+            <label for="password">Password</label>
+            <input
+              type="password"
+              id="password"
+              autocomplete="current-password"
+              required
+            />
+          </div>
+          <button type="submit" class="btn-primary" id="login-btn">
+            Log in
+          </button>
+          <div class="msg" id="login-msg"></div>
+        </form>
+      </div>
+    </div>
+
+    <!-- ============================================================== SETUP -->
+    <div class="auth-wrap hidden" id="view-setup">
+      <div class="auth">
+        <h1>Set your password</h1>
+        <p class="sub" id="setup-sub">&nbsp;</p>
+        <form id="setup-form">
+          <div class="field">
+            <label for="new-password"
+              >New password <span class="req">*</span></label
+            >
+            <input
+              type="password"
+              id="new-password"
+              autocomplete="new-password"
+              minlength="10"
+              required
+            />
+            <p style="color: var(--muted); font-size: 13px; margin: 6px 0 0">
+              At least 10 characters. Nobody else ever sees this, including
+              Taylor.
+            </p>
+          </div>
+          <div class="field">
+            <label for="confirm-password"
+              >Confirm password <span class="req">*</span></label
+            >
+            <input
+              type="password"
+              id="confirm-password"
+              autocomplete="new-password"
+              required
+            />
+          </div>
+          <button type="submit" class="btn-primary" id="setup-btn">
+            Save password
+          </button>
+          <div class="msg" id="setup-msg"></div>
+        </form>
+      </div>
+    </div>
+
+    <!-- ============================================================= SIGNUP -->
+    <div class="auth-wrap hidden" id="view-signup">
+      <div class="auth">
+        <h1>Create your account</h1>
+        <p class="sub" id="signup-sub">Darwin 1942 &mdash; RSL club outreach</p>
+        <form id="signup-form">
+          <div class="field">
+            <label for="su-name">Your name <span class="req">*</span></label>
+            <input type="text" id="su-name" autocomplete="name" required />
+            <p class="hint">
+              This is what goes in the spreadsheet against every call you make.
+            </p>
+          </div>
+          <div class="field">
+            <label for="su-email">Your email <span class="req">*</span></label>
+            <input
+              type="email"
+              id="su-email"
+              autocomplete="email"
+              autocapitalize="none"
+              spellcheck="false"
+              required
+            />
+          </div>
+          <div class="field">
+            <label for="su-password"
+              >Choose a password <span class="req">*</span></label
+            >
+            <input
+              type="password"
+              id="su-password"
+              autocomplete="new-password"
+              minlength="10"
+              required
+            />
+            <p class="hint">
+              At least 10 characters. Nobody else ever sees this, including
+              Taylor.
+            </p>
+          </div>
+          <div class="field">
+            <label for="su-confirm"
+              >Confirm password <span class="req">*</span></label
+            >
+            <input
+              type="password"
+              id="su-confirm"
+              autocomplete="new-password"
+              required
+            />
+          </div>
+          <button type="submit" class="btn-primary" id="signup-btn">
+            Create account
+          </button>
+          <div class="msg" id="signup-msg"></div>
+        </form>
+      </div>
+    </div>
+
+    <!-- ========================================================== WORKSHEET -->
+    <div class="hidden" id="view-work">
+      <div class="topbar">
+        <h1><span class="logo"><img src="assets/community-chest.png" alt="" width="34" height="34"></span>Community Chest</h1>
+        <div class="nav">
+          <div id="round-wrap"></div>
+          <div class="tabs" id="admin-tabs">
+            <button class="tab on" id="tab-work">Worksheet</button>
+            <button class="tab" id="tab-board">Board</button>
+            <button class="tab" id="tab-admin">Overview</button>
+            <button class="tab" id="tab-training">Training</button>
+          </div>
+          <div class="counters">
+            <div><b id="c-mine">0</b> my calls</div>
+            <div><b id="c-remaining">0</b> left to call</div>
+            <div><b id="c-done">0</b> done</div>
+            <div id="c-dnc-wrap"><b id="c-dnc">0</b> do not call</div>
+          </div>
+        </div>
+        <div class="who">
+          <button type="button" class="token-btn" id="token-btn" title="Change your token"><span class="tk" id="who-token">&#10067;</span><span id="who-name"></span></button>
+          <button class="linkbtn" id="logout-btn">log out</button>
+        </div>
+      </div>
+
+      <div id="work-body"></div>
+      <div id="admin-body" class="hidden"></div>
+      <div id="training-body" class="hidden"></div>
+      <div id="board-body" class="hidden"></div>
+    </div>
+
+    <!-- ======================================================== CLUB DRAWER -->
+    <div id="drawer-backdrop"></div>
+    <aside id="drawer" class="drawer" aria-label="Club details">
+      <div class="drawer-inner" id="drawer-inner"></div>
+    </aside>
+    <div id="token-modal" class="hidden"></div>
+    <div class="toast" id="toast"></div>
+
+    <script>
+      (function () {
+        "use strict";
+
+        var API =
+          "https://nwchcduhlhhppvyhxbpo.supabase.co/functions/v1/d1942-calls-api";
+        var TOKEN_KEY = "d1942_calls_token";
+
+        var token = null;
+        try {
+          token = localStorage.getItem(TOKEN_KEY);
+        } catch (e) {}
+        var current = null; // the club currently on screen
+        var formRound = 1; // which round the on-screen form was built for
+        var formCarryEmail = ""; // DM email from an earlier call, reused on round-2 saves
+        var meCaller = null; // the logged-in caller, used in the script
+        var tabsWired = false;
+        var drawerClub = null; // target_id currently open in the slide-out
+
+        // Which queue the worksheet serves from: 1 = first calls, 2 = callbacks.
+        var roundMode = 1;
+        try {
+          roundMode =
+            parseInt(localStorage.getItem("d1942_round") || "1", 10) === 2
+              ? 2
+              : 1;
+        } catch (e) {}
+
+        function api(action, payload) {
+          if (DEMO) return demoApi(action, payload);
+          var body = Object.assign({ action: action }, payload || {});
+          if (token) body.token = token;
+          return fetch(API, {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify(body),
+          }).then(function (r) {
+            return r.json().then(function (j) {
+              if (r.status === 401) {
+                signOut();
+                throw new Error("Your session expired. Please log in again.");
+              }
+              if (j && j.error) throw new Error(j.error);
+              return j;
+            });
+          });
+        }
+
+        function show(id) {
+          ["view-login", "view-setup", "view-signup", "view-work"].forEach(
+            function (v) {
+              document.getElementById(v).classList.toggle("hidden", v !== id);
+            },
+          );
+        }
+        function msg(el, text, kind) {
+          var n = document.getElementById(el);
+          n.className = "msg " + (kind || "error");
+          n.textContent = text;
+        }
+        function clearMsg(el) {
+          document.getElementById(el).className = "msg";
+        }
+        function esc(s) {
+          return String(s == null ? "" : s).replace(/[&<>"']/g, function (c) {
+            return {
+              "&": "&amp;",
+              "<": "&lt;",
+              ">": "&gt;",
+              '"': "&quot;",
+              "'": "&#39;",
+            }[c];
+          });
+        }
+
+        // ----------------------------------------------------------- setup flow
+        var setupToken = new URLSearchParams(location.search).get("setup");
+
+        if (setupToken) {
+          show("view-setup");
+          api("setup_check", { setup_token: setupToken })
+            .then(function (r) {
+              if (!r.valid) {
+                msg("setup-msg", r.reason, "error");
+                document.getElementById("setup-btn").disabled = true;
+                return;
+              }
+              document.getElementById("setup-sub").textContent =
+                r.name + " — your username is " + r.username;
+              if (r.already_set)
+                msg(
+                  "setup-msg",
+                  "You already have a password. Saving here replaces it.",
+                  "ok",
+                );
+            })
+            .catch(function (e) {
+              msg("setup-msg", e.message, "error");
+            });
+
+          document
+            .getElementById("setup-form")
+            .addEventListener("submit", function (e) {
+              e.preventDefault();
+              clearMsg("setup-msg");
+              var pw = document.getElementById("new-password").value;
+              var cf = document.getElementById("confirm-password").value;
+              if (pw !== cf) {
+                msg("setup-msg", "Those two passwords do not match.", "error");
+                return;
+              }
+              var btn = document.getElementById("setup-btn");
+              btn.disabled = true;
+              btn.textContent = "Saving...";
+              api("setup", { setup_token: setupToken, password: pw })
+                .then(function () {
+                  msg(
+                    "setup-msg",
+                    "Password saved. Taking you to the login screen...",
+                    "ok",
+                  );
+                  setTimeout(function () {
+                    location.href = location.pathname;
+                  }, 1400);
+                })
+                .catch(function (err) {
+                  msg("setup-msg", err.message, "error");
+                  btn.disabled = false;
+                  btn.textContent = "Save password";
+                });
+            });
+          return;
+        }
+
+        // ---------------------------------------------------------- signup flow
+        var signupToken = new URLSearchParams(location.search).get("signup");
+
+        if (signupToken) {
+          show("view-signup");
+          api("signup_check", { signup_token: signupToken })
+            .then(function (r) {
+              if (!r.valid) {
+                msg("signup-msg", r.reason, "error");
+                document.getElementById("signup-btn").disabled = true;
+                return;
+              }
+              // Say plainly what the link creates, so an admin link handed to the wrong
+              // person is obvious to them rather than silent.
+              document.getElementById("signup-sub").textContent = r.is_admin
+                ? "Darwin 1942 — this link creates an ADMIN account, with access to the full overview."
+                : "Darwin 1942 — RSL club outreach";
+              if (r.remaining != null && r.remaining <= 3) {
+                msg(
+                  "signup-msg",
+                  r.remaining + " place(s) left on this link.",
+                  "ok",
+                );
+              }
+            })
+            .catch(function (e) {
+              msg("signup-msg", e.message, "error");
+            });
+
+          document
+            .getElementById("signup-form")
+            .addEventListener("submit", function (e) {
+              e.preventDefault();
+              clearMsg("signup-msg");
+              var pw = document.getElementById("su-password").value;
+              if (pw !== document.getElementById("su-confirm").value) {
+                msg("signup-msg", "Those two passwords do not match.", "error");
+                return;
+              }
+              var btn = document.getElementById("signup-btn");
+              btn.disabled = true;
+              btn.textContent = "Creating...";
+              api("signup", {
+                signup_token: signupToken,
+                name: document.getElementById("su-name").value,
+                email: document.getElementById("su-email").value,
+                password: pw,
+              })
+                .then(function (r) {
+                  token = r.token;
+                  try {
+                    localStorage.setItem(TOKEN_KEY, token);
+                  } catch (e) {}
+                  // Drop the token from the address bar so the link is not left sitting
+                  // in history or shoulder-surfed off the screen.
+                  history.replaceState(null, "", location.pathname);
+                  startWork(r.caller);
+                })
+                .catch(function (err) {
+                  msg("signup-msg", err.message, "error");
+                  btn.disabled = false;
+                  btn.textContent = "Create account";
+                });
+            });
+          return;
+        }
+
+        // ----------------------------------------------------------- login flow
+        document
+          .getElementById("login-form")
+          .addEventListener("submit", function (e) {
+            e.preventDefault();
+            clearMsg("login-msg");
+            var btn = document.getElementById("login-btn");
+            btn.disabled = true;
+            btn.textContent = "Logging in...";
+            api("login", {
+              username: document.getElementById("username").value,
+              password: document.getElementById("password").value,
+            })
+              .then(function (r) {
+                if (r.error) throw new Error(r.error);
+                if (!r.caller) throw new Error("Login succeeded but no account was returned. Please try again.");
+                token = r.token;
+                try {
+                  localStorage.setItem(TOKEN_KEY, token);
+                } catch (e) {}
+                startWork(r.caller);
+              })
+              .catch(function (err) {
+                msg("login-msg", err.message, "error");
+                btn.disabled = false;
+                btn.textContent = "Log in";
+              });
+          });
+
+        function signOut() {
+          token = null;
+          try {
+            localStorage.removeItem(TOKEN_KEY);
+          } catch (e) {}
+          show("view-login");
+          var btn = document.getElementById("login-btn");
+          btn.disabled = false;
+          btn.textContent = "Log in";
+        }
+
+        document
+          .getElementById("logout-btn")
+          .addEventListener("click", function () {
+            api("logout", {}).catch(function () {});
+            signOut();
+          });
+
+        // New callers must read the campaign training before their first call.
+        // Admins are never gated, and completion is stored on the caller row so
+        // it follows them across devices.
+        function needsTraining() {
+          return !!(meCaller && !meCaller.is_admin && !meCaller.onboarded_at);
+        }
+
+        function startWork(caller) {
+          meCaller = caller;
+          initToken();
+          document.getElementById("who-name").textContent = caller.name;
+          show("view-work");
+          // Callers see their own numbers; the do-not-call figure is admin plumbing.
+          document
+            .getElementById("c-dnc-wrap")
+            .classList.toggle("hidden", !caller.is_admin);
+          renderRoundSwitch();
+          // Everyone gets the overview now; non-admins are served a version scoped
+          // to their own list and their own calls by the API.
+          if (!tabsWired) {
+            tabsWired = true;
+            document
+              .getElementById("tab-work")
+              .addEventListener("click", function () {
+                switchTab("work");
+              });
+            document
+              .getElementById("tab-admin")
+              .addEventListener("click", function () {
+                switchTab("admin");
+              });
+            document
+              .getElementById("tab-training")
+              .addEventListener("click", function () {
+                switchTab("training");
+              });
+            document
+              .getElementById("tab-board")
+              .addEventListener("click", function () {
+                switchTab("board");
+              });
+          }
+          if (needsTraining()) {
+            // Don't claim a club yet — the worksheet unlocks when they finish.
+            switchTab("training");
+          } else {
+            loadNext();
+          }
+        }
+
+        function switchTab(which) {
+          if (needsTraining()) which = "training";
+          ["work", "admin", "training", "board"].forEach(function (t) {
+            document
+              .getElementById("tab-" + t)
+              .classList.toggle("on", t === which);
+            document
+              .getElementById(t + "-body")
+              .classList.toggle("hidden", t !== which);
+          });
+          if (which === "admin") loadOverview();
+          if (which === "board") loadBoard();
+          if (which === "training") renderTraining();
+        }
+
+        // ------------------------------------------------------------- training
+        // The campaign briefing every caller reads before their first call,
+        // distilled from the team's strategy document, ending with a walkthrough
+        // of the worksheet itself. Edit the steps below as the strategy evolves.
+        var TRAIN_STEPS = [
+          {
+            t: "Welcome to the Darwin 1942 campaign",
+            h:
+              "<p><em>Darwin 1942</em> is a feature commemorative documentary telling the story of the largest military attack ever carried out on Australian soil, through the voices of the veterans who defended Australia. Heritage Films is producing it alongside Australian Television and Media Group, leading into the 85th anniversary of the Bombing of Darwin in February 2027.</p>" +
+              "<p>The outbound campaign is the next step in our national RSL Club outreach program. You are the first human voice most of these clubs will hear from the project, and your job on the phone is simple. It is not selling.</p>" +
+              "<p>This training takes about fifteen minutes. It covers what the campaign is, what to have ready before you dial, who we're calling, the script line by line, how to handle pushback, and finishes with a walkthrough of this worksheet. Read it properly &mdash; the difference between a good call and a wasted one is almost always preparation.</p>",
+          },
+          {
+            t: "What this campaign is about",
+            h:
+              "<p>The purpose of the calls is <b>not</b> to sell the documentary or ask for funding on the first conversation. Our objective is to:</p>" +
+              "<ol><li>Identify the right decision maker.</li>" +
+              "<li>Build credibility and trust.</li>" +
+              "<li>Create curiosity about the project.</li>" +
+              "<li>Secure permission to send information.</li>" +
+              "<li>Establish the appropriate next step and, where possible, book a follow-up conversation.</li></ol>" +
+              "<h3>The biggest mistake we can make</h3>" +
+              "<p>Trying to explain the entire project in a three-minute phone call. You don't need to tell them everything. Your job is to create enough interest for them to say:</p>" +
+              '<div class="train-say"><b>The words you are listening for</b>&ldquo;Yes, send me some information.&rdquo;</div>' +
+              "<p>Once they have received the information and had an opportunity to look at it, we have earned the right to have a more detailed conversation.</p>",
+          },
+          {
+            t: "The goal",
+            h:
+              "<p>The campaign aims to raise at least <b>$1 million</b> through RSL Clubs and Sub-Branches, while creating nationwide ownership of Darwin 1942.</p>" +
+              "<p>But success is not measured in dollars alone. Every call also builds toward:</p>" +
+              "<ul><li>national awareness of the story</li>" +
+              "<li>local screenings in communities around Australia</li>" +
+              "<li>veteran engagement and storytelling</li>" +
+              "<li>schools receiving the film and education resources</li>" +
+              "<li>community participation</li>" +
+              "<li>a long-term legacy that outlasts the anniversary</li></ul>" +
+              "<p>A call that finds the right person and captures good intelligence is a success, even if that club never contributes a dollar.</p>",
+          },
+          {
+            t: "Before you make your first call",
+            h:
+              "<p>Use this as your pre-call checklist. Make sure you have:</p>" +
+              '<ul><li>Read the <a href="https://docs.google.com/document/d/1TFWuJ8Pl0XkVBWniJ3SjMDiQvb1Irja55BM5NZ2Idmo/edit?tab=t.0" target="_blank" rel="noopener">ClubGRANTS information</a>.</li>' +
+              '<li>Reviewed the Darwin 1942 project information at <a href="https://darwin1942.com/rsl/" target="_blank" rel="noopener">darwin1942.com/rsl</a>.</li>' +
+              '<li>Completed your Crazytel setup &mdash; <a href="https://docs.google.com/document/d/1rUX-jrYFoVp__Mfc_S0QN89F_xNZaBebmhxO9qkeQOg/edit?tab=t.0" target="_blank" rel="noopener">individual setup instructions are here</a>.</li>' +
+              "<li>Signed up to this call centre system (you have &mdash; you're reading this inside it).</li>" +
+              "<li>The script available. It sits on the left of the worksheet on every call.</li>" +
+              "<li>Know where to record call outcomes and contact information: the form beside the script, on every call.</li></ul>" +
+              "<h3>Logistics</h3>" +
+              "<ul><li>Calls are made from our centralised phone system, <b>Crazytel</b>, not your own mobile.</li>" +
+              "<li>A central database of around 200 RSL gaming licence sites is the initial focus. The system has allocated each team member their own share of those sites, and it hands them to you one at a time.</li>" +
+              "<li><b>Record the outcome of every call</b>, including the ones where nobody answered. If it isn't in the worksheet, it didn't happen.</li></ul>",
+          },
+          {
+            t: "Background you need to know",
+            h:
+              "<h3>Email outreach has already begun</h3>" +
+              "<p>Since <b>14 August 2026</b>, more than 1,000 RSL Clubs have been receiving a weekly eDM every Friday introducing the Darwin 1942 project and inviting clubs to Get Involved.</p>" +
+              "<p>So the phone call is not necessarily a cold introduction. Some clubs may have already seen the emails; others won't have noticed them.</p>" +
+              '<div class="train-dont"><b>Don&rsquo;t assume</b>Don&rsquo;t assume they&rsquo;ve read anything. Simply introduce yourself naturally and use the call to identify the right person.</div>' +
+              "<h3>ClubGRANTS</h3>" +
+              '<p>RSL gaming sites can provide community donations and funding through their ClubGRANTS process. Read the <a href="https://docs.google.com/document/d/1TFWuJ8Pl0XkVBWniJ3SjMDiQvb1Irja55BM5NZ2Idmo/edit?tab=t.0" target="_blank" rel="noopener">ClubGRANTS information</a> before making calls so you understand the opportunity and can recognise when it is relevant to the conversation. The next pages cover the essentials.</p>',
+          },
+          {
+            t: "Who we're calling",
+            h:
+              "<h3>Tier one &mdash; RSL Clubs (the priority)</h3>" +
+              "<p>Of the 1,100+ RSL organisations nationally, around 200 are licensed gaming venues &mdash; and they are our initial focus. These clubs have gaming operations, community grant programs, marketing budgets and sponsorship capability. Typical partnerships are expected around $20,000 for regional clubs, up to $35,000 for metro clubs. They can contribute through sponsorship, venue support, screening events and local promotion.</p>" +
+              "<h3>Tier two &mdash; RSL Sub-Branches</h3>" +
+              "<p>Smaller deals ($5,000&ndash;$10,000), and in metro areas most will lean on their local RSL Club for funding. Their real value is as advocates, storytellers, screening hosts, local champions and education partners. Every Sub-Branch receives a complimentary copy of the documentary.</p>" +
+              "<h3>Why clubs say yes</h3>" +
+              "<p>Not because they need another sponsorship &mdash; because this helps them deliver exactly what RSL Clubs already exist to do: support veterans, educate communities, strengthen remembrance and build local engagement.</p>" +
+              "<h3>Why some say no</h3>" +
+              "<p>No connection to the story, or they can't afford it &mdash; in which case a Sub-Branch will usually point to the local Club. Either way, understanding the reason is valuable. Record it.</p>",
+          },
+          {
+            t: "ClubGRANTS, in two minutes",
+            h:
+              "<p>In NSW, registered clubs with more than $1 million in annual gaming machine profits fund community work through the <b>ClubGRANTS</b> scheme. Category 2 of that scheme covers community development and support &mdash; and specifically includes veteran welfare activities. This is the most natural funding avenue for Darwin 1942.</p>" +
+              "<p>So the proposition is never &ldquo;give us $20,000 to make a movie&rdquo;. A partnership funds a defined local community program: commemorative screenings, watch-at-home film gifts for members, the film and education resources delivered into local schools, and a community engagement campaign.</p>" +
+              '<div class="train-dont"><b>One important caution</b>Never tell a club their partnership <em>is</em> eligible for ClubGRANTS funding. Eligibility depends on the category, the purpose and the club&rsquo;s own process. If it comes up, the most you can say is that it <em>may be eligible to be supported</em> through their ClubGRANTS program.</div>' +
+              "<p>On the call, simply ask whether the club runs ClubGRANTS or a community funding round, and when the relevant committee meets. Those two answers shape everything that follows.</p>",
+          },
+          {
+            t: "The language we use matters",
+            h:
+              '<div class="train-dont"><b>Avoid saying</b>&ldquo;We&rsquo;re raising money for a documentary.&rdquo; &middot; &ldquo;Please support our film.&rdquo;</div>' +
+              '<div class="train-say"><b>Instead say</b>&ldquo;We&rsquo;re inviting RSL Clubs to become founding partners in a national legacy project that will honour veterans, educate future generations, and ensure one of Australia&rsquo;s most important wartime stories continues to be told.&rdquo;</div>' +
+              "<p>The difference is important. We are not simply asking clubs to fund a film. We are inviting them to consider participating in a legacy project that aligns with the values and purpose of the RSL community.</p>" +
+              "<h3>The three pillars</h3>" +
+              "<ul><li><b>Honour veterans.</b> Every dollar preserves veteran stories.</li>" +
+              "<li><b>Educate Australia.</b> Schools, study guides, community screenings, museums.</li>" +
+              "<li><b>Local community legacy.</b> Each club becomes the local home of Darwin 1942 in its own community.</li></ul>",
+          },
+          {
+            t: "You are opening a door, not closing a deal",
+            h:
+              "<p>Think of the initial call as a <b>permission-based introduction</b>.</p>" +
+              "<h3>You are not trying to</h3>" +
+              "<ul><li>Explain the entire documentary.</li>" +
+              "<li>Present the full proposal.</li>" +
+              "<li>Ask for a funding commitment.</li>" +
+              "<li>Overcome every possible objection.</li>" +
+              "<li>Have a 20-minute conversation with reception.</li></ul>" +
+              "<h3>You are trying to</h3>" +
+              "<ul><li>Find the right person.</li>" +
+              "<li>Establish who you are.</li>" +
+              "<li>Explain the opportunity in one or two sentences.</li>" +
+              "<li>Create enough curiosity for them to want more.</li>" +
+              "<li>Get permission to send the information.</li>" +
+              "<li>Secure a follow-up conversation where appropriate.</li></ul>" +
+              '<div class="train-say"><b>Your mindset</b>Brief. Confident. Respectful. Curious.</div>' +
+              "<p>Don't rush. Don't over-explain. Don't sound like you're reading a script. And most importantly, <b>stop talking when you've made your point</b>. A pause is powerful.</p>",
+          },
+          {
+            t: "Who we're trying to reach",
+            h:
+              "<p>The ideal decision maker may be the:</p>" +
+              "<ul><li>CEO</li>" +
+              "<li>Club General Manager</li>" +
+              "<li>Community Grants Manager</li>" +
+              "<li>Marketing Manager</li>" +
+              "<li>Board Chair</li>" +
+              "<li>Sub-Branch President</li>" +
+              "<li>Community Partnerships Manager</li>" +
+              "<li>Another person responsible for grants, sponsorships or community initiatives</li></ul>" +
+              "<p>If the person you reach isn't the decision maker, <b>don't try to sell them the project</b>. Simply ask:</p>" +
+              '<div class="train-say"><b>Say</b>&ldquo;Who would be the best person for me to speak with about community grants, sponsorships or special community initiatives?&rdquo;</div>' +
+              "<p>Your goal is to get the <b>name, position, email address and direct contact details</b> of the appropriate person. There is a field for each of those in the form.</p>",
+          },
+          {
+            t: "The script: reception and first contact",
+            h:
+              "<p>Use this as your starting point. Don't read it word-for-word if it makes you sound unnatural.</p>" +
+              "<h3>1. Reception / first contact</h3>" +
+              '<div class="train-say"><b>Say</b>&ldquo;Good morning. My name is [your name], calling from Heritage Films. We&rsquo;re working alongside Australian Television and Media Group on a feature commemorative documentary called Darwin 1942, which honours the veterans who defended Australia during the bombing of Darwin. We&rsquo;re beginning conversations with RSL Clubs and Sub-Branches around Australia, and I was wondering if you could point me towards the person who oversees community grants, sponsorships or special community initiatives?&rdquo;</div>' +
+              "<p><b>Then stop.</b> Let them answer. People are generally very willing to help when you're simply asking for direction.</p>" +
+              "<h3>2. If they ask: &ldquo;What is it regarding?&rdquo;</h3>" +
+              "<p>Keep it short.</p>" +
+              '<div class="train-say"><b>Say</b>&ldquo;Certainly. It&rsquo;s a national documentary leading into the 85th anniversary of the Bombing of Darwin in 2027. The project is being developed with military historians and RSL partners and includes community screenings, education resources and veteran storytelling. We&rsquo;re simply trying to speak with the right person before sending some information through.&rdquo;</div>' +
+              "<p>Then stop. Short. No pressure.</p>" +
+              "<h3>3. If they ask: &ldquo;Are you asking for sponsorship?&rdquo;</h3>" +
+              "<p>Don't immediately frame the conversation as a funding request. Instead:</p>" +
+              '<div class="train-say"><b>Say</b>&ldquo;We&rsquo;re inviting selected RSL Clubs to explore becoming part of a national legacy project. Depending on each club, that could involve community grant funding, sponsorship, hosting screenings or simply participating locally. At this stage, we&rsquo;re simply looking for the right person to introduce the project to.&rdquo;</div>' +
+              "<p>This changes the conversation from &ldquo;we're asking you for money&rdquo; to &ldquo;we're inviting you to explore an opportunity&rdquo;.</p>",
+          },
+          {
+            t: "The script: once you reach the right person",
+            h:
+              "<p>Start by lowering resistance.</p>" +
+              '<div class="train-say"><b>Say</b>&ldquo;Hi [name], thank you for taking my call. I&rsquo;ll keep this really brief.&rdquo;</div>' +
+              "<p>Then:</p>" +
+              '<div class="train-say"><b>Say</b>&ldquo;Heritage Films are working with Australian Television and Media Group on the national release of Darwin 1942. It&rsquo;s a feature commemorative documentary telling the story of the largest military attack ever carried out on Australian soil, through the voices and stories of the veterans who defended Australia. As we approach the 85th anniversary in 2027, we&rsquo;re inviting a select number of RSL Clubs to explore becoming founding partners in what we believe could become a significant national veteran legacy project.&rdquo;</div>' +
+              "<p><b>Pause.</b> Do not immediately fill the silence. If they're interested, continue:</p>" +
+              '<div class="train-say"><b>Say</b>&ldquo;The project extends well beyond the documentary itself. It includes local screenings, education resources, veteran speakers, museum partnerships and community engagement initiatives designed to preserve these stories for future generations.&rdquo;</div>' +
+              "<p>Then ask the key question:</p>" +
+              '<div class="train-say"><b>The key question</b>&ldquo;Would you be open to having a look at some information if I sent it through today?&rdquo;</div>' +
+              "<h3>If they say yes</h3>" +
+              "<p>Excellent. Move naturally to capturing their details:</p>" +
+              '<div class="train-say"><b>Say</b>&ldquo;Wonderful. What&rsquo;s the best email address for you?&rdquo; &hellip; &ldquo;Once you&rsquo;ve had a chance to look through it, could we organise fifteen or twenty minutes next week to answer any questions?&rdquo;</div>' +
+              "<p>You are now booking a conversation, not selling the project.</p>" +
+              "<h3>Discovery questions</h3>" +
+              "<p>Don't interrogate the person. These are for when the conversation is open and receptive, and they help us understand the club and how it makes decisions. Prioritise:</p>" +
+              "<ul><li>&ldquo;Can I ask whether your club currently has a community grants program?&rdquo;</li>" +
+              "<li>&ldquo;Is there anyone else who should receive the information as well?&rdquo;</li>" +
+              "<li>&ldquo;When do those meetings normally take place?&rdquo;</li></ul>",
+          },
+          {
+            t: "If they push back",
+            h:
+              "<h3>&ldquo;We&rsquo;re not interested.&rdquo;</h3>" +
+              "<p>Don't argue.</p>" +
+              '<div class="train-say"><b>Say</b>&ldquo;No problem at all. May I ask whether it&rsquo;s simply not the right timing, or whether these kinds of projects generally aren&rsquo;t something the club supports?&rdquo;</div>' +
+              "<p>This gives you useful information without creating pressure.</p>" +
+              "<h3>&ldquo;Just send me some information.&rdquo;</h3>" +
+              "<p>That's a positive response.</p>" +
+              '<div class="train-say"><b>Say</b>&ldquo;Perfect. I&rsquo;d be delighted to. Is there anything in particular you&rsquo;d like me to include?&rdquo;</div>' +
+              "<p>Then capture the email and establish the next step.</p>" +
+              "<h3>&ldquo;We already have too many requests.&rdquo;</h3>" +
+              '<div class="train-say"><b>Say</b>&ldquo;I completely understand. That&rsquo;s exactly why we&rsquo;re starting with a brief introduction rather than asking for a decision. We think this is a little different because it&rsquo;s centred on preserving Australian military history and connecting that story with local communities.&rdquo;</div>' +
+              "<h3>&ldquo;We&rsquo;re not the right people.&rdquo;</h3>" +
+              '<div class="train-say"><b>Say</b>&ldquo;Of course. Would you mind pointing me towards whoever oversees community partnerships or grant funding?&rdquo;</div>' +
+              "<p>Then thank them and capture the details.</p>" +
+              "<h3>If they push back on money</h3>" +
+              '<div class="train-say"><b>Say</b>&ldquo;Completely understand &mdash; nothing has to be decided today. Can I keep you posted as the film progresses?&rdquo;</div>' +
+              "<p>Whatever the pushback, record the reason in your notes. Intelligence beats persistence.</p>",
+          },
+          {
+            t: "Every call should leave us with more information",
+            h:
+              "<p>At the end of each call, record as much of the following as possible:</p>" +
+              "<ul><li>Decision maker's name and title.</li>" +
+              "<li>Direct phone number.</li>" +
+              "<li>Email address.</li>" +
+              "<li>Whether they operate gaming-funded community grants.</li>" +
+              "<li>Board or committee meeting dates.</li>" +
+              "<li>Interest level: <b>Hot / Warm / Cold</b> &mdash; put this at the top of your notes.</li></ul>" +
+              "<p>A call that doesn't result in an immediate opportunity can still be a successful call if we learn something useful.</p>" +
+              "<h3>What a successful first call looks like</h3>" +
+              "<p>Don't try to tell them everything. Your job is to:</p>" +
+              "<ol><li>Open the door.</li>" +
+              "<li>Find the right person.</li>" +
+              "<li>Create curiosity.</li>" +
+              "<li>Get permission.</li>" +
+              "<li>Send the information.</li>" +
+              "<li>Book the next conversation.</li></ol>" +
+              "<p>That is a successful first call.</p>",
+          },
+          {
+            t: "What happens after you hang up",
+            h:
+              "<p>The worksheet is wired into the campaign's email journey, which is why filling it in properly matters:</p>" +
+              "<ul><li>When you choose <b>&ldquo;Wants information &mdash; partnership pack&rdquo;</b> with an email address, the introduction email goes out automatically within minutes &mdash; the overview, the poster, the teaser and the proposal, exactly as promised on the call. You never send anything yourself.</li>" +
+              "<li>From there a nurture sequence continues automatically over the following weeks. Replies come back to a central inbox and are handled by the core team.</li>" +
+              "<li>A few days later the club appears in the <b>call-back queue</b> for the second call: &ldquo;I sent through the information &mdash; I was just interested to hear what you thought.&rdquo; Then stop, and let them talk.</li></ul>" +
+              "<p>On that second call you're establishing which path they're on: <b>ready to explore</b> (book a 15&ndash;20 minute meeting), <b>interested but not ready</b> (the nurture journey continues), or <b>not interested</b> (find out why). The second-call form is built around exactly those paths.</p>" +
+              "<p>If a club mentions a committee or board date, write it down &mdash; the follow-up gets timed around it rather than sending generic chasers.</p>",
+          },
+          {
+            t: "How to use this worksheet",
+            h:
+              "<p>Everything you've just read is wired into the tool you're looking at.</p>" +
+              "<h3>Getting a club</h3>" +
+              "<p>The worksheet hands you one club at a time from your own list &mdash; it's yours for an hour, and nobody else will be offered it. <b>Skip for now</b> hands it back for later. The switch in the top-right corner flips between <b>1</b> (first calls) and <b>2</b> (call-backs).</p>" +
+              "<h3>On a call</h3>" +
+              "<ul><li>The left pane has the club's details and the full script. Clicking the phone number copies it on a computer, or dials on a phone &mdash; dial it from Crazytel.</li>" +
+              "<li>Start the form with <b>who you spoke to</b>. If you only reached reception, choose gatekeeper &mdash; record whatever they told you about the right person, and the club automatically comes back around in the queue.</li>" +
+              "<li>Fill the form as you go: decision maker, role, direct email and phone, ClubGRANTS, who else is involved, when the committee meets. Interest level and anything else goes in the notes.</li></ul>" +
+              "<h3>Outcomes</h3>" +
+              "<ul><li><b>Wants information &mdash; partnership pack</b>: the pack is emailed automatically. It needs their email address.</li>" +
+              "<li><b>Could not get to the decision maker</b>, <b>no answer</b> and <b>wrong number</b> put the club back in the pool to try again later.</li>" +
+              "<li><b>Not interested</b> closes the club out &mdash; note down why.</li>" +
+              "<li><b>Other</b>: explain what happened in the notes.</li></ul>" +
+              "<h3>Everything else</h3>" +
+              "<p>The <b>Overview</b> tab shows your numbers, your to-call and call-back lists, and your recent calls &mdash; click any club to see its full history, every call and every email it's been sent. And write rich notes: committee dates, names, objections. Notes are gold for whoever makes the next call.</p>" +
+              "<p>You can reopen this training any time from the Training tab.</p>",
+          },
+        ];
+
+        var trainStep = 0;
+        try {
+          trainStep =
+            parseInt(localStorage.getItem("d1942_train_step") || "0", 10) || 0;
+        } catch (e) {}
+
+        function renderTraining() {
+          if (trainStep < 0 || trainStep >= TRAIN_STEPS.length) trainStep = 0;
+          var s = TRAIN_STEPS[trainStep];
+          var last = trainStep === TRAIN_STEPS.length - 1;
+          var pct = Math.round(((trainStep + 1) / TRAIN_STEPS.length) * 100);
+
+          document.getElementById("training-body").innerHTML =
+            '<div class="train-wrap">' +
+            '<div class="train-progress"><span>Step ' +
+            (trainStep + 1) +
+            " of " +
+            TRAIN_STEPS.length +
+            '</span><div class="train-bar"><span style="width:' +
+            pct +
+            '%"></span></div></div>' +
+            '<div class="train-card">' +
+            "<h2>" +
+            s.t +
+            "</h2>" +
+            '<p class="train-kicker">Darwin 1942 caller training</p>' +
+            s.h +
+            '<div class="train-nav">' +
+            (trainStep > 0
+              ? '<button type="button" class="btn-ghost" id="train-back">&#8592; Back</button>'
+              : "<span></span>") +
+            (last
+              ? '<button type="button" class="btn-primary" id="train-done">' +
+                (needsTraining()
+                  ? "I&rsquo;ve read everything &mdash; unlock the worksheet"
+                  : "Done &mdash; back to the worksheet") +
+                "</button>"
+              : '<button type="button" class="btn-primary" id="train-next">Next &#8594;</button>') +
+            "</div>" +
+            (needsTraining()
+              ? '<p class="train-note">The worksheet unlocks when you finish reading &mdash; your place is saved if you come back later.</p>'
+              : "") +
+            "</div></div>";
+
+          var body = document.getElementById("training-body");
+          body.scrollTop = 0;
+
+          var back = document.getElementById("train-back");
+          if (back)
+            back.addEventListener("click", function () {
+              trainStep--;
+              saveTrainStep();
+              renderTraining();
+            });
+          var next = document.getElementById("train-next");
+          if (next)
+            next.addEventListener("click", function () {
+              trainStep++;
+              saveTrainStep();
+              renderTraining();
+            });
+          var done = document.getElementById("train-done");
+          if (done)
+            done.addEventListener("click", function () {
+              if (!needsTraining()) {
+                switchTab("work");
+                if (!current) loadNext();
+                return;
+              }
+              done.disabled = true;
+              done.textContent = "Unlocking...";
+              api("complete_onboarding", {})
+                .then(function (r) {
+                  meCaller.onboarded_at = r.onboarded_at || "done";
+                  switchTab("work");
+                  loadNext();
+                })
+                .catch(function (e) {
+                  done.disabled = false;
+                  done.textContent =
+                    "I’ve read everything — unlock the worksheet";
+                  alert(e.message);
+                });
+            });
+        }
+
+        function saveTrainStep() {
+          try {
+            localStorage.setItem("d1942_train_step", String(trainStep));
+          } catch (e) {}
+        }
+
+        // --------------------------------------------------------------- overview
+        function loadOverview() {
+          var el = document.getElementById("admin-body");
+          el.innerHTML = '<div class="empty"><p>Loading overview...</p></div>';
+          api("overview", {})
+            .then(function (d) {
+              if (d.scope === "mine") renderMyOverview(el, d);
+              else renderOverview(el, d);
+            })
+            .catch(function (e) {
+              el.innerHTML =
+                '<div class="empty"><h2>Could not load</h2><p>' +
+                esc(e.message) +
+                "</p></div>";
+            });
+        }
+
+        // Monochrome ramp from white down to the site blue (--sky-blue), stable per
+        // outcome so a slice keeps its colour as the numbers move: the best outcomes
+        // are lightest, the dead ends sit at the blue end.
+        // Drawn from the board's property-set palette so the chart reads like the
+        // rest of the game — vivid, no greys.
+        var OUTCOME_COLOURS = {
+          committed: "#1fb25a",        // green
+          interested_followup: "#0072bb", // dark blue
+          referred_to_board: "#f7941d",   // orange
+          callback_scheduled: "#00acef",  // sky
+          wants_updates: "#d93a96",       // pink
+          wants_info_only: "#fece50",     // yellow
+          not_interested: "#ed1b24",      // red
+          no_answer: "#955436",           // brown
+          gatekeeper: "#aae0fa",          // light blue
+          wrong_number: "#7a3fa0",        // violet
+          other: "#17a398",               // teal
+        };
+        var OUTCOME_LABELS = {
+          committed: "Committed",
+          interested_followup: "Interested \u2014 needs another call",
+          referred_to_board: "Going to the board",
+          callback_scheduled: "Callback scheduled",
+          wants_updates: "Wants updates only",
+          wants_info_only: "Wants information — partnership pack",
+          not_interested: "Not interested",
+          no_answer: "No answer",
+          gatekeeper: "Could not get to the decision maker",
+          wrong_number: "Wrong number",
+          other: "Other — see notes",
+        };
+        function outcomeColour(k) {
+          return OUTCOME_COLOURS[k] || "#8fa3b3";
+        }
+        function outcomeLabel(k) {
+          return OUTCOME_LABELS[k] || String(k).replace(/_/g, " ");
+        }
+
+        // Short names for the chart, where the full outcome labels won't fit.
+        var OUTCOME_SHORT = {
+          committed: "Committed",
+          interested_followup: "Interested",
+          referred_to_board: "To the board",
+          callback_scheduled: "Callback",
+          wants_updates: "Wants updates",
+          wants_info_only: "Wants info",
+          not_interested: "Not interested",
+          no_answer: "No answer",
+          gatekeeper: "No decision maker",
+          wrong_number: "Wrong number",
+          other: "Other",
+        };
+
+        // Hand-rolled SVG donut with labels either side, joined to their slices by
+        // leader lines. No chart library, so nothing external to load.
+        function pieChart(byOutcome) {
+          var keys = Object.keys(byOutcome || {}).filter(function (k) {
+            return byOutcome[k] > 0;
+          });
+          var total = keys.reduce(function (a, k) {
+            return a + byOutcome[k];
+          }, 0);
+          if (!total) {
+            return '<div class="chart-empty">No calls recorded yet &mdash; the outcome mix will appear here.</div>';
+          }
+          keys.sort(function (a, b) {
+            return byOutcome[b] - byOutcome[a];
+          });
+
+          var W = 520,
+            H = 264,
+            cx = 260,
+            cy = 132,
+            r = 86,
+            inner = 50;
+          var angle = -Math.PI / 2,
+            paths = "",
+            labels = [];
+
+          keys.forEach(function (k) {
+            var frac = byOutcome[k] / total;
+            var end = angle + frac * Math.PI * 2;
+            var mid = (angle + end) / 2;
+            // A single slice covering everything cannot be drawn as an arc (start and
+            // end coincide), so draw it as a ring instead.
+            if (frac >= 0.9999) {
+              paths +=
+                '<circle cx="' +
+                cx +
+                '" cy="' +
+                cy +
+                '" r="' +
+                (r + inner) / 2 +
+                '" fill="none" ' +
+                'stroke="' +
+                outcomeColour(k) +
+                '" stroke-width="' +
+                (r - inner) +
+                '"></circle>';
+            } else {
+              var large = frac > 0.5 ? 1 : 0;
+              var x1 = cx + r * Math.cos(angle),
+                y1 = cy + r * Math.sin(angle);
+              var x2 = cx + r * Math.cos(end),
+                y2 = cy + r * Math.sin(end);
+              var x3 = cx + inner * Math.cos(end),
+                y3 = cy + inner * Math.sin(end);
+              var x4 = cx + inner * Math.cos(angle),
+                y4 = cy + inner * Math.sin(angle);
+              paths +=
+                '<path d="M' +
+                x1.toFixed(2) +
+                " " +
+                y1.toFixed(2) +
+                " A" +
+                r +
+                " " +
+                r +
+                " 0 " +
+                large +
+                " 1 " +
+                x2.toFixed(2) +
+                " " +
+                y2.toFixed(2) +
+                " L" +
+                x3.toFixed(2) +
+                " " +
+                y3.toFixed(2) +
+                " A" +
+                inner +
+                " " +
+                inner +
+                " 0 " +
+                large +
+                " 0 " +
+                x4.toFixed(2) +
+                " " +
+                y4.toFixed(2) +
+                ' Z" fill="' +
+                outcomeColour(k) +
+                '" stroke="#081524" stroke-width="1.5"></path>';
+            }
+            labels.push({
+              k: k,
+              n: byOutcome[k],
+              pct: Math.round(frac * 100),
+              mid: mid,
+            });
+            angle = end;
+          });
+
+          // Plain lists either side of the donut — no leader lines. Each entry keeps
+          // its slice's colour as a swatch, and each side's list is centred
+          // vertically on the chart.
+          var left = labels.filter(function (l) {
+            return Math.cos(l.mid) < 0;
+          });
+          var right = labels.filter(function (l) {
+            return Math.cos(l.mid) >= 0;
+          });
+          function listSvg(list, x) {
+            var gap = 22;
+            var y0 = cy - ((list.length - 1) * gap) / 2;
+            y0 = Math.max(16, Math.min(y0, H - 16 - (list.length - 1) * gap));
+            return list
+              .map(function (l, i) {
+                var y = y0 + i * gap;
+                var name = OUTCOME_SHORT[l.k] || outcomeLabel(l.k);
+                return (
+                  '<rect x="' +
+                  x +
+                  '" y="' +
+                  (y - 5).toFixed(1) +
+                  '" width="10" height="10" rx="2" fill="' +
+                  outcomeColour(l.k) +
+                  '"></rect>' +
+                  '<text x="' +
+                  (x + 16) +
+                  '" y="' +
+                  (y + 4).toFixed(1) +
+                  '" text-anchor="start" font-family="Arial" font-size="12" fill="#222222">' +
+                  esc(name) +
+                  ' <tspan fill="#222222" font-weight="bold">' +
+                  l.n +
+                  "</tspan>" +
+                  ' <tspan fill="#5f6b64">(' +
+                  l.pct +
+                  "%)</tspan></text>"
+                );
+              })
+              .join("");
+          }
+          var decor = listSvg(left, 8) + listSvg(right, cx + r + 26);
+
+          return (
+            '<svg viewBox="0 0 ' +
+            W +
+            " " +
+            H +
+            '" style="width:100%;max-width:' +
+            W +
+            'px;display:block;margin:0 auto" role="img" ' +
+            'aria-label="Call outcomes as a proportion of all calls">' +
+            paths +
+            decor +
+            '<text x="' +
+            cx +
+            '" y="' +
+            (cy - 4) +
+            '" text-anchor="middle" fill="#222222" font-size="28" font-family="Arial" font-weight="bold">' +
+            total +
+            "</text>" +
+            '<text x="' +
+            cx +
+            '" y="' +
+            (cy + 16) +
+            '" text-anchor="middle" fill="#5f6b64" font-size="12" font-family="Arial">calls</text>' +
+            "</svg>"
+          );
+        }
+
+        // -------------------------------------------------- client-side pagination
+        // Long tables render one page at a time; rows are kept in memory and the
+        // container re-renders on Prev/Next.
+        var PAGERS = {};
+        function pagedTable(key, head, rows, opts) {
+          PAGERS[key] = {
+            head: head,
+            rows: rows,
+            pageSize: (opts && opts.pageSize) || 10,
+            empty: (opts && opts.empty) || "Nothing here yet.",
+            page: 0,
+          };
+          return (
+            '<div class="scroll" data-pager="' +
+            key +
+            '">' +
+            pagedInner(key) +
+            "</div>"
+          );
+        }
+        function pagedInner(key) {
+          var o = PAGERS[key];
+          var total = o.rows.length;
+          var pages = Math.max(1, Math.ceil(total / o.pageSize));
+          if (o.page > pages - 1) o.page = pages - 1;
+          var s = o.page * o.pageSize;
+          return (
+            "<table><thead><tr>" +
+            o.head +
+            "</tr></thead><tbody>" +
+            (total
+              ? o.rows.slice(s, s + o.pageSize).join("")
+              : '<tr><td colspan="99">' + o.empty + "</td></tr>") +
+            "</tbody></table>" +
+            (pages > 1
+              ? '<div class="pager">' +
+                '<button type="button" class="pg-btn" data-pg="' +
+                key +
+                '" data-dir="-1"' +
+                (o.page === 0 ? " disabled" : "") +
+                ">&#8592; Prev</button>" +
+                "<span>" +
+                (s + 1) +
+                "&ndash;" +
+                Math.min(s + o.pageSize, total) +
+                " of " +
+                total +
+                "</span>" +
+                '<button type="button" class="pg-btn" data-pg="' +
+                key +
+                '" data-dir="1"' +
+                (o.page >= pages - 1 ? " disabled" : "") +
+                ">Next &#8594;</button>" +
+                "</div>"
+              : "")
+          );
+        }
+        document.addEventListener("click", function (e) {
+          var b = e.target.closest && e.target.closest(".pg-btn");
+          if (!b || b.disabled) return;
+          var key = b.getAttribute("data-pg");
+          if (!PAGERS[key]) return;
+          PAGERS[key].page += parseInt(b.getAttribute("data-dir"), 10);
+          var host = document.querySelector('[data-pager="' + key + '"]');
+          if (host) host.innerHTML = pagedInner(key);
+        });
+
+        // Horizontal stage timeline: one line across the panel, coloured in
+        // white-to-blue steps to show the stages, each with its count and
+        // description underneath.
+        var FUNNEL_COLOURS = [
+          "#ceebcd",
+          "#9bdcf9",
+          "#5cc8f5",
+          "#00acef",
+          "#fece50",
+        ];
+        function funnelChart(f, totalClubs) {
+          var stages = [
+            { key: "waiting", label: "Waiting to be called" },
+            { key: "called_once", label: "Called" },
+            { key: "into_cio", label: "Into Customer.io" },
+            { key: "second_call", label: "Second call" },
+            { key: "committed", label: "Committed money" },
+          ];
+          return (
+            '<ol class="funnel">' +
+            stages
+              .map(function (st, i) {
+                var n = Number(f[st.key] || 0);
+                var pctOfAll = totalClubs
+                  ? Math.round((n / totalClubs) * 100)
+                  : 0;
+                return (
+                  "<li>" +
+                  '<span class="fn-label">' +
+                  esc(st.label) +
+                  "</span>" +
+                  '<span class="fn-seg" style="background:' +
+                  FUNNEL_COLOURS[i] +
+                  '"></span>' +
+                  '<span class="fn-num">' +
+                  n +
+                  "</span>" +
+                  '<span class="fn-pct">' +
+                  pctOfAll +
+                  "% of clubs</span>" +
+                  "</li>"
+                );
+              })
+              .join("") +
+            "</ol>"
+          );
+        }
+
+        // Tap to toggle, since hover does not exist on touch. Delegated so it keeps
+        // working after the overview re-renders.
+        document.addEventListener("click", function (e) {
+          var icon = e.target.closest && e.target.closest(".info-i");
+          document.querySelectorAll(".info-i.open").forEach(function (n) {
+            if (n !== icon) n.classList.remove("open");
+          });
+          if (icon) icon.classList.toggle("open");
+        });
+
+        function infoIcon(text) {
+          return (
+            '<span class="info-i" tabindex="0" role="note" aria-label="' +
+            esc(text) +
+            '">i' +
+            '<span class="tip">' +
+            esc(text) +
+            "</span></span>"
+          );
+        }
+
+        function card(value, label, cls) {
+          return (
+            '<div class="card ' +
+            (cls || "") +
+            '"><b>' +
+            esc(value) +
+            "</b><span>" +
+            esc(label) +
+            "</span></div>"
+          );
+        }
+        function when(iso) {
+          if (!iso) return "—";
+          var d = new Date(iso);
+          return (
+            d.toLocaleDateString("en-AU") +
+            " " +
+            d.toLocaleTimeString("en-AU", {
+              hour: "2-digit",
+              minute: "2-digit",
+            })
+          );
+        }
+        function yesno(v) {
+          return v
+            ? '<span class="pill ok">yes</span>'
+            : '<span class="pill">no</span>';
+        }
+
+        // The two working lists. Every row opens the club's slide-out panel.
+        function listsHtml(lists) {
+          var r1 = (lists && lists.round1) || [];
+          var r2 = (lists && lists.round2) || [];
+
+          var round1 =
+            "<h2>First round &mdash; to call (" +
+            r1.length +
+            ")</h2>" +
+            '<p class="list-note">Clubs nobody has spoken to yet, biggest first. Click a club for its full record.</p>' +
+            pagedTable(
+              "r1",
+              "<th>Club</th><th>Where</th><th>Rank</th><th>Phone</th><th>Attempts</th>",
+              r1.map(function (t) {
+                return (
+                  '<tr class="rowlink" data-club="' +
+                  esc(t.id) +
+                  '">' +
+                  "<td>" +
+                  esc(t.entity_name) +
+                  "</td>" +
+                  "<td>" +
+                  esc(t.where || "—") +
+                  "</td>" +
+                  "<td>" +
+                  esc(t.gaming_rank != null ? t.gaming_rank : "—") +
+                  "</td>" +
+                  '<td class="nowrap">' +
+                  esc(t.primary_phone || "—") +
+                  "</td>" +
+                  "<td>" +
+                  (t.attempts ? esc(t.attempts) + " tried" : "—") +
+                  "</td></tr>"
+                );
+              }),
+              { empty: "Nothing left — every club has been spoken to." },
+            );
+
+          var round2 =
+            "<h2>Second round &mdash; call back (" +
+            r2.length +
+            ")</h2>" +
+            '<p class="list-note">Already called, in priority order: clubs where the first call landed a direct ' +
+            "contact come first, then everyone else. Not-interested clubs are left off.</p>" +
+            pagedTable(
+              "r2",
+              "<th>Priority</th><th>Club</th><th>Where</th><th>Contact</th><th>Last outcome</th><th>Calls</th>",
+              r2.map(function (t) {
+                return (
+                  '<tr class="rowlink" data-club="' +
+                  esc(t.id) +
+                  '">' +
+                  "<td>" +
+                  (t.direct
+                    ? '<span class="pill hot">direct contact</span>'
+                    : '<span class="pill">standard</span>') +
+                  "</td>" +
+                  "<td>" +
+                  esc(t.entity_name) +
+                  "</td>" +
+                  "<td>" +
+                  esc(t.where || "—") +
+                  "</td>" +
+                  "<td>" +
+                  esc(t.decision_maker || "—") +
+                  (t.decision_maker_phone
+                    ? "<br><span style='color:var(--muted)'>" +
+                      esc(t.decision_maker_phone) +
+                      "</span>"
+                    : "") +
+                  "</td>" +
+                  "<td>" +
+                  esc(outcomeLabel(t.last_outcome)) +
+                  (t.called_again
+                    ? ' <span class="pill ok">called again</span>'
+                    : "") +
+                  "</td>" +
+                  "<td>" +
+                  esc(t.calls) +
+                  "</td></tr>"
+                );
+              }),
+              {
+                empty:
+                  "No callbacks yet — they appear here after first calls are made.",
+              },
+            );
+
+          return round1 + round2;
+        }
+
+        // The caller's own overview: their numbers, their round lists, their calls.
+        function renderMyOverview(el, d) {
+          var s = d.stats || {};
+          el.innerHTML =
+            '<div class="admin">' +
+            "<h2>Your progress</h2>" +
+            '<div class="progress-split">' +
+            '<div class="cards cards-tight">' +
+            card(s.my_calls, "calls you have made") +
+            card(s.remaining, "left in your list") +
+            card(s.done, "done in your list", "good") +
+            card(s.total, "clubs in your list") +
+            card(
+              s.call_group ? "list " + s.call_group + " of 5" : "all lists",
+              "your list",
+            ) +
+            "</div>" +
+            '<div class="panel">' +
+            '<h3 class="panel-title">Outcome of your calls</h3>' +
+            pieChart(d.by_outcome) +
+            "</div>" +
+            "</div>" +
+            listsHtml(d.lists) +
+            "<h2>Your recent calls</h2>" +
+            pagedTable(
+              "myrecent",
+              "<th>When</th><th>Club</th><th>Outcome</th><th>Decision maker</th><th>Wants info</th><th>Notes</th>",
+              (d.recent || []).map(function (r) {
+                return (
+                  '<tr class="rowlink" data-club="' +
+                  esc(r.target_id || "") +
+                  '">' +
+                  '<td class="nowrap">' +
+                  esc(when(r.created_at)) +
+                  "</td>" +
+                  "<td>" +
+                  esc(r.club) +
+                  "<br><span style='color:var(--muted)'>" +
+                  esc(r.where) +
+                  "</span></td>" +
+                  "<td>" +
+                  esc(outcomeLabel(r.outcome)) +
+                  (r.round > 1 ? " (call " + esc(r.round) + ")" : "") +
+                  "</td>" +
+                  "<td>" +
+                  esc(r.decision_maker || "—") +
+                  (r.decision_maker_email
+                    ? "<br><span style='color:var(--muted)'>" +
+                      esc(r.decision_maker_email) +
+                      "</span>"
+                    : "") +
+                  "</td>" +
+                  "<td>" +
+                  yesno(r.wants_info) +
+                  "</td>" +
+                  "<td>" +
+                  esc(r.notes || "—") +
+                  "</td></tr>"
+                );
+              }),
+              { empty: "No calls recorded yet." },
+            ) +
+            "</div>";
+        }
+
+        function renderOverview(el, d) {
+          var c = d.counters,
+            dl = d.delivery || {};
+          var waiting = Number(dl.waiting || 0);
+          var failing = Number(dl.failing || 0);
+
+          // Delivery leads, but only a genuine failure is alarming. A call saved
+          // between sweeps is simply queued, and saying otherwise trains people to
+          // ignore the banner.
+          var banner;
+          if (failing > 0) {
+            banner =
+              '<div class="banner bad"><b>' +
+              failing +
+              " call" +
+              (failing === 1 ? "" : "s") +
+              " could not be delivered yet.</b> Safely recorded in Supabase, and the sweeper keeps " +
+              "retrying — no data is lost. Details below.</div>";
+          } else if (waiting > 0) {
+            banner =
+              '<div class="banner ok">' +
+              waiting +
+              " call" +
+              (waiting === 1 ? "" : "s") +
+              " queued for the next sync. The sweeper runs every 5 minutes.</div>";
+          } else {
+            banner =
+              '<div class="banner ok">Every recorded call has reached the spreadsheet and ' +
+              "Customer.io. Nothing is outstanding.</div>";
+          }
+
+          var failingHtml = "";
+          if (d.failing && d.failing.length) {
+            failingHtml =
+              "<h2>Could not be delivered yet</h2><div class='scroll'><table><thead><tr>" +
+              "<th>Club</th><th>Recorded</th><th>Sheet tries</th><th>Sheet error</th><th>CIO tries</th><th>CIO error</th>" +
+              "</tr></thead><tbody>" +
+              d.failing
+                .map(function (f) {
+                  return (
+                    "<tr><td>" +
+                    esc(f.club) +
+                    '</td><td class="nowrap">' +
+                    esc(when(f.created_at)) +
+                    "</td>" +
+                    "<td>" +
+                    esc(f.sheet_attempts) +
+                    "</td><td>" +
+                    esc(f.sheet_error || "—") +
+                    "</td>" +
+                    "<td>" +
+                    esc(f.cio_attempts) +
+                    "</td><td>" +
+                    esc(f.cio_error || "—") +
+                    "</td></tr>"
+                  );
+                })
+                .join("") +
+              "</tbody></table></div>";
+          }
+
+          var outcomeHtml =
+            '<h2>Where the clubs are up to</h2><div class="panel">' +
+            infoIcon(
+              "Every club counted once, at each stage it has reached. " +
+                "Attempts that reached nobody (no answer, reception, wrong number) " +
+                "do not count as a call. " +
+                c.do_not_call +
+                " club(s) are excluded as do-not-call.",
+            ) +
+            funnelChart(d.funnel || {}, c.total) +
+            "</div>";
+
+          el.innerHTML =
+            '<div class="admin">' +
+            banner +
+            "<h2>Progress</h2>" +
+            '<div class="progress-split">' +
+            '<div class="cards cards-tight">' +
+            card(c.total, "clubs on the list") +
+            card(c.done, "called", "good") +
+            card(c.pending, "still to call") +
+            card(c.in_progress, "on a call now") +
+            card(c.do_not_call, "do not call") +
+            card(c.calls, "calls recorded") +
+            "</div>" +
+            '<div class="panel">' +
+            '<h3 class="panel-title">Outcome of every call</h3>' +
+            pieChart(d.by_outcome) +
+            "</div>" +
+            "</div>" +
+            outcomeHtml +
+            listsHtml(d.lists) +
+            "<h2>Callers</h2><div class='scroll'><table><thead><tr>" +
+            "<th>Name</th><th>Username</th><th>List</th><th>Calls</th><th>Left / all</th>" +
+            "<th>On a call</th><th>Trained</th><th>Password set</th><th>Last login</th>" +
+            "</tr></thead><tbody>" +
+            (d.callers.length
+              ? d.callers
+                  .map(function (x) {
+                    return (
+                      "<tr><td>" +
+                      esc(x.name) +
+                      (x.is_admin ? ' <span class="pill">admin</span>' : "") +
+                      "</td>" +
+                      "<td>" +
+                      esc(x.username) +
+                      "</td>" +
+                      "<td>" +
+                      (x.call_group
+                        ? esc(x.call_group) + " of 5"
+                        : '<span class="pill">any</span>') +
+                      "</td>" +
+                      "<td>" +
+                      esc(x.calls) +
+                      "</td>" +
+                      '<td class="nowrap">' +
+                      esc(x.group_remaining) +
+                      " / " +
+                      esc(x.group_total) +
+                      "</td>" +
+                      "<td>" +
+                      esc(x.assigned_now) +
+                      "</td>" +
+                      "<td>" +
+                      (x.onboarded
+                        ? '<span class="pill ok">yes</span>'
+                        : x.is_admin
+                          ? '<span class="pill">n/a</span>'
+                          : '<span class="pill bad">not yet</span>') +
+                      "</td>" +
+                      "<td>" +
+                      (x.password_set
+                        ? '<span class="pill ok">yes</span>'
+                        : '<span class="pill bad">setup link not used</span>') +
+                      "</td>" +
+                      '<td class="nowrap">' +
+                      esc(when(x.last_login_at)) +
+                      "</td></tr>"
+                    );
+                  })
+                  .join("")
+              : '<tr><td colspan="9">No callers set up yet.</td></tr>') +
+            "</tbody></table></div>" +
+            "<h2>Recent calls</h2>" +
+            pagedTable(
+              "recent",
+              "<th>When</th><th>Club</th><th>Caller</th><th>Outcome</th><th>Decision maker</th>" +
+                "<th>Wants info</th><th>In sheet</th><th>Notes</th>",
+              (d.recent || []).map(function (r) {
+                return (
+                  '<tr class="rowlink" data-club="' +
+                  esc(r.target_id || "") +
+                  '">' +
+                  '<td class="nowrap">' +
+                  esc(when(r.created_at)) +
+                  "</td>" +
+                  "<td>" +
+                  esc(r.club) +
+                  "<br><span style='color:var(--muted)'>" +
+                  esc(r.where) +
+                  "</span></td>" +
+                  "<td>" +
+                  esc(r.caller) +
+                  "</td>" +
+                  "<td>" +
+                  esc((r.outcome || "").replace(/_/g, " ")) +
+                  (r.round > 1 ? " (call " + esc(r.round) + ")" : "") +
+                  "</td>" +
+                  "<td>" +
+                  esc(r.decision_maker || "—") +
+                  (r.decision_maker_role
+                    ? "<br><span style='color:var(--muted)'>" +
+                      esc(r.decision_maker_role) +
+                      "</span>"
+                    : "") +
+                  (r.decision_maker_email
+                    ? "<br>" + esc(r.decision_maker_email)
+                    : "") +
+                  "</td>" +
+                  "<td>" +
+                  yesno(r.wants_info) +
+                  "</td>" +
+                  "<td>" +
+                  (r.sheet_synced
+                    ? '<span class="pill ok">yes</span>'
+                    : '<span class="pill bad">pending</span>') +
+                  "</td>" +
+                  "<td>" +
+                  esc(r.notes || "—") +
+                  "</td></tr>"
+                );
+              }),
+              { empty: "No calls recorded yet." },
+            ) +
+            failingHtml +
+            "<h2>Do not call &mdash; already came to us</h2>" +
+            pagedTable(
+              "dnc",
+              "<th>Club</th><th>Where</th><th>Why</th>",
+              (d.do_not_call || []).map(function (x) {
+                return (
+                  "<tr><td>" +
+                  esc(x.entity_name) +
+                  "</td><td>" +
+                  esc([x.suburb, x.state].filter(Boolean).join(" ")) +
+                  "</td><td>" +
+                  esc(x.do_not_call_reason || "—") +
+                  "</td></tr>"
+                );
+              }),
+              { empty: "Nothing flagged yet." },
+            ) +
+            "</div>";
+        }
+
+        function setStats(s) {
+          if (!s) return;
+          document.getElementById("c-mine").textContent = s.my_calls;
+          document.getElementById("c-remaining").textContent = s.remaining;
+          document.getElementById("c-done").textContent = s.done;
+          document.getElementById("c-dnc").textContent = s.do_not_call;
+        }
+
+        // On a desktop there is nothing useful behind tel: — clicking the number
+        // copies it instead, for pasting into a softphone. Touch devices still
+        // place the call.
+        var TOUCH_CALLING = !!(
+          window.matchMedia && window.matchMedia("(pointer: coarse)").matches
+        );
+        document.addEventListener("click", function (e) {
+          var a =
+            e.target.closest && e.target.closest("a.phone-cta, a.drawer-phone");
+          if (!a || TOUCH_CALLING) return;
+          e.preventDefault();
+          var num = (a.textContent || "").replace(/Copied.*/, "").trim();
+          function done() {
+            a.setAttribute("data-restore", num);
+            a.textContent = "Copied ✓";
+            setTimeout(function () {
+              if (a.getAttribute("data-restore"))
+                a.textContent = a.getAttribute("data-restore");
+            }, 1400);
+          }
+          if (navigator.clipboard && navigator.clipboard.writeText) {
+            navigator.clipboard.writeText(num).then(done, done);
+          } else {
+            try {
+              var ta = document.createElement("textarea");
+              ta.value = num;
+              document.body.appendChild(ta);
+              ta.select();
+              document.execCommand("copy");
+              document.body.removeChild(ta);
+              done();
+            } catch (err) {}
+          }
+        });
+
+        // ======================================================= community chest
+        // Everything Monopoly lives here: colour sets, the title deed, tokens,
+        // the board, and the demo fixtures behind ?demo=1.
+        var DEMO = new URLSearchParams(location.search).get("demo") === "1";
+
+        // Colour sets by size of the club (poker machines), cheapest to dearest.
+        // Ranks only exist for NSW, machine counts exist for every state.
+        var TIERS = [
+          { key: "darkblue", name: "Dark blue", min: 300, colour: "#0072bb", light: false },
+          { key: "green", name: "Green", min: 200, colour: "#1fb25a", light: false },
+          { key: "yellow", name: "Yellow", min: 150, colour: "#fef200", light: true },
+          { key: "red", name: "Red", min: 100, colour: "#ed1b24", light: false },
+          { key: "orange", name: "Orange", min: 75, colour: "#f7941d", light: true },
+          { key: "pink", name: "Pink", min: 50, colour: "#d93a96", light: false },
+          { key: "lightblue", name: "Light blue", min: 25, colour: "#aae0fa", light: true },
+          { key: "brown", name: "Brown", min: 0, colour: "#955436", light: false },
+        ];
+        function tierOf(egm) {
+          var n = Number(egm || 0);
+          for (var i = 0; i < TIERS.length; i++) if (n >= TIERS[i].min) return TIERS[i];
+          return TIERS[TIERS.length - 1];
+        }
+        function tierRange(tier) {
+          var i = TIERS.indexOf(tier);
+          return i > 0 ? tier.min + "–" + (TIERS[i - 1].min - 1) : tier.min + "+";
+        }
+        function tierLabel(tier) {
+          return tier.name + " set — " + tierRange(tier) + " machines";
+        }
+
+        // The club as a title deed: colour band for its set, then the "rent" table.
+        function deedHtml(t, round, phone, telHref, websites, webLabel, place, distance) {
+          var tier = tierOf(t.egm_count);
+          function row(label, value, raw) {
+            if (!value && value !== 0) return "";
+            return "<tr><td>" + esc(label) + "</td><td>" + (raw ? value : esc(value)) + "</td></tr>";
+          }
+          return (
+            '<div class="deed">' +
+            '<div class="deed-band' + (tier.light ? " light" : "") + '" style="background:' + tier.colour + '">' +
+            "<small>Title deed" + (round >= 2 ? " · call back" : "") + "</small>" +
+            "<h2>" + esc(t.entity_name) + "</h2></div>" +
+            '<div class="deed-body">' +
+            '<p class="deed-sub">' + esc(place) + (distance ? " · " + esc(distance) : "") + "</p>" +
+            '<table class="rent">' +
+            (phone
+              ? row("Phone number", '<a class="phone-cta inline" href="' + esc(telHref) + '">' + esc(phone) + "</a>", true)
+              : row("Phone number", '<span style="color:var(--muted);font-weight:400">Not on file</span>', true)) +
+            row("Contact on file", t.primary_person) +
+            row("Email on file", t.primary_email) +
+            (websites
+              ? row("Website", '<a href="' + esc(websites) + '" target="_blank" rel="noopener">' + esc(webLabel) + "</a>", true)
+              : "") +
+            row("Gaming machines", t.egm_count) +
+            row("Gaming revenue", money(t.gaming_revenue)) +
+            row("State profit rank", t.gaming_rank) +
+            "</table></div></div>"
+          );
+        }
+
+        // ---------------------------------------------------------------- tokens
+        // The eight classic metal pieces. Each is a PNG in assets/, referenced by
+        // slug. The piece lives on d1942_callers.piece, which carries a unique
+        // index — so it follows the caller across devices, everyone else's shows
+        // on the board, and two people can never hold the same one.
+        var TOKENS = [
+          ["top-hat", "Top hat"], ["dog", "Dog"], ["race-car", "Race car"], ["battleship", "Battleship"],
+          ["boot", "Boot"], ["iron", "Iron"], ["wheelbarrow", "Wheelbarrow"], ["thimble", "Thimble"],
+        ];
+        var takenPieces = []; // [{piece, name, username}] from the server
+        var tokenPickerFirst = false;
+        function myToken() {
+          return (meCaller && meCaller.piece) || "";
+        }
+        function tokenName(slug) {
+          for (var i = 0; i < TOKENS.length; i++) if (TOKENS[i][0] === slug) return TOKENS[i][1];
+          return "";
+        }
+        // Who else holds this piece, or "" if it's free (or mine).
+        function pieceOwner(slug) {
+          for (var i = 0; i < takenPieces.length; i++) {
+            var p = takenPieces[i];
+            if (p.piece === slug && !(meCaller && p.username === meCaller.username)) return p.name || "someone";
+          }
+          return "";
+        }
+        // An <img> of the piece, or "" when no valid token is set.
+        function tokenIcon(slug, cls) {
+          if (!slug || !tokenName(slug)) return "";
+          return '<img class="token-img' + (cls ? " " + cls : "") + '" src="assets/' + slug + '.png" alt="' + esc(tokenName(slug)) + '">';
+        }
+        function paintToken() {
+          var tk = myToken();
+          document.getElementById("who-token").innerHTML = tokenIcon(tk) || "❔";
+          var you = document.querySelector(".sp .you");
+          if (you) you.innerHTML = tokenIcon(tk) || "📍";
+        }
+        function initToken() {
+          paintToken();
+          if (tokenName(myToken())) return;
+          // Pieces used to be remembered per browser. Carry one across if it's
+          // still free; otherwise ask.
+          var old = "";
+          try { old = localStorage.getItem("d1942_token_" + meCaller.username) || ""; } catch (e) {}
+          if (!tokenName(old)) return openTokenPicker(true);
+          api("set_piece", { piece: old })
+            .then(function (r) {
+              takenPieces = r.pieces || [];
+              if (r.ok) { meCaller.piece = r.piece; paintToken(); }
+              else openTokenPicker(true, r.pieces);
+            })
+            .catch(function () { openTokenPicker(true); });
+        }
+        function openTokenPicker(first, list) {
+          tokenPickerFirst = !!first;
+          var m = document.getElementById("token-modal");
+          m.innerHTML = '<div class="token-card"><div class="band"><h2>' +
+            (first ? "Choose your token" : "Change your token") + "</h2><p>Checking which pieces are free&hellip;</p></div></div>";
+          m.classList.remove("hidden");
+          (list ? Promise.resolve({ pieces: list }) : api("pieces", {}))
+            .then(function (r) { takenPieces = r.pieces || []; renderTokenPicker(""); })
+            .catch(function (e) { renderTokenPicker(e.message, true); });
+        }
+        function renderTokenPicker(note, bad) {
+          var cur = myToken();
+          var m = document.getElementById("token-modal");
+          m.innerHTML =
+            '<div class="token-card"><div class="band"><h2>' +
+            (tokenPickerFirst ? "Choose your token" : "Change your token") +
+            "</h2><p>It moves around the board as you work through your list. One piece per player.</p></div>" +
+            '<div class="token-grid">' +
+            TOKENS.map(function (t) {
+              var owner = pieceOwner(t[0]);
+              return '<button type="button" class="token-opt' + (t[0] === cur ? " on" : "") + (owner ? " taken" : "") +
+                '" data-token="' + t[0] + '"' + (owner ? ' disabled title="Taken by ' + esc(owner) + '"' : "") + '><span class="tk">' + tokenIcon(t[0]) + "</span>" + t[1] +
+                (owner ? '<span class="owner">' + esc(owner) + "</span>" : "") + "</button>";
+            }).join("") +
+            "</div>" +
+            (note ? '<p class="token-note' + (bad ? " bad" : "") + '">' + esc(note) + "</p>" : "") +
+            "</div>";
+          m.classList.remove("hidden");
+        }
+        document.addEventListener("click", function (e) {
+          var opt = e.target.closest && e.target.closest(".token-opt");
+          if (opt) {
+            if (opt.disabled) return;
+            var tk = opt.getAttribute("data-token");
+            opt.classList.add("on");
+            api("set_piece", { piece: tk })
+              .then(function (r) {
+                takenPieces = r.pieces || [];
+                if (!r.ok) {
+                  renderTokenPicker("Too slow — " + (r.taken_by || "someone") + " just took the " + tokenName(tk).toLowerCase() + ". Pick another.", true);
+                  return;
+                }
+                meCaller.piece = r.piece;
+                try { localStorage.removeItem("d1942_token_" + meCaller.username); } catch (err) {}
+                paintToken();
+                document.getElementById("token-modal").classList.add("hidden");
+              })
+              .catch(function (err) { renderTokenPicker(err.message, true); });
+            return;
+          }
+          if (e.target.id === "token-modal" && myToken()) e.target.classList.add("hidden");
+          if (e.target.closest && e.target.closest("#token-btn")) openTokenPicker(false);
+        });
+
+        // ----------------------------------------------------------------- toast
+        var CHEST_CARDS = [
+          "Bank error in your favour: one more club off the list.",
+          "Advance to the next club. Do not stop at reception.",
+          "You have won second prize in a beauty contest. The prize is another phone call.",
+          "Grand opera night: the whole team applauds your persistence.",
+          "Get out of voicemail free. Keep this card until needed.",
+          "It is your birthday. Every club puts you through to the decision maker.",
+          "Income tax refund: collect one small sense of achievement.",
+          "Doctor's fee: pay nothing, keep dialling.",
+        ];
+        var toastTimer;
+        function toast(title, text) {
+          var t = document.getElementById("toast");
+          t.innerHTML = "<b>" + esc(title) + "</b>" + esc(text);
+          t.classList.add("show");
+          clearTimeout(toastTimer);
+          toastTimer = setTimeout(function () { t.classList.remove("show"); }, 3400);
+        }
+        function passGo() {
+          var n = Number(document.getElementById("c-mine").textContent || 0) + 1;
+          toast(
+            (tokenName(myToken()) || "You") + " pass GO — call " + n + " in the bank",
+            CHEST_CARDS[Math.floor(Math.random() * CHEST_CARDS.length)],
+          );
+        }
+
+        // ----------------------------------------------------------------- board
+        // The caller's list laid out as a board: 36 club spaces a lap plus the four
+        // corners. Clubs already dealt with come first in the order they were
+        // called, then the ones still to call, biggest first, so the token walks
+        // forward one space per club.
+        var SPACES = 36;
+        var boardLap = -1; // -1 = the lap the token is on
+        var NO_CONTACT = ["no_answer", "gatekeeper", "wrong_number"];
+
+        function loadBoard() {
+          var el = document.getElementById("board-body");
+          el.innerHTML = '<div class="empty"><p>Setting up the board...</p></div>';
+          boardLap = -1;
+          api("overview", {})
+            .then(function (d) { renderBoard(el, d); })
+            .catch(function (e) {
+              el.innerHTML = '<div class="empty"><h2>Could not load</h2><p>' + esc(e.message) + "</p></div>";
+            });
+        }
+
+        function shortName(n) {
+          var s = String(n || "")
+            .replace(/\b(RSL|R\.S\.L\.?|Club|Clubs|Ltd|Limited|Memorial|Sub[- ]?Branch|Community|Services|Inc\.?|Co-?operative|Pty|The)\b/gi, "")
+            .replace(/[,()]/g, "")
+            .replace(/\s+/g, " ")
+            .trim();
+          return s || n;
+        }
+
+        function boardSpaces(d) {
+          var byId = {}, order = [];
+          (d.recent || []).slice().reverse().forEach(function (r) {
+            if (!r.target_id) return;
+            var s = byId[r.target_id];
+            if (!s) {
+              s = byId[r.target_id] = { id: r.target_id, name: r.club, where: r.where, egm: r.egm_count, state: "tried", houses: 0, hotel: false, calls: 0 };
+              order.push(s);
+            }
+            s.calls++;
+            if (NO_CONTACT.indexOf(r.outcome) < 0) s.state = r.outcome === "not_interested" ? "out" : "done";
+            if (r.wants_info) s.houses = Math.max(s.houses, 1);
+            if (["interested_followup", "referred_to_board", "callback_scheduled"].indexOf(r.outcome) >= 0) s.houses = Math.max(s.houses, 2);
+            if (r.outcome === "committed") s.hotel = true;
+          });
+          var lists = d.lists || {};
+          (lists.round2 || []).forEach(function (t) {
+            var s = byId[t.id];
+            if (!s) {
+              s = byId[t.id] = { id: t.id, name: t.entity_name, where: t.where, egm: t.egm_count, state: "done", houses: t.direct ? 1 : 0, hotel: false, calls: t.calls || 1 };
+              order.push(s);
+            } else if (s.state !== "out") s.state = "done";
+          });
+          var done = order.filter(function (s) { return s.state !== "tried"; });
+          var todo = (lists.round1 || []).map(function (t) {
+            return { id: t.id, name: t.entity_name, where: t.where, egm: t.egm_count, state: t.attempts ? "tried" : "todo", houses: 0, hotel: false, calls: t.attempts || 0 };
+          });
+          return { done: done, todo: todo, all: done.concat(todo) };
+        }
+
+        function renderBoard(el, d) {
+          var b = boardSpaces(d);
+          var all = b.all, pos = b.done.length;
+          var laps = Math.max(1, Math.ceil(all.length / SPACES));
+          if (boardLap < 0) boardLap = Math.min(laps - 1, Math.floor(pos / SPACES));
+          var start = boardLap * SPACES;
+          var tk = myToken();
+          var houses = 0, hotels = 0, out = 0, tried = 0;
+          all.forEach(function (s) {
+            if (s.hotel) hotels++; else houses += s.houses;
+            if (s.state === "out") out++;
+            if (s.state === "tried") tried++;
+          });
+          var st = d.stats || d.counters || {};
+          var isMine = d.scope === "mine";
+          var next = all[pos];
+
+          function space(s, i) {
+            var side, r, c;
+            if (i < 9) { side = "b"; r = 11; c = 10 - i; }
+            else if (i < 18) { side = "l"; c = 1; r = 10 - (i - 9); }
+            else if (i < 27) { side = "t"; r = 1; c = 2 + (i - 18); }
+            else { side = "r"; c = 11; r = 2 + (i - 27); }
+            var tier = tierOf(s.egm);
+            var isCurrent = start + i === pos;
+            var marks = s.hotel
+              ? '<span class="hotel"></span>'
+              : new Array(s.houses + 1).join('<span class="house"></span>');
+            return (
+              '<div class="sp side-' + side +
+              (s.state === "done" ? " done" : "") + (s.state === "out" ? " out" : "") + (isCurrent ? " current" : "") +
+              '" style="grid-row:' + r + ';grid-column:' + c + '" data-club="' + esc(s.id) +
+              '" title="' + esc(s.name + (s.where ? " — " + s.where : "") + " · " + tierLabel(tier)) + '">' +
+              '<span class="band" style="background:' + tier.colour + '"></span>' +
+              '<span class="nm">' + esc(shortName(s.name)) + "</span>" +
+              (marks ? '<span class="marks">' + marks + "</span>" : "") +
+              (s.state === "done" && !marks ? '<span class="tick">✓</span>' : "") +
+              (s.state === "out" ? '<span class="tick">✕</span>' : "") +
+              (isCurrent ? '<span class="you">' + (tokenIcon(tk) || "📍") + "</span>" : "") +
+              "</div>"
+            );
+          }
+
+          var spaces = "";
+          for (var i = 0; i < SPACES; i++) {
+            var s = all[start + i];
+            if (s) spaces += space(s, i);
+          }
+          var corners =
+            '<div class="corner go" style="grid-row:11;grid-column:11"><small>collect a call</small><b>GO</b><small>&larr; this way</small></div>' +
+            '<div class="corner jail" style="grid-row:11;grid-column:1"><span class="bars">&#128683;</span>Do not call<small>' + esc(st.do_not_call != null ? st.do_not_call + " came to us" : "already enquired") + "</small></div>" +
+            '<div class="corner" style="grid-row:1;grid-column:1">&#128663; Free parking<small>' + tried + " to try again</small></div>" +
+            '<div class="corner" style="grid-row:1;grid-column:11">Not interested<small>' + out + " passed for now</small></div>";
+
+          var centre =
+            '<div class="centre">' +
+            '<div class="nameplate"><span>' + esc((meCaller && meCaller.name) || "You") + "</span></div>" +
+            '<div class="tally">' + pos + " of " + all.length + (isMine ? " clubs in your list called" : " clubs called") +
+            (laps > 1 ? '<span class="lap"> &middot; Lap ' + (boardLap + 1) + " of " + laps + "</span>" : "") + "</div>" +
+            '<div class="cc"><b>' + (next ? "Next up" : "Board complete") + "</b>" +
+            (next ? esc(next.name) + (next.where ? " · " + esc(next.where) : "") : "Every club in this list has been called.") +
+            "</div></div>";
+
+          var legend =
+            '<div class="panel"><h3 class="panel-title">Colour sets</h3><ul class="legend">' +
+            TIERS.map(function (t) {
+              return '<li><span class="set-chip" style="background:' + t.colour + '"></span><b>' + t.name + "</b><span style='color:var(--muted)'>" + tierRange(t) + " machines</span></li>";
+            }).join("") +
+            "</ul></div>" +
+            '<div class="panel"><h3 class="panel-title">Pieces on the board</h3><ul class="legend">' +
+            '<li><span class="house"></span> House &mdash; wants the partnership pack<b style="margin-left:auto">' + houses + "</b></li>" +
+            '<li><span class="hotel"></span> Hotel &mdash; committed<b style="margin-left:auto">' + hotels + "</b></li>" +
+            '<li><span style="width:14px;text-align:center">✓</span> Called, decision maker reached</li>' +
+            '<li><span style="width:14px;text-align:center">✕</span> Not interested</li>' +
+            "</ul>" +
+            (laps > 1
+              ? '<div class="laps">' + Array.apply(null, Array(laps)).map(function (_, i) {
+                  return '<button type="button" class="pg-btn lap-btn' + (i === boardLap ? " on" : "") + '" data-lap="' + i + '">Lap ' + (i + 1) + "</button>";
+                }).join("") + "</div>"
+              : "") +
+            "</div>";
+
+          var callers = "";
+          if (!isMine && d.callers && d.callers.length) {
+            var max = Math.max.apply(null, d.callers.map(function (c) { return c.calls || 0; }).concat([1]));
+            callers =
+              '<div class="panel"><h3 class="panel-title">Players</h3>' +
+              d.callers.slice().sort(function (a, b) { return (b.calls || 0) - (a.calls || 0); }).map(function (c) {
+                var mine = meCaller && c.username === meCaller.username;
+                return '<div class="rank-row' + (mine ? " me" : "") + '"><span class="tk">' + (tokenIcon(c.piece) || "🎲") + "</span><span style='flex:0 0 120px'>" + esc(c.name) + '</span><span class="bar"><span style="width:' + Math.round(((c.calls || 0) / max) * 100) + '%"></span></span><span class="n">' + (c.calls || 0) + "</span></div>";
+              }).join("") +
+              "</div>";
+          }
+
+          el.innerHTML =
+            '<div class="board-wrap">' +
+            (all.length
+              ? '<div class="board">' + corners + spaces + centre + "</div>"
+              : '<div class="panel"><p style="margin:0;color:var(--muted)">No clubs in this list yet.</p></div>') +
+            '<div class="board-side">' + legend + callers + "</div>" +
+            "</div>";
+          el.__boardData = d;
+        }
+        document.addEventListener("click", function (e) {
+          var b = e.target.closest && e.target.closest(".lap-btn");
+          if (!b) return;
+          boardLap = parseInt(b.getAttribute("data-lap"), 10) || 0;
+          var el = document.getElementById("board-body");
+          if (el.__boardData) renderBoard(el, el.__boardData);
+        });
+
+        // ------------------------------------------------------------ demo mode
+        // ?demo=1 runs the whole page against fixtures so the design can be looked
+        // at without a login. Nothing is sent anywhere.
+        var DEMO_CALLER = { id: "demo", name: "Demo caller", username: "demo", is_admin: false, call_group: 2, onboarded_at: "2026-09-01T00:00:00Z", piece: null };
+        var DEMO_PIECES = [{ piece: "dog", name: "Danella", username: "danella" }, { piece: "top-hat", name: "Taylor", username: "taylor" }];
+        var DEMO_CLUBS = [
+          ["Rooty Hill RSL Club", "ROOTY HILL", "NSW", 699, 6, "$203,883,454", "(02) 9625 5500", "www.rootyhillrsl.com.au", "Reception", "info@rootyhillrsl.com.au", 43],
+          ["Merrylands RSL Club Ltd", "MERRYLANDS", "NSW", 308, 14, "$291,724,968", "(02) 9760 8888", "www.merrylandsrsl.com.au", "", "", 24],
+          ["Castle Hill RSL Club", "CASTLE HILL", "NSW", 390, 15, "$67,073,908", "(02) 9634 4000", "www.castlehillrsl.com.au", "", "", 31],
+          ["Burwood RSL Club", "BURWOOD", "NSW", 293, 23, "$87,154,232", "(02) 9744 0000", "", "", "", 11],
+          ["Smithfield RSL", "SMITHFIELD", "NSW", 325, 26, "$482,648,979", "(02) 9604 8888", "", "", "", 33],
+          ["Campsie RSL Sub-branch Club Limited", "CAMPSIE", "NSW", 263, 28, "$435,045,140", "(02) 9789 1111", "", "", "", 13],
+          ["North Ryde RSL Community Club Ltd", "NORTH RYDE", "NSW", 295, 43, "$65,443,236", "(02) 9888 5555", "", "", "", 15],
+          ["Ramsgate RSL Memorial Club Limited", "RAMSGATE", "NSW", 234, 44, "$76,666,899", "(02) 9529 7111", "", "", "", 17],
+          ["Dee Why RSL Club Limited", "DEE WHY", "NSW", 494, 17, "$108,567,867", "(02) 9454 4000", "", "", "", 18],
+          ["Bathurst RSL Club", "BATHURST", "NSW", 180, 96, "$22,400,120", "(02) 6331 2211", "", "", "", 200],
+          ["Shepparton RSL Sub-Branch", "SHEPPARTON", "VIC", 95, null, "$9,102,300", "(03) 5821 2233", "", "", "", null],
+          ["Waverley RSL", "GLEN WAVERLEY", "VIC", 60, null, "$4,880,000", "(03) 9560 7788", "", "", "", null],
+          ["Hervey Bay RSL", "PIALBA", "QLD", 210, null, "", "(07) 4128 1133", "", "", "", null],
+          ["Geebung RSL Club", "GEEBUNG", "QLD", 160, null, "", "(07) 3265 4211", "", "", "", null],
+          ["Wagga RSL Club", "WAGGA WAGGA", "NSW", 140, 130, "$18,300,000", "(02) 6921 3624", "", "", "", 452],
+          ["Dubbo RSL Memorial Club", "DUBBO", "NSW", 120, 150, "$15,200,000", "(02) 6882 4411", "", "", "", 390],
+          ["Tamworth RSL", "TAMWORTH", "NSW", 88, 210, "$8,900,000", "(02) 6766 4888", "", "", "", 410],
+          ["Kingscliff RSL", "KINGSCLIFF", "NSW", 70, 260, "$6,100,000", "(02) 6674 1122", "", "", "", 780],
+          ["Cronulla RSL Memorial Club", "CRONULLA", "NSW", 110, 170, "$12,800,000", "(02) 9523 1111", "", "", "", 26],
+          ["Mooney Mooney Club", "MOONEY MOONEY", "NSW", 22, 700, "$1,100,000", "(02) 4985 5555", "", "", "", 55],
+          ["Frankston RSL", "FRANKSTON", "VIC", 103, null, "$11,000,000", "(03) 9783 3277", "", "", "", null],
+          ["Dandenong RSL", "DANDENONG", "VIC", 80, null, "$7,200,000", "(03) 9793 3311", "", "", "", null],
+          ["Caloundra RSL", "CALOUNDRA", "QLD", 300, null, "", "(07) 5438 5800", "", "", "", null],
+          ["Redcliffe RSL", "REDCLIFFE", "QLD", 260, null, "", "(07) 3283 2011", "", "", "", null],
+          ["Bribie Island RSL", "BONGAREE", "QLD", 180, null, "", "(07) 3408 1288", "", "", "", null],
+          ["Ballina RSL Club", "BALLINA", "NSW", 150, 150, "$9,700,000", "(02) 6686 2544", "", "", "", 740],
+          ["Coffs Harbour Ex-Services", "COFFS HARBOUR", "NSW", 95, 220, "$8,100,000", "(02) 6652 3888", "", "", "", 530],
+          ["Port Macquarie RSL", "PORT MACQUARIE", "NSW", 76, 240, "$6,000,000", "(02) 6580 2300", "", "", "", 390],
+          ["Goulburn Soldiers Club", "GOULBURN", "NSW", 55, 320, "$4,100,000", "(02) 4821 3300", "", "", "", 195],
+          ["Nowra RSL", "NOWRA", "NSW", 48, 360, "$3,300,000", "(02) 4421 2722", "", "", "", 160],
+          ["Bega RSL Club", "BEGA", "NSW", 30, 520, "$1,900,000", "(02) 6492 1155", "", "", "", 420],
+          ["Cooma Ex-Services Club", "COOMA", "NSW", 27, 560, "$1,700,000", "(02) 6452 1144", "", "", "", 400],
+          ["Moree RSL", "MOREE", "NSW", 18, 760, "$900,000", "(02) 6752 1288", "", "", "", 620],
+          ["Bendigo RSL", "BENDIGO", "VIC", 50, null, "$3,900,000", "(03) 5442 2950", "", "", "", null],
+          ["Ballarat RSL", "BALLARAT", "VIC", 45, null, "$3,400,000", "(03) 5331 5344", "", "", "", null],
+          ["Mildura RSL", "MILDURA", "VIC", 40, null, "$2,800,000", "(03) 5023 0621", "", "", "", null],
+          ["Gympie RSL", "GYMPIE", "QLD", 35, null, "", "(07) 5482 1231", "", "", "", null],
+          ["Yeppoon RSL", "YEPPOON", "QLD", 12, null, "", "(07) 4939 1100", "", "", "", null],
+        ].map(function (r, i) {
+          return {
+            id: "demo-" + i, entity_name: r[0], suburb: r[1], state: r[2], egm_count: r[3], gaming_rank: r[4],
+            gaming_revenue: r[5], primary_phone: r[6], websites: r[7], primary_person: r[8], primary_email: r[9],
+            distance_km: r[10], postcode: "", full_address: "", where: r[1] + " " + r[2],
+          };
+        });
+        var DEMO_CALLS = [
+          [0, "wants_info_only", true, "Rebecca Ward", "Community & grants manager", "rward@example.com", 3],
+          [1, "committed", false, "Tony Marsh", "CEO", "tony@example.com", 2],
+          [2, "not_interested", false, "Front desk", "", "", 5],
+          [3, "wants_info_only", true, "Kylie Dunn", "Marketing manager", "kylie@example.com", 6],
+          [4, "referred_to_board", false, "Bill Prior", "Secretary manager", "bill@example.com", 7],
+          [5, "wants_info_only", true, "Sam O'Neil", "Grants officer", "sam@example.com", 8],
+          [6, "other", false, "", "", "", 9],
+          [7, "wants_info_only", true, "Jess Tan", "Operations", "jess@example.com", 10],
+          [8, "no_answer", false, "", "", "", 1],
+          [10, "gatekeeper", false, "", "", "", 1],
+        ].map(function (c, i) {
+          var t = DEMO_CLUBS[c[0]];
+          return {
+            target_id: t.id, club: t.entity_name, where: t.where, egm_count: t.egm_count, outcome: c[1], wants_info: c[2],
+            decision_maker: c[3], decision_maker_name: c[3], decision_maker_role: c[4], decision_maker_email: c[5],
+            round: 1, sheet_synced: true, notes: c[1] === "committed" ? "Keen to host a screening for members." : "",
+            created_at: new Date(Date.now() - c[6] * 3600e3 * 5).toISOString(), d1942_callers: { name: DEMO_CALLER.name },
+          };
+        });
+        function demoApi(action, payload) {
+          return new Promise(function (resolve, reject) {
+            setTimeout(function () {
+              try { resolve(demoData(action, payload || {})); } catch (e) { reject(e); }
+            }, 220);
+          });
+        }
+        function demoData(action, p) {
+          var doneIds = {};
+          DEMO_CALLS.forEach(function (c) { if (NO_CONTACT.indexOf(c.outcome) < 0) doneIds[c.target_id] = c; });
+          var stats = { my_calls: DEMO_CALLS.length, remaining: DEMO_CLUBS.length - Object.keys(doneIds).length, done: Object.keys(doneIds).length, total: DEMO_CLUBS.length, do_not_call: 2, call_group: 2 };
+          var round1 = DEMO_CLUBS.filter(function (t) { return !doneIds[t.id]; }).map(function (t) {
+            var tries = DEMO_CALLS.filter(function (c) { return c.target_id === t.id; }).length;
+            return Object.assign({}, t, { attempts: tries });
+          });
+          var round2 = DEMO_CLUBS.filter(function (t) { return doneIds[t.id] && doneIds[t.id].outcome !== "not_interested"; }).map(function (t) {
+            var c = doneIds[t.id];
+            return Object.assign({}, t, { direct: !!c.decision_maker_email, last_outcome: c.outcome, decision_maker: c.decision_maker, calls: 1, called_again: false });
+          });
+          switch (action) {
+            case "login": return { token: "demo", caller: DEMO_CALLER };
+            case "logout": return { ok: true };
+            case "me": return { caller: DEMO_CALLER, stats: stats };
+            case "pieces": return { pieces: DEMO_PIECES.concat(DEMO_CALLER.piece ? [{ piece: DEMO_CALLER.piece, name: DEMO_CALLER.name, username: DEMO_CALLER.username }] : []) };
+            case "set_piece": {
+              var held = DEMO_PIECES.filter(function (x) { return x.piece === p.piece; })[0];
+              if (held) return { ok: false, taken_by: held.name, pieces: DEMO_PIECES };
+              DEMO_CALLER.piece = p.piece;
+              return { ok: true, piece: p.piece, pieces: DEMO_PIECES.concat([{ piece: p.piece, name: DEMO_CALLER.name, username: DEMO_CALLER.username }]) };
+            }
+            case "next": {
+              var r2 = Number(p.round) === 2;
+              var t = r2 ? DEMO_CLUBS[4] : round1[0];
+              return { target: t, round: r2 ? 2 : 1, stats: stats, history: r2 ? DEMO_CALLS.filter(function (c) { return c.target_id === t.id; }) : [] };
+            }
+            case "overview": return { scope: "mine", stats: stats, by_outcome: DEMO_CALLS.reduce(function (a, c) { a[c.outcome] = (a[c.outcome] || 0) + 1; return a; }, {}), lists: { round1: round1, round2: round2 }, recent: DEMO_CALLS.slice().reverse() };
+            case "club_detail": {
+              var tt = DEMO_CLUBS.filter(function (x) { return x.id === p.target_id; })[0] || DEMO_CLUBS[0];
+              return { caller: DEMO_CALLER, target: tt, calls: DEMO_CALLS.filter(function (c) { return c.target_id === tt.id; }).map(function (c, i) { return Object.assign({ id: "c" + i }, c); }), emails: { available: true, addresses: [], deliveries: [], events: [] } };
+            }
+            case "save": case "log_call": return { ok: true, saved: "Demo" };
+            default: return { ok: true };
+          }
+        }
+
+        // ------------------------------------------------------------ worksheet
+        // Lives in the topbar's top-right corner: which calling round the
+        // worksheet serves from.
+        function renderRoundSwitch() {
+          document.getElementById("round-wrap").innerHTML =
+            '<select class="round-select" id="round-select" title="Which round to call">' +
+            '<option value="1"' + (roundMode === 1 ? " selected" : "") + ">Round 1</option>" +
+            '<option value="2"' + (roundMode === 2 ? " selected" : "") + ">Round 2</option>" +
+            "</select>";
+        }
+
+        function isFormDirty() {
+          return [
+            "f-dm",
+            "f-role",
+            "f-email",
+            "f-phone",
+            "f-grants",
+            "f-others",
+            "f-board",
+            "f-notes",
+            "f-a-meeting",
+            "f-a-level",
+            "f-gk-name",
+          ].some(function (id) {
+            var n = document.getElementById(id);
+            return n && n.value.trim();
+          });
+        }
+
+        // Switching rounds hands the current club straight back to the pool (no
+        // penalty) and claims from the other queue.
+        function switchRound(m) {
+          m = m === 2 ? 2 : 1;
+          if (m === roundMode) return;
+          if (
+            current &&
+            isFormDirty() &&
+            !confirm(
+              "You have unsaved answers on this call. Switch rounds and lose them?",
+            )
+          ) {
+            renderRoundSwitch(); // put the dropdown back on the current round
+            return;
+          }
+          roundMode = m;
+          try {
+            localStorage.setItem("d1942_round", String(m));
+          } catch (err) {}
+          renderRoundSwitch();
+          switchTab("work"); // the switch drives the worksheet, so show it
+          var prev = current;
+          current = null;
+          if (prev)
+            api("unclaim", { target_id: prev.id }).catch(function () {});
+          loadNext();
+        }
+        document.addEventListener("change", function (e) {
+          var sel = e.target.closest && e.target.closest(".round-select");
+          if (!sel) return;
+          switchRound(parseInt(sel.value, 10));
+        });
+
+        function loadNext() {
+          if (needsTraining()) return; // no clubs are claimed until training is done
+          document.getElementById("work-body").innerHTML =
+            '<div class="empty"><p>Finding your next club...</p></div>';
+          api("next", { round: roundMode })
+            .then(function (r) {
+              setStats(r.stats);
+              current = r.target;
+              if (!r.target) {
+                document.getElementById("work-body").innerHTML =
+                  '<div class="empty"><h2>' +
+                  (roundMode === 2
+                    ? "No callbacks waiting"
+                    : "Nothing left to call") +
+                  "</h2>" +
+                  "<p>" +
+                  esc(
+                    r.message || "Every club in this queue has been called.",
+                  ) +
+                  "</p>" +
+                  '<p style="color:var(--muted);font-size:14px">Use the round switch in the top bar to work the other queue.</p></div>';
+                return;
+              }
+              render(r.target, r.history || [], r.round || roundMode);
+            })
+            .catch(function (e) {
+              document.getElementById("work-body").innerHTML =
+                '<div class="empty"><h2>Something went wrong</h2><p>' +
+                esc(e.message) +
+                "</p></div>";
+            });
+        }
+
+        // A div wrapping dt/dd inside a dl is valid HTML and is what lets each fact
+        // be a grid cell with its label stacked above the value.
+        function fact(label, value, cls) {
+          if (!value && value !== 0) return "";
+          return (
+            '<div class="fact ' +
+            (cls || "") +
+            '"><dt>' +
+            esc(label) +
+            "</dt><dd>" +
+            esc(value) +
+            "</dd></div>"
+          );
+        }
+
+        function money(v) {
+          return v ? String(v) : "";
+        }
+
+        function render(t, history, round) {
+          var phone = (t.primary_phone || "").trim();
+          var telHref = phone ? "tel:" + phone.replace(/[^0-9+]/g, "") : "";
+          var websites = (t.websites || "").split(";")[0].trim();
+          // Shown without the scheme or www, but the link still points at the full URL.
+          var webLabel = websites
+            .replace(/^https?:\/\//i, "")
+            .replace(/^www\./i, "")
+            .replace(/\/$/, "");
+          var place =
+            t.full_address ||
+            [t.suburb, t.state, t.postcode].filter(Boolean).join(" ");
+          var distance = t.distance_km ? t.distance_km + " km from Sydney" : "";
+
+          var historyHtml = "";
+          if (history.length) {
+            historyHtml =
+              '<div class="history"><h4>Previous contact</h4><ul>' +
+              history
+                .map(function (h) {
+                  var when = h.created_at
+                    ? new Date(h.created_at).toLocaleDateString("en-AU")
+                    : "";
+                  var who = (h.d1942_callers && h.d1942_callers.name) || "";
+                  return (
+                    "<li><b>" +
+                    esc(when) +
+                    "</b> " +
+                    esc(who) +
+                    " &mdash; " +
+                    esc(h.outcome || "") +
+                    (h.decision_maker_name
+                      ? " (spoke to " + esc(h.decision_maker_name) + ")"
+                      : "") +
+                    (h.notes ? "<br>" + esc(h.notes) : "") +
+                    "</li>"
+                  );
+                })
+                .join("") +
+              "</ul></div>";
+          }
+
+          // First calls keep the full qualify form and flat outcome list. Second
+          // calls are leaner — who you spoke to, their role, then one of three
+          // paths (plus "no conversation") which map onto the same outcomes
+          // underneath, so nothing downstream changes.
+          var outcomeHtml, fieldsHtml;
+          if (round >= 2) {
+            fieldsHtml =
+              '<div class="field-row">' +
+              '<div class="field"><label for="f-dm">Who did you speak to?</label>' +
+              '<input type="text" id="f-dm" autocomplete="off"></div>' +
+              '<div class="field"><label for="f-role">What is their role?</label>' +
+              '<input type="text" id="f-role" autocomplete="off"></div>' +
+              "</div>";
+            outcomeHtml =
+              '<div class="field"><label>Where did the call land? <span class="req">*</span></label>' +
+              '<div class="paths">' +
+              '<label class="path"><input type="radio" name="f-path" value="a">' +
+              "<b>Path A &mdash; ready to explore</b>" +
+              "<span>Interested and prepared to discuss participation.</span></label>" +
+              '<label class="path"><input type="radio" name="f-path" value="b">' +
+              "<b>Path B &mdash; interested, but not ready</b>" +
+              "<span>Likes the concept but needs more information, internal discussion, or the timing is unclear.</span></label>" +
+              '<label class="path"><input type="radio" name="f-path" value="c">' +
+              "<b>Path C &mdash; not interested</b>" +
+              "<span>Work out why before you hang up.</span></label>" +
+              '<label class="path"><input type="radio" name="f-path" value="x">' +
+              "<b>No conversation</b>" +
+              "<span>No answer, blocked at reception, or bad contact details.</span></label>" +
+              "</div></div>" +
+              '<div class="path-extra" id="path-a" hidden>' +
+              '<div class="field"><label for="f-a-next">Next step <span class="req">*</span></label>' +
+              '<select id="f-a-next">' +
+              '<option value="callback_scheduled">Meeting booked (15&ndash;20 minutes)</option>' +
+              '<option value="referred_to_board">Going to the board / committee</option>' +
+              '<option value="interested_followup">Needs another call from us first</option>' +
+              '<option value="committed">Committed &mdash; agreed to a package</option>' +
+              "</select></div>" +
+              '<div class="field-row">' +
+              '<div class="field"><label for="f-a-meeting">Meeting time agreed (if booked)</label>' +
+              '<input type="text" id="f-a-meeting" autocomplete="off" placeholder="e.g. Tue 10 Sep, 2:30pm"></div>' +
+              '<div class="field"><label for="f-a-level">Partnership level discussed</label>' +
+              '<input type="text" id="f-a-level" autocomplete="off" placeholder="e.g. ClubGRANTS, sponsorship, screening host"></div>' +
+              "</div>" +
+              '<p class="path-hint">Booking runs off Richard and Rod&rsquo;s availability &mdash; until the booking system exists, agree a time on the call and record it here. Put anything else you learn (other decision makers, ClubGRANTS / board process, committee timing) in the notes below.</p>' +
+              "</div>" +
+              '<div class="path-extra" id="path-b" hidden>' +
+              '<p class="path-hint">They continue on the nurture journey &mdash; nothing more to fill in. Add any colour (what they need, who they are talking to, timing) in the notes below.</p>' +
+              "</div>" +
+              '<div class="path-extra" id="path-c" hidden>' +
+              '<div class="field"><label for="f-c-reason">Why not? <span class="req">*</span></label>' +
+              '<select id="f-c-reason">' +
+              '<option value="">Choose a reason...</option>' +
+              '<option value="Wrong timing">Wrong timing</option>' +
+              '<option value="Wrong person">Wrong person</option>' +
+              '<option value="Funding unavailable">Funding unavailable</option>' +
+              '<option value="Grant cycle closed">Grant cycle closed</option>' +
+              '<option value="Genuinely not aligned">Genuinely not aligned</option>' +
+              "</select></div>" +
+              "</div>" +
+              '<div class="path-extra" id="path-x" hidden>' +
+              '<div class="field"><label for="f-x-outcome">What happened? <span class="req">*</span></label>' +
+              '<select id="f-x-outcome">' +
+              '<option value="no_answer">No answer / voicemail</option>' +
+              '<option value="gatekeeper">Could not get to the decision maker</option>' +
+              '<option value="wrong_number">Wrong number / bad contact details</option>' +
+              "</select>" +
+              '<p style="color:var(--muted);font-size:13px;margin:6px 0 0;">These put the club back in the callback pool to try again later.</p>' +
+              "</div>" +
+              "</div>";
+          } else {
+            fieldsHtml =
+              // Not every first call reaches a decision maker — often it's
+              // reception. Saying so up front shapes the rest of the form:
+              // a gatekeeper call always saves as "could not get past
+              // reception", so the club comes back around in the queue.
+              '<div class="field"><label>Who did you speak to?</label>' +
+              '<div class="paths">' +
+              '<label class="path"><input type="radio" name="f-spoke" value="dm" checked>' +
+              "<b>A decision maker &mdash; or someone involved</b>" +
+              "<span>Manager, secretary, board member, grants officer.</span></label>" +
+              '<label class="path"><input type="radio" name="f-spoke" value="gk">' +
+              "<b>A gatekeeper &mdash; reception or office staff</b>" +
+              "<span>You didn&rsquo;t get through, but they may have pointed you to the right person.</span></label>" +
+              "</div></div>" +
+              '<div class="path-extra" id="gk-extra" hidden>' +
+              '<div class="field"><label for="f-gk-name">Gatekeeper&rsquo;s name (if you got it)</label>' +
+              '<input type="text" id="f-gk-name" autocomplete="off" placeholder="e.g. Sharon at reception"></div>' +
+              '<p class="path-hint">Record whatever they told you about the right person below &mdash; a name, role or email from reception is a win. The call saves as &ldquo;could not get to the decision maker&rdquo; and the club comes back around in the queue to try again. If they gave you an email for the pack, tick the more-information box too.</p>' +
+              "</div>" +
+              '<div class="field-row">' +
+              '<div class="field"><label for="f-dm">Who is the appropriate decision maker?</label>' +
+              '<input type="text" id="f-dm" autocomplete="off"></div>' +
+              '<div class="field"><label for="f-role">What is their role?</label>' +
+              '<input type="text" id="f-role" autocomplete="off"></div>' +
+              "</div>" +
+              '<div class="field-row">' +
+              '<div class="field"><label for="f-email">Their direct email</label>' +
+              '<input type="email" id="f-email" autocomplete="off"></div>' +
+              '<div class="field"><label for="f-phone">Their direct phone number</label>' +
+              '<input type="tel" id="f-phone" autocomplete="off"></div>' +
+              "</div>" +
+              '<div class="field"><label for="f-grants">Does the club participate in ClubGRANTS / community funding?</label>' +
+              '<input type="text" id="f-grants" autocomplete="off" placeholder="Yes / No / details"></div>' +
+              '<div class="field-row">' +
+              '<div class="field"><label for="f-others">Who else is involved in the decision?</label>' +
+              '<input type="text" id="f-others" autocomplete="off"></div>' +
+              '<div class="field"><label for="f-board">When does the relevant committee meet?</label>' +
+              '<input type="text" id="f-board" autocomplete="off" placeholder="e.g. third Tuesday monthly"></div>' +
+              "</div>" +
+              '<div class="field checkbox">' +
+              '<input type="checkbox" id="f-wants">' +
+              '<label for="f-wants">They want to receive more information &mdash; add them to Customer.io and send the partnership pack. Needs their email address above.</label>' +
+              "</div>";
+            outcomeHtml =
+              '<div class="field" id="outcome-wrap"><label for="f-outcome">Outcome <span class="req">*</span></label>' +
+              '<select id="f-outcome" required>' +
+              '<option value="">Choose an outcome...</option>' +
+              '<option value="wants_info_only">Wants information &mdash; partnership pack</option>' +
+              '<option value="gatekeeper">Could not get to the decision maker</option>' +
+              '<option value="not_interested">Not interested</option>' +
+              '<option value="no_answer">No answer / voicemail</option>' +
+              '<option value="wrong_number">Wrong number / bad contact details</option>' +
+              '<option value="other">Other &mdash; see notes</option>' +
+              "</select>" +
+              '<p style="color:var(--muted);font-size:13px;margin:6px 0 0;">No answer, could not get to the decision maker, and wrong number put the club back in the pool to try again later. Everything else marks it called.</p>' +
+              "</div>";
+          }
+
+          var html =
+            '<div class="work">' +
+            // -------------------------------------------------- left: who + script
+            '<div class="pane pane-left">' +
+            deedHtml(t, round, phone, telHref, websites, webLabel, place, distance) +
+            // The script is deliberately plain HTML you can edit in this file.
+            '<div class="script">' +
+            "<h2>Call script</h2>" +
+            '<div class="step"><b>1. Opening</b>' +
+            "Hi, my name is <em>" +
+            esc((meCaller && meCaller.name) || "[your name]") +
+            "</em> calling from Heritage Films. We’re working alongside Australian Television " +
+            "and Media Group on a feature commemorative documentary called <em>Darwin 1942</em>, " +
+            "which honours the veterans who defended Australia during the bombing of Darwin. " +
+            "We’re beginning conversations with RSL Clubs and Sub-Branches around Australia, " +
+            "and I was wondering if you could point me towards the person who oversees " +
+            "community grants, sponsorships or special community initiatives?</div>" +
+            '<div class="step"><b>2. Why we are calling</b>' +
+            "Certainly. It’s a national documentary leading into the 85th anniversary of the " +
+            "Bombing of Darwin in 2027. " +
+            "The project is being developed with military historians and RSL partners and includes " +
+            "community screenings, education resources and veteran storytelling. " +
+            "We’re simply trying to speak with the right person before sending some information through.</div>" +
+            '<div class="step"><b>3. What it means for the club</b>' +
+            "We’re inviting selected RSL Clubs to explore becoming part of a national legacy project. " +
+            "Depending on each club, that could involve community grant funding, sponsorship, " +
+            "hosting screenings or simply participating locally. " +
+            "At this stage, we’re simply looking for the right person to introduce the project to.</div>" +
+            '<div class="step"><b>4. Qualify &mdash; fill the form as you go</b>' +
+            '<span class="script-do">' +
+            "<span>Who would be the right person to make a decision like this?</span>" +
+            "<span>Does the club run ClubGRANTS or a community funding round?</span>" +
+            "<span>Who else would be involved in a decision?</span>" +
+            "<span>When does the committee next meet?</span>" +
+            "</span></div>" +
+            '<div class="step"><b>5. Close</b>' +
+            "Can I email you the partnership presentation so you have it in front of you before " +
+            "that meeting?" +
+            '<span class="script-do"><span>Tick “they want to receive more information” and take their email.</span></span></div>' +
+            '<div class="step"><b>If they push back on money</b>' +
+            "Completely understand — nothing has to be decided today. Can I keep you posted as " +
+            "the film progresses?" +
+            '<span class="script-do"><span>Choose the “not ready to commit financially” outcome.</span></span></div>' +
+            "</div>" +
+            historyHtml +
+            "</div>" +
+            // ------------------------------------------------------- right: form
+            '<div class="pane pane-form"><div class="form-card">' +
+            '<div class="form-head"><h2>Record the call</h2><span class="chest">&#129520;</span></div>' +
+            '<form id="call-form">' +
+            fieldsHtml +
+            outcomeHtml +
+            '<div class="field"><label for="f-notes">Any other notes on how the call went</label>' +
+            '<textarea id="f-notes" rows="4"></textarea></div>' +
+            '<div class="actions">' +
+            '<button type="submit" class="btn-primary" id="save-btn">Done &mdash; save and next</button>' +
+            '<button type="button" class="btn-ghost" id="skip-btn">Skip for now</button>' +
+            "</div>" +
+            '<div class="msg" id="save-msg"></div>' +
+            "</form>" +
+            "</div></div>" +
+            "</div>";
+
+          document.getElementById("work-body").innerHTML = html;
+          formRound = round;
+          // The lean second-call form doesn't re-ask for the email, but a saved
+          // call only reaches the Customer.io history when it carries one — so
+          // quietly reuse the address captured on an earlier call.
+          formCarryEmail = "";
+          if (round >= 2) {
+            for (var i = 0; i < history.length; i++) {
+              if (history[i].decision_maker_email) {
+                formCarryEmail = history[i].decision_maker_email;
+                break;
+              }
+            }
+          }
+
+          if (round >= 2) {
+            document
+              .querySelectorAll('#call-form input[name="f-path"]')
+              .forEach(function (radio) {
+                radio.addEventListener("change", function () {
+                  ["a", "b", "c", "x"].forEach(function (p) {
+                    document.getElementById("path-" + p).hidden =
+                      radio.value !== p;
+                  });
+                });
+              });
+          } else {
+            // Gatekeeper mode fixes the outcome, so the select is hidden (and
+            // un-required, or the browser would block submitting the form).
+            document
+              .querySelectorAll('#call-form input[name="f-spoke"]')
+              .forEach(function (radio) {
+                radio.addEventListener("change", function () {
+                  var gk = radio.value === "gk";
+                  document.getElementById("gk-extra").hidden = !gk;
+                  document.getElementById("outcome-wrap").hidden = gk;
+                  document.getElementById("f-outcome").required = !gk;
+                });
+              });
+            // "Wants information" IS the partnership-pack outcome — picking it
+            // ticks the send box so the pack actually goes out.
+            document
+              .getElementById("f-outcome")
+              .addEventListener("change", function () {
+                if (this.value === "wants_info_only")
+                  document.getElementById("f-wants").checked = true;
+              });
+          }
+
+          document
+            .getElementById("call-form")
+            .addEventListener("submit", onSave);
+          document
+            .getElementById("skip-btn")
+            .addEventListener("click", function () {
+              if (!current) return;
+              var b = this;
+              b.disabled = true;
+              api("skip", { target_id: current.id })
+                .then(loadNext)
+                .catch(function (e) {
+                  msg("save-msg", e.message, "error");
+                  b.disabled = false;
+                });
+            });
+        }
+
+        function onSave(e) {
+          e.preventDefault();
+          if (!current) return;
+          clearMsg("save-msg");
+
+          // The second-call form is leaner, so some fields only exist in round 1.
+          var val = function (id) {
+            var n = document.getElementById(id);
+            return n ? n.value : "";
+          };
+          var wantsEl = document.getElementById("f-wants");
+          var wants = !!(wantsEl && wantsEl.checked);
+          var email =
+            formRound >= 2 ? formCarryEmail : val("f-email").trim();
+          if (wants && !email) {
+            msg(
+              "save-msg",
+              "To send more information you need their email address.",
+              "error",
+            );
+            document.getElementById("f-email").focus();
+            return;
+          }
+
+          // Second calls record a path; it resolves to a normal outcome, and the
+          // path details ride along at the top of the notes so they land in the
+          // sheet and Customer.io without any backend changes.
+          var outcome, notes = document.getElementById("f-notes").value;
+          if (formRound >= 2) {
+            var pathEl = document.querySelector(
+              '#call-form input[name="f-path"]:checked',
+            );
+            if (!pathEl) {
+              msg("save-msg", "Choose where the call landed.", "error");
+              return;
+            }
+            var path = pathEl.value;
+            if (path === "a") {
+              outcome = document.getElementById("f-a-next").value;
+              var mtg = document.getElementById("f-a-meeting").value.trim();
+              var lvl = document.getElementById("f-a-level").value.trim();
+              notes =
+                "Path A - ready to explore." +
+                (mtg ? " Meeting: " + mtg + "." : "") +
+                (lvl ? " Partnership level: " + lvl + "." : "") +
+                (notes ? "\n" + notes : "");
+            } else if (path === "b") {
+              outcome = "wants_updates";
+              notes =
+                "Path B - interested, not ready. Continue nurture journey." +
+                (notes ? "\n" + notes : "");
+            } else if (path === "c") {
+              var reason = document.getElementById("f-c-reason").value;
+              if (!reason) {
+                msg("save-msg", "Choose why they are not interested.", "error");
+                document.getElementById("f-c-reason").focus();
+                return;
+              }
+              outcome = "not_interested";
+              notes =
+                "Path C - not interested (" +
+                reason.toLowerCase() +
+                ")." +
+                (notes ? "\n" + notes : "");
+            } else {
+              outcome = document.getElementById("f-x-outcome").value;
+            }
+          } else if (
+            document.querySelector(
+              '#call-form input[name="f-spoke"][value="gk"]:checked',
+            )
+          ) {
+            outcome = "gatekeeper";
+            var gkName = val("f-gk-name").trim();
+            notes =
+              "Spoke to gatekeeper" +
+              (gkName ? ": " + gkName : "") +
+              "." +
+              (notes ? "\n" + notes : "");
+          } else {
+            outcome = document.getElementById("f-outcome").value;
+          }
+
+          // The pack outcome always sends the pack, which needs an email.
+          if (outcome === "wants_info_only" && !wants) {
+            wants = true;
+            if (!email) {
+              msg(
+                "save-msg",
+                "To send the partnership pack you need their email address.",
+                "error",
+              );
+              document.getElementById("f-email").focus();
+              return;
+            }
+          }
+
+          var btn = document.getElementById("save-btn");
+          btn.disabled = true;
+          btn.textContent = "Saving...";
+
+          api("save", {
+            target_id: current.id,
+            decision_maker_name: val("f-dm"),
+            decision_maker_role: val("f-role"),
+            decision_maker_email: email,
+            decision_maker_phone: val("f-phone"),
+            clubgrants: val("f-grants"),
+            others_involved: val("f-others"),
+            board_meeting: val("f-board"),
+            wants_info: wants,
+            notes: notes,
+            outcome: outcome,
+          })
+            .then(function (r) {
+              passGo();
+              // Rare: the claim expired mid-call and the club went to someone else. The
+              // call is still saved, but say so rather than moving on silently.
+              if (r && r.warning) {
+                msg("save-msg", r.warning, "ok");
+                setTimeout(loadNext, 3000);
+                return;
+              }
+              loadNext();
+            })
+            .catch(function (err) {
+              msg("save-msg", err.message, "error");
+              btn.disabled = false;
+              btn.textContent = "Done — save and next";
+            });
+        }
+
+        // Warn before losing anything typed into the form.
+        window.addEventListener("beforeunload", function (e) {
+          if (!current) return;
+          var form = document.getElementById("call-form");
+          if (!form) return;
+          if (isFormDirty()) {
+            e.preventDefault();
+            e.returnValue = "";
+          }
+        });
+
+        // ------------------------------------------------------------ club drawer
+        var drawerEl = document.getElementById("drawer");
+        var backdropEl = document.getElementById("drawer-backdrop");
+
+        function closeDrawer() {
+          drawerEl.classList.remove("open");
+          backdropEl.classList.remove("open");
+          drawerClub = null;
+        }
+        backdropEl.addEventListener("click", closeDrawer);
+        document.addEventListener("keydown", function (e) {
+          if (e.key === "Escape" && drawerClub) closeDrawer();
+        });
+
+        // Any element carrying data-club opens the panel — list rows, recent calls.
+        document.addEventListener("click", function (e) {
+          if (e.target.closest && e.target.closest("a,button")) return;
+          var row = e.target.closest && e.target.closest("[data-club]");
+          if (row && row.getAttribute("data-club"))
+            openClub(row.getAttribute("data-club"));
+        });
+
+        function openClub(targetId) {
+          drawerClub = targetId;
+          drawerEl.classList.add("open");
+          backdropEl.classList.add("open");
+          document.getElementById("drawer-inner").innerHTML =
+            '<div class="empty"><p>Loading club...</p></div>';
+          api("club_detail", { target_id: targetId })
+            .then(function (d) {
+              if (drawerClub !== targetId) return; // another club was opened meanwhile
+              renderDrawer(d);
+            })
+            .catch(function (e) {
+              document.getElementById("drawer-inner").innerHTML =
+                '<div class="empty"><h2>Could not load</h2><p>' +
+                esc(e.message) +
+                "</p></div>";
+            });
+        }
+
+        function drawerFact(label, value) {
+          if (!value && value !== 0) return "";
+          return (
+            '<div class="fact"><dt>' +
+            esc(label) +
+            "</dt><dd>" +
+            esc(value) +
+            "</dd></div>"
+          );
+        }
+
+        function evLabel(kind) {
+          return (
+            {
+              delivered: "Delivered",
+              sent: "Sent",
+              opened: "Opened",
+              clicked: "Clicked link",
+              bounced: "Bounced",
+              failed: "Failed",
+              suppressed: "Suppressed",
+              spam: "Marked as spam",
+              unsubscribed: "Unsubscribed",
+              converted: "Converted",
+            }[kind] || kind
+          );
+        }
+
+        function renderDrawer(d) {
+          var t = d.target;
+          var phone = (t.primary_phone || "").trim();
+          var place =
+            t.full_address ||
+            [t.suburb, t.state, t.postcode].filter(Boolean).join(" ");
+          var websites = (t.websites || "").split(";")[0].trim();
+
+          var callsHtml = (d.calls || []).length
+            ? d.calls
+                .map(function (c) {
+                  var who = (c.d1942_callers && c.d1942_callers.name) || "";
+                  var bits = [];
+                  if (c.decision_maker_name)
+                    bits.push(
+                      "Spoke to " +
+                        c.decision_maker_name +
+                        (c.decision_maker_role
+                          ? " (" + c.decision_maker_role + ")"
+                          : ""),
+                    );
+                  if (c.decision_maker_email) bits.push(c.decision_maker_email);
+                  if (c.decision_maker_phone) bits.push(c.decision_maker_phone);
+                  if (c.clubgrants) bits.push("ClubGRANTS: " + c.clubgrants);
+                  if (c.others_involved)
+                    bits.push("Also involved: " + c.others_involved);
+                  if (c.board_meeting)
+                    bits.push("Committee meets: " + c.board_meeting);
+                  return (
+                    '<div class="call-item">' +
+                    '<div class="ci-head"><b>' +
+                    esc(outcomeLabel(c.outcome)) +
+                    (c.round > 1 ? " (call " + esc(c.round) + ")" : "") +
+                    "</b>" +
+                    '<span class="ci-when">' +
+                    esc(when(c.created_at)) +
+                    (who ? " · " + esc(who) : "") +
+                    "</span></div>" +
+                    (bits.length
+                      ? "<div>" + bits.map(esc).join("<br>") + "</div>"
+                      : "") +
+                    (c.wants_info
+                      ? '<div><span class="pill ok">wants more info</span></div>'
+                      : "") +
+                    (c.notes
+                      ? '<div class="ci-notes">' + esc(c.notes) + "</div>"
+                      : "") +
+                    "</div>"
+                  );
+                })
+                .join("")
+            : '<p class="list-note">No calls recorded for this club yet.</p>';
+
+          var em = d.emails || {};
+          var emailsHtml;
+          // Unix seconds -> short date; a chip only appears when its stage happened.
+          function emChip(kind, label, ts) {
+            if (!ts) return "";
+            return (
+              '<span class="ev-pill ' +
+              kind +
+              '">' +
+              label +
+              " " +
+              esc(new Date(ts * 1000).toLocaleDateString("en-AU")) +
+              "</span>"
+            );
+          }
+          if (!em.available) {
+            emailsHtml =
+              '<p class="list-note">Email history could not be loaded: ' +
+              esc(em.reason || "unknown") +
+              "</p>";
+          } else if (!(em.addresses || []).length) {
+            emailsHtml =
+              '<p class="list-note">No email address has been captured for this club yet, so there is no email history to show.</p>';
+          } else if ((em.deliveries || []).length) {
+            // Preferred shape: one card per email, subject first, then what happened to it.
+            emailsHtml =
+              '<p class="list-note">Tracking ' +
+              esc(em.addresses.join(", ")) +
+              "</p>" +
+              em.deliveries
+                .map(function (m) {
+                  var chips =
+                    emChip("sent", "Sent", m.sent) +
+                    emChip("delivered", "Delivered", m.delivered) +
+                    emChip("opened", "Opened", m.opened) +
+                    emChip("clicked", "Clicked", m.clicked) +
+                    emChip("bounced", "Bounced", m.bounced) +
+                    emChip("spam", "Marked as spam", m.spammed) +
+                    emChip("unsubscribed", "Unsubscribed", m.unsubscribed) +
+                    (m.failure
+                      ? '<span class="ev-pill failed">Failed</span>'
+                      : "");
+                  return (
+                    '<div class="email-msg">' +
+                    '<div class="em-head"><b>' +
+                    esc(m.subject || m.campaign || "(no subject)") +
+                    "</b></div>" +
+                    '<div class="em-chips">' +
+                    chips +
+                    "</div>" +
+                    '<div class="ev-addr">' +
+                    esc(m.email) +
+                    "</div>" +
+                    "</div>"
+                  );
+                })
+                .join("");
+          } else if (!(em.events || []).length) {
+            emailsHtml =
+              '<p class="list-note">Nothing sent yet to ' +
+              esc(em.addresses.join(", ")) +
+              ".</p>";
+          } else {
+            emailsHtml =
+              '<p class="list-note">Tracking ' +
+              esc(em.addresses.join(", ")) +
+              "</p>" +
+              em.events
+                .map(function (ev) {
+                  return (
+                    '<div class="email-ev">' +
+                    '<span class="ev-pill ' +
+                    esc(ev.kind) +
+                    '">' +
+                    esc(evLabel(ev.kind)) +
+                    "</span>" +
+                    '<span class="ev-addr">' +
+                    esc(ev.email) +
+                    (ev.subject
+                      ? " — " + esc(ev.subject)
+                      : ev.campaign
+                        ? " — " + esc(ev.campaign)
+                        : "") +
+                    "</span>" +
+                    '<span class="ev-when" style="margin-left:auto">' +
+                    esc(when(ev.at)) +
+                    "</span>" +
+                    "</div>"
+                  );
+                })
+                .join("");
+          }
+
+          document.getElementById("drawer-inner").innerHTML =
+            '<span class="drawer-band" style="background:' +
+            tierOf(t.egm_count).colour +
+            '"></span>' +
+            '<div class="drawer-top"><h2>' +
+            esc(t.entity_name) +
+            "</h2>" +
+            '<button class="drawer-close" id="drawer-close" aria-label="Close">&times;</button></div>' +
+            '<p class="drawer-sub">' +
+            esc(place) +
+            (t.distance_km
+              ? " · " + esc(t.distance_km) + " km from Sydney"
+              : "") +
+            "</p>" +
+            (phone
+              ? '<a class="drawer-phone" href="tel:' +
+                esc(phone.replace(/[^0-9+]/g, "")) +
+                '">' +
+                esc(phone) +
+                "</a>"
+              : "") +
+            '<dl class="facts">' +
+            drawerFact("Contact on file", t.primary_person) +
+            drawerFact("Email on file", t.primary_email) +
+            (websites
+              ? '<div class="fact"><dt>Website</dt><dd><a href="' +
+                esc(websites) +
+                '" target="_blank" rel="noopener">' +
+                esc(
+                  websites
+                    .replace(/^https?:\/\//i, "")
+                    .replace(/^www\./i, "")
+                    .replace(/\/$/, ""),
+                ) +
+                "</a></dd></div>"
+              : "") +
+            drawerFact("Gaming machines", t.egm_count) +
+            drawerFact("Gaming revenue", t.gaming_revenue) +
+            drawerFact("State profit rank", t.gaming_rank) +
+            drawerFact("Licence", t.licence_name) +
+            drawerFact(
+              "Status",
+              (t.status || "").replace(/_/g, " ") +
+                (t.do_not_call ? " · DO NOT CALL" : ""),
+            ) +
+            "</dl>" +
+            "<h3>Record another call</h3>" +
+            '<form id="d-call-form">' +
+            '<div class="field-row">' +
+            '<div class="field"><label for="d-dm">Decision maker</label><input type="text" id="d-dm" autocomplete="off"></div>' +
+            '<div class="field"><label for="d-role">Their role</label><input type="text" id="d-role" autocomplete="off"></div>' +
+            "</div>" +
+            '<div class="field-row">' +
+            '<div class="field"><label for="d-email">Their direct email</label><input type="email" id="d-email" autocomplete="off"></div>' +
+            '<div class="field"><label for="d-phone">Their direct phone</label><input type="tel" id="d-phone" autocomplete="off"></div>' +
+            "</div>" +
+            '<div class="field checkbox">' +
+            '<input type="checkbox" id="d-wants">' +
+            '<label for="d-wants">They want to receive more information &mdash; needs their email above.</label>' +
+            "</div>" +
+            '<div class="field"><label for="d-outcome">Outcome <span class="req">*</span></label>' +
+            '<select id="d-outcome" required>' +
+            '<option value="">Choose an outcome...</option>' +
+            '<option value="wants_info_only">Wants information &mdash; partnership pack</option>' +
+            '<option value="gatekeeper">Could not get to the decision maker</option>' +
+            '<option value="not_interested">Not interested</option>' +
+            '<option value="no_answer">No answer / voicemail</option>' +
+            '<option value="wrong_number">Wrong number / bad contact details</option>' +
+            '<option value="other">Other &mdash; see notes</option>' +
+            "</select></div>" +
+            '<div class="field"><label for="d-notes">Notes</label><textarea id="d-notes" rows="3"></textarea></div>' +
+            '<button type="submit" class="btn-primary" id="d-save-btn">Save this call</button>' +
+            '<div class="msg" id="d-save-msg"></div>' +
+            "</form>" +
+            "<h3>All calls to this club (" +
+            (d.calls || []).length +
+            ")</h3>" +
+            callsHtml +
+            "<h3>Emails to this contact</h3>" +
+            emailsHtml;
+
+          document
+            .getElementById("drawer-close")
+            .addEventListener("click", closeDrawer);
+
+          document
+            .getElementById("d-outcome")
+            .addEventListener("change", function () {
+              if (this.value === "wants_info_only")
+                document.getElementById("d-wants").checked = true;
+            });
+
+          document
+            .getElementById("d-call-form")
+            .addEventListener("submit", function (e) {
+              e.preventDefault();
+              clearMsg("d-save-msg");
+              var outcome = document.getElementById("d-outcome").value;
+              var wants =
+                document.getElementById("d-wants").checked ||
+                outcome === "wants_info_only";
+              var email = document.getElementById("d-email").value.trim();
+              if (wants && !email) {
+                msg(
+                  "d-save-msg",
+                  "To send the partnership pack you need their email address.",
+                  "error",
+                );
+                return;
+              }
+              if (!outcome) {
+                msg("d-save-msg", "Choose an outcome before saving.", "error");
+                return;
+              }
+              var btn = document.getElementById("d-save-btn");
+              btn.disabled = true;
+              btn.textContent = "Saving...";
+              api("log_call", {
+                target_id: t.id,
+                decision_maker_name: document.getElementById("d-dm").value,
+                decision_maker_role: document.getElementById("d-role").value,
+                decision_maker_email: email,
+                decision_maker_phone: document.getElementById("d-phone").value,
+                wants_info: wants,
+                notes: document.getElementById("d-notes").value,
+                outcome: outcome,
+              })
+                .then(function () {
+                  openClub(t.id); // reload the drawer with the new call in the timeline
+                  // The lists behind the drawer have changed too.
+                  if (
+                    !document
+                      .getElementById("admin-body")
+                      .classList.contains("hidden")
+                  )
+                    loadOverview();
+                })
+                .catch(function (err) {
+                  msg("d-save-msg", err.message, "error");
+                  btn.disabled = false;
+                  btn.textContent = "Save this call";
+                });
+            });
+        }
+
+        // ------------------------------------------------------- resume session
+        if (DEMO) {
+          startWork(DEMO_CALLER);
+        } else if (token) {
+          api("me", {})
+            .then(function (r) {
+              setStats(r.stats);
+              startWork(r.caller);
+            })
+            .catch(function () {
+              signOut();
+            });
+        } else {
+          show("view-login");
+        }
+      })();
+    </script>
+  </body>
+</html>
