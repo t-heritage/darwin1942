@@ -687,6 +687,27 @@
         margin-top: 14px;
         text-align: center;
       }
+      /* Interactive walkthrough: the page itself is shown behind a floating card,
+         everything is dimmed except the part being explained, and nothing on the
+         page can be clicked until the step moves on. */
+      #tour-dim { position: fixed; inset: 0; background: rgba(0, 8, 18, 0.62); z-index: 70; }
+      .tour-hi { position: relative; z-index: 71 !important; outline: 4px solid var(--sky-blue); outline-offset: 6px; border-radius: 8px; box-shadow: 0 0 0 4px rgba(0,0,0,0.35), 0 0 40px rgba(43,140,196,0.7); animation: tourPulse 1.6s ease-in-out infinite; }
+      .topbar.tour-lift { z-index: 72; }
+      @keyframes tourPulse { 0%, 100% { outline-color: var(--sky-blue); } 50% { outline-color: var(--white); } }
+      .tour-locked { pointer-events: none; user-select: none; }
+      #tour-card { position: fixed; right: 24px; bottom: 24px; width: 400px; max-width: calc(100vw - 32px); max-height: calc(100vh - 48px); overflow-y: auto; z-index: 75; background: var(--card-dark); border: 1px solid var(--line); border-radius: var(--radius); padding: 18px 22px 20px; box-shadow: 0 18px 50px rgba(0,0,0,0.5); }
+      #tour-card.left { right: auto; left: 24px; }
+      #tour-card h2 { font-size: 19px; margin: 0 0 2px; }
+      #tour-card .train-kicker { margin-bottom: 10px; }
+      #tour-card p, #tour-card li { font-size: 14px; line-height: 1.55; }
+      #tour-card p { margin: 0 0 10px; }
+      #tour-card ul, #tour-card ol { margin: 0 0 10px; padding-left: 20px; }
+      #tour-card .train-progress { margin-bottom: 12px; }
+      #tour-card .train-nav { margin-top: 14px; }
+      #tour-card .train-nav .btn-primary { padding: 10px 18px; }
+      .tour-banner { background: var(--sky-blue); color: #fff; padding: 8px 16px; font-size: 13px; text-align: center; }
+      .tour-banner b { font-weight: 700; }
+      @media (max-width: 700px) { #tour-card, #tour-card.left { right: 8px; left: 8px; bottom: 8px; width: auto; } }
       .actions {
         display: flex;
         gap: 12px;
@@ -1435,6 +1456,8 @@
     </div>
 
     <!-- ======================================================== CLUB DRAWER -->
+    <div id="tour-dim" class="hidden"></div>
+    <div id="tour-card" class="hidden"></div>
     <div id="drawer-backdrop"></div>
     <aside id="drawer" class="drawer" aria-label="Club details">
       <div class="drawer-inner" id="drawer-inner"></div>
@@ -1576,7 +1599,6 @@
                   btn.textContent = "Save password";
                 });
             });
-          return;
         }
 
         // ---------------------------------------------------------- signup flow
@@ -1635,15 +1657,16 @@
                   // Drop the token from the address bar so the link is not left sitting
                   // in history or shoulder-surfed off the screen.
                   history.replaceState(null, "", location.pathname);
+                  try { localStorage.removeItem("d1942_train_step_" + r.caller.username); } catch (e) {}
                   startWork(r.caller);
                 })
                 .catch(function (err) {
+                  console.error("signup", err);
                   msg("signup-msg", err.message, "error");
                   btn.disabled = false;
                   btn.textContent = "Create account";
                 });
             });
-          return;
         }
 
         // ----------------------------------------------------------- login flow
@@ -1696,11 +1719,12 @@
         // Admins are never gated, and completion is stored on the caller row so
         // it follows them across devices.
         function needsTraining() {
-          return !!(meCaller && !meCaller.is_admin && !meCaller.onboarded_at);
+          return !!(meCaller && !meCaller.onboarded_at);
         }
 
         function startWork(caller) {
           meCaller = caller;
+          loadTrainStep();
           document.getElementById("who-name").textContent =
             caller.name +
             (caller.call_group
@@ -1712,6 +1736,10 @@
             .getElementById("c-dnc-wrap")
             .classList.toggle("hidden", !caller.is_admin);
           renderRoundSwitch();
+          // Oversight-only admins have no list and no worksheet: hide the tab and
+          // the round switch so nothing on the page can claim a club for them.
+          document.getElementById("tab-work").classList.toggle("hidden", !canCall());
+          document.getElementById("round-wrap").classList.toggle("hidden", !canCall());
           // Everyone gets the overview now; non-admins are served a version scoped
           // to their own list and their own calls by the API.
           if (!tabsWired) {
@@ -1734,14 +1762,27 @@
           }
           if (needsTraining()) {
             // Don't claim a club yet — the worksheet unlocks when they finish.
+            // The overview is fetched in the background meanwhile, so the
+            // walkthrough at the end of the training has it ready.
             switchTab("training");
+            loadOverview();
+          } else if (!canCall()) {
+            switchTab("admin");
           } else {
             loadNext();
           }
         }
 
+        // Whether this account is offered clubs at all. Oversight-only admins
+        // (signed up through the no-call-list link) only ever see the overview.
+        function canCall() {
+          return !meCaller || meCaller.can_call !== false;
+        }
+
         function switchTab(which) {
           if (needsTraining()) which = "training";
+          if (which === "work" && !canCall()) which = "admin";
+          endTourView();
           ["work", "admin", "training"].forEach(function (t) {
             document
               .getElementById("tab-" + t)
@@ -1979,45 +2020,293 @@
               "<p>On that second call you're establishing which path they're on: <b>ready to explore</b> (book a 15&ndash;20 minute meeting), <b>interested but not ready</b> (the nurture journey continues), or <b>not interested</b> (find out why). The second-call form is built around exactly those paths.</p>" +
               "<p>If a club mentions a committee or board date, write it down &mdash; the follow-up gets timed around it rather than sending generic chasers.</p>",
           },
+          // ---- interactive walkthrough of the worksheet itself. Each of these
+          // steps opens the relevant tab behind a floating card and spotlights the
+          // part being explained (tour.sel). Steps on the worksheet are skipped for
+          // accounts that have no call list.
           {
-            t: "How to use this worksheet",
+            t: "Finding your way around",
+            tour: { tab: "work", sel: "#admin-tabs" },
             h:
-              "<p>Everything you've just read is wired into the tool you're looking at.</p>" +
-              "<h3>Getting a club</h3>" +
-              "<p>The worksheet hands you one club at a time from your own list &mdash; it's yours for an hour, and nobody else will be offered it. <b>Skip for now</b> hands it back for later. The switch in the top-right corner flips between <b>1</b> (first calls) and <b>2</b> (call-backs).</p>" +
-              "<h3>On a call</h3>" +
-              "<ul><li>The left pane has the club's details and the full script. Clicking the phone number copies it on a computer, or dials on a phone &mdash; dial it from Crazytel.</li>" +
-              "<li>Start the form with <b>who you spoke to</b>. If you only reached reception, choose gatekeeper &mdash; record whatever they told you about the right person, and the club automatically comes back around in the queue.</li>" +
-              "<li>Fill the form as you go: decision maker, role, direct email and phone, ClubGRANTS, who else is involved, when the committee meets. Interest level and anything else goes in the notes.</li></ul>" +
-              "<h3>Outcomes</h3>" +
-              "<ul><li><b>Wants information &mdash; partnership pack</b>: the pack is emailed automatically. It needs their email address.</li>" +
+              "<p>Everything you&rsquo;ve just read is wired into the tool you&rsquo;re looking at. The rest of this training walks you around it &mdash; the page behind this card is live, and the highlighted part is what each step is about.</p>" +
+              "<p>The tabs in the top bar are the whole app:</p>" +
+              "<ul>{{worksheetTab}}" +
+              "<li><b>Overview</b> &mdash; {{overviewBlurb}}</li>" +
+              "<li><b>Training</b> &mdash; this, any time you want it back.</li></ul>",
+          },
+          {
+            t: "Your counters",
+            tour: { tab: "work", sel: ".counters" },
+            h:
+              "<p>These tick over as you work. <b>My calls</b> is every call you&rsquo;ve recorded, including the ones nobody answered. <b>Left to call</b> and <b>done</b> are about <em>your</em> list, not the whole campaign &mdash; so you can actually reach the end of it.</p>",
+          },
+          {
+            t: "Rounds",
+            tour: { tab: "work", sel: "#round-wrap", needsCall: true },
+            h:
+              "<p>The worksheet serves from one of two queues.</p>" +
+              "<ul><li><b>Round 1</b> &mdash; first calls to clubs nobody has spoken to yet.</li>" +
+              "<li><b>Round 2</b> &mdash; call-backs: clubs you&rsquo;ve already had a real conversation with, warmest first.</li></ul>" +
+              "<p>Switching rounds hands back whatever club you&rsquo;re holding, with no penalty, and picks up from the other queue.</p>",
+          },
+          {
+            t: "The club you're calling",
+            tour: { tab: "work", sel: ".pane-left", demo: true, needsCall: true },
+            h:
+              "<p>The worksheet hands you one club at a time from your own list. It&rsquo;s yours for an hour and nobody else will be offered it.</p>" +
+              "<p>The card at the top has the club&rsquo;s details: where it is, how big it is, and the number to dial. On a computer, clicking the number <b>copies it</b> for pasting into Crazytel; on a phone it dials.</p>" +
+              "<p>If anyone has called this club before, their notes appear here under <b>Previous contact</b> &mdash; read them before you dial.</p>",
+          },
+          {
+            t: "The script",
+            tour: { tab: "work", sel: ".script", demo: true, needsCall: true },
+            h:
+              "<p>The full script sits under the club details on every call, with your own name already in it. The blue &ldquo;do&rdquo; notes tell you which part of the form to fill in at each point of the conversation.</p>" +
+              "<p>Use it as a guide, not a teleprompter.</p>",
+          },
+          {
+            t: "Record the call",
+            tour: { tab: "work", sel: ".form-card", demo: true, needsCall: true },
+            h:
+              "<p>Start with <b>who you spoke to</b>. If you only got as far as reception, choose <em>gatekeeper</em> &mdash; note whatever they told you about the right person, and the club automatically comes back around in the queue.</p>" +
+              "<p>Otherwise fill the form as you go: the decision maker, their role, direct email and phone, whether they run ClubGRANTS, who else is involved, when the committee meets. Interest level (<b>Hot / Warm / Cold</b>) and anything else goes at the top of the notes.</p>",
+          },
+          {
+            t: "Outcomes",
+            tour: { tab: "work", sel: "#outcome-wrap", demo: true, needsCall: true },
+            h:
+              "<ul><li><b>Wants information &mdash; partnership pack</b>: the pack is emailed automatically within minutes. It needs their email address.</li>" +
               "<li><b>Could not get to the decision maker</b>, <b>no answer</b> and <b>wrong number</b> put the club back in the pool to try again later.</li>" +
               "<li><b>Not interested</b> closes the club out &mdash; note down why.</li>" +
-              "<li><b>Other</b>: explain what happened in the notes.</li></ul>" +
-              "<h3>Everything else</h3>" +
-              "<p>The <b>Overview</b> tab shows your numbers, your to-call and call-back lists, and your recent calls &mdash; click any club to see its full history, every call and every email it's been sent. And write rich notes: committee dates, names, objections. Notes are gold for whoever makes the next call.</p>" +
-              "<p>You can reopen this training any time from the Training tab.</p>",
+              "<li><b>Other</b>: explain what happened in the notes.</li></ul>",
+          },
+          {
+            t: "Done, or skip",
+            tour: { tab: "work", sel: ".actions", demo: true, needsCall: true },
+            h:
+              "<p><b>Done &mdash; save and next</b> records the call, sends it to the campaign sheet and the email journey, and hands you the next club. Nothing is ever lost: if the page ever misbehaves, what you saved is still safe.</p>" +
+              "<p><b>Skip for now</b> hands the club back for a couple of hours without recording anything &mdash; for when you need to step away mid-club.</p>",
+          },
+          {
+            t: "Your overview",
+            tour: { tab: "admin", sel: ".cards" },
+            h: "{{overviewStep}}",
+          },
+          {
+            t: "Your lists",
+            tour: { tab: "admin", sel: "#list-r1" },
+            h:
+              "<p><b>First round &mdash; to call</b> is every club in your list nobody has spoken to yet, biggest first. <b>Second round &mdash; call back</b> is the clubs you&rsquo;ve had a real conversation with, in priority order.</p>" +
+              "<p>Click any club, anywhere it appears, to open its full record: every call, every note, and every email the campaign has sent it &mdash; including whether it was opened. You can also log a call from there.</p>",
+          },
+          {
+            t: "You're ready",
+            h:
+              "<p>That&rsquo;s the whole tool. A few last things:</p>" +
+              "<ul><li><b>Record every call</b>, including the ones where nobody answered. If it isn&rsquo;t in the worksheet, it didn&rsquo;t happen.</li>" +
+              "<li><b>Write rich notes</b>: committee dates, names, objections. Notes are gold for whoever makes the next call.</li>" +
+              "<li>You can reopen this training any time from the <b>Training</b> tab.</li></ul>",
           },
         ];
 
+        // ---- training position is remembered per account, so a shared computer
+        // never drops one caller into the middle of someone else's training.
         var trainStep = 0;
-        try {
-          trainStep =
-            parseInt(localStorage.getItem("d1942_train_step") || "0", 10) || 0;
-        } catch (e) {}
+        function trainKey() {
+          return "d1942_train_step_" + ((meCaller && meCaller.username) || "anon");
+        }
+        function loadTrainStep() {
+          trainStep = 0;
+          try {
+            trainStep = parseInt(localStorage.getItem(trainKey()) || "0", 10) || 0;
+          } catch (e) {}
+        }
+
+        // The steps this account actually sees: worksheet steps need a call list.
+        function trainSteps() {
+          return TRAIN_STEPS.filter(function (st) {
+            return !(st.tour && st.tour.needsCall && !canCall());
+          });
+        }
+
+        // ---- the interactive walkthrough
+        var tourShown = false;
+        var tourDemoShown = false;
+        var tourSeq = 0;
+        function bodyFor(tab) {
+          return document.getElementById(tab === "work" ? "work-body" : tab === "admin" ? "admin-body" : "training-body");
+        }
+        function endTourView() {
+          if (!tourShown) return;
+          tourShown = false;
+          document.querySelectorAll(".tour-hi").forEach(function (n) { n.classList.remove("tour-hi"); });
+          document.querySelectorAll(".tour-locked").forEach(function (n) { n.classList.remove("tour-locked"); });
+          document.querySelectorAll(".topbar.tour-lift").forEach(function (n) { n.classList.remove("tour-lift"); });
+          document.getElementById("tour-dim").classList.add("hidden");
+          document.getElementById("tour-card").classList.add("hidden");
+        }
+        // A stand-in club so the worksheet can be explained without claiming a
+        // real one (training happens before the first club is handed out).
+        function tourClub() {
+          return {
+            id: "tour", entity_name: "Example RSL Club", suburb: "EXAMPLETOWN", state: "NSW", postcode: "2000",
+            egm_count: 120, gaming_rank: 88, gaming_revenue: "$25,000,000", primary_phone: "02 9000 0000",
+            websites: "https://example.com", primary_person: "Reception", primary_email: "", distance_km: 12,
+            full_address: "1 Example Street, EXAMPLETOWN, NSW, 2000",
+          };
+        }
+        function tourText(h) {
+          var cc = canCall();
+          return h
+            .replace("{{worksheetTab}}", cc ? "<li><b>Worksheet</b> &mdash; where you make calls, one club at a time.</li>" : "")
+            .replace("{{overviewBlurb}}", cc
+              ? "your numbers, your lists and every call you&rsquo;ve made."
+              : "the whole campaign: every caller, every call, every list.")
+            .replace("{{overviewStep}}", cc
+              ? "<p>The Overview tab is your scoreboard: how far through your list you are, and how your calls have landed.</p>" +
+                "<p>Below it, every call you&rsquo;ve recorded &mdash; and further down, your two working lists.</p>"
+              : "<p>The Overview is the whole campaign at a glance: how many clubs are on the list, how many have been called, and where every club sits in the funnel.</p>" +
+                "<p>Below it: anything that failed to reach the spreadsheet or Customer.io, the callers table (who has which list, how far they are, whether they&rsquo;ve trained), every call anyone has recorded, the two working lists, and the do-not-call register.</p>");
+        }
+        function showTourStep(st, stepIdx, total) {
+          var tour = st.tour;
+          var tab = tour.tab;
+          var seq = ++tourSeq;
+          if (tab === "work" && !canCall()) tab = "admin";
+          // Bodies only; the Training tab stays selected in the top bar.
+          ["work", "admin", "training"].forEach(function (t) {
+            bodyFor(t).classList.toggle("hidden", t !== tab);
+          });
+          var ready;
+          if (tab === "work") {
+            if (!current) {
+              render(tourClub(), [], 1);
+              document.getElementById("work-body").insertAdjacentHTML(
+                "afterbegin",
+                '<div class="tour-banner"><b>Example club</b> &mdash; this is what a real club looks like on the worksheet. Nothing here is saved.</div>',
+              );
+              tourDemoShown = true;
+            }
+            ready = Promise.resolve();
+          } else {
+            var ab = document.getElementById("admin-body");
+            ready = ab.__loaded ? Promise.resolve() : new Promise(function (res) { loadOverview(res); });
+          }
+
+          var card = document.getElementById("tour-card");
+          var pct = Math.round(((stepIdx + 1) / total) * 100);
+          card.innerHTML =
+            '<div class="train-progress"><span>Step ' + (stepIdx + 1) + " of " + total +
+            '</span><div class="train-bar"><span style="width:' + pct + '%"></span></div></div>' +
+            "<h2>" + st.t + "</h2>" +
+            '<p class="train-kicker">Walkthrough</p>' +
+            tourText(st.h) +
+            '<div class="train-nav">' +
+            (stepIdx > 0 ? '<button type="button" class="btn-ghost" id="train-back">&#8592; Back</button>' : "<span></span>") +
+            '<button type="button" class="btn-primary" id="train-next">Next &#8594;</button>' +
+            "</div>";
+          card.classList.remove("hidden");
+          document.getElementById("tour-dim").classList.remove("hidden");
+          tourShown = true;
+          // The reading card is out of the way while the page itself is shown.
+          document.getElementById("training-body").innerHTML = "";
+          wireTrainNav(card);
+
+          document.querySelectorAll(".tour-hi").forEach(function (n) { n.classList.remove("tour-hi"); });
+          document.querySelectorAll(".topbar.tour-lift").forEach(function (n) { n.classList.remove("tour-lift"); });
+          document.querySelectorAll(".tour-locked").forEach(function (n) { n.classList.remove("tour-locked"); });
+          bodyFor(tab).classList.add("tour-locked");
+          document.querySelector(".topbar").classList.add("tour-locked");
+
+          function spotlight() {
+            // A later step may already be on screen by the time a slow load lands.
+            if (!tourShown || seq !== tourSeq) return;
+            var el = document.querySelector(tour.sel);
+            if (!el) return;
+            el.classList.add("tour-hi");
+            var bar = el.closest(".topbar");
+            if (bar) bar.classList.add("tour-lift");
+            revealForTour(el);
+            // Keep the card off the part being explained.
+            var r = el.getBoundingClientRect();
+            card.classList.toggle("left", (r.left + r.right) / 2 > window.innerWidth / 2);
+          }
+          var now = document.querySelector(tour.sel);
+          if (now && now.closest(".topbar")) spotlight();
+          else ready.then(spotlight);
+        }
+
+        // Bring a spotlit element into the middle of the screen. The worksheet
+        // panes scroll on their own, so the window alone is not enough; instant
+        // scrolling also means the measurement that places the card is right.
+        function revealForTour(el) {
+          try { el.scrollIntoView({ block: "center", inline: "nearest", behavior: "auto" }); } catch (e) { el.scrollIntoView(); }
+          var r = el.getBoundingClientRect();
+          var want = window.innerHeight / 2 - (r.top + r.height / 2);
+          if (Math.abs(want) > 40) window.scrollBy(0, -want);
+        }
+
+        function wireTrainNav(root) {
+          var back = root.querySelector("#train-back");
+          if (back)
+            back.addEventListener("click", function () {
+              trainStep--;
+              saveTrainStep();
+              renderTraining();
+            });
+          var next = root.querySelector("#train-next");
+          if (next)
+            next.addEventListener("click", function () {
+              trainStep++;
+              saveTrainStep();
+              renderTraining();
+            });
+          var done = root.querySelector("#train-done");
+          if (done)
+            done.addEventListener("click", function () {
+              var landing = canCall() ? "work" : "admin";
+              if (!needsTraining()) {
+                switchTab(landing);
+                if (canCall() && (!current || tourDemoShown)) { tourDemoShown = false; loadNext(); }
+                return;
+              }
+              done.disabled = true;
+              done.textContent = "Unlocking...";
+              api("complete_onboarding", {})
+                .then(function (r) {
+                  meCaller.onboarded_at = r.onboarded_at || "done";
+                  switchTab(landing);
+                  tourDemoShown = false;
+                  if (canCall()) loadNext();
+                })
+                .catch(function (e) {
+                  done.disabled = false;
+                  done.textContent = "I’ve read everything — unlock the worksheet";
+                  alert(e.message);
+                });
+            });
+        }
+
 
         function renderTraining() {
-          if (trainStep < 0 || trainStep >= TRAIN_STEPS.length) trainStep = 0;
-          var s = TRAIN_STEPS[trainStep];
-          var last = trainStep === TRAIN_STEPS.length - 1;
-          var pct = Math.round(((trainStep + 1) / TRAIN_STEPS.length) * 100);
+          var steps = trainSteps();
+          if (trainStep < 0 || trainStep >= steps.length) trainStep = 0;
+          var s = steps[trainStep];
+          var last = trainStep === steps.length - 1;
+          var pct = Math.round(((trainStep + 1) / steps.length) * 100);
+
+          if (s.tour) return showTourStep(s, trainStep, steps.length);
+          endTourView();
+          ["work", "admin", "training"].forEach(function (t) {
+            bodyFor(t).classList.toggle("hidden", t !== "training");
+          });
 
           document.getElementById("training-body").innerHTML =
             '<div class="train-wrap">' +
             '<div class="train-progress"><span>Step ' +
             (trainStep + 1) +
             " of " +
-            TRAIN_STEPS.length +
+            steps.length +
             '</span><div class="train-bar"><span style="width:' +
             pct +
             '%"></span></div></div>' +
@@ -2034,70 +2323,45 @@
             (last
               ? '<button type="button" class="btn-primary" id="train-done">' +
                 (needsTraining()
-                  ? "I&rsquo;ve read everything &mdash; unlock the worksheet"
-                  : "Done &mdash; back to the worksheet") +
+                  ? (canCall()
+                      ? "I&rsquo;ve read everything &mdash; unlock the worksheet"
+                      : "I&rsquo;ve read everything &mdash; open the overview")
+                  : (canCall() ? "Done &mdash; back to the worksheet" : "Done &mdash; back to the overview")) +
                 "</button>"
               : '<button type="button" class="btn-primary" id="train-next">Next &#8594;</button>') +
             "</div>" +
             (needsTraining()
-              ? '<p class="train-note">The worksheet unlocks when you finish reading &mdash; your place is saved if you come back later.</p>'
+              ? '<p class="train-note">' +
+                (canCall() ? "The worksheet unlocks" : "The dashboard unlocks") +
+                " when you finish reading &mdash; your place is saved if you come back later.</p>"
               : "") +
             "</div></div>";
 
           var body = document.getElementById("training-body");
           body.scrollTop = 0;
-
-          var back = document.getElementById("train-back");
-          if (back)
-            back.addEventListener("click", function () {
-              trainStep--;
-              saveTrainStep();
-              renderTraining();
-            });
-          var next = document.getElementById("train-next");
-          if (next)
-            next.addEventListener("click", function () {
-              trainStep++;
-              saveTrainStep();
-              renderTraining();
-            });
-          var done = document.getElementById("train-done");
-          if (done)
-            done.addEventListener("click", function () {
-              if (!needsTraining()) {
-                switchTab("work");
-                if (!current) loadNext();
-                return;
-              }
-              done.disabled = true;
-              done.textContent = "Unlocking...";
-              api("complete_onboarding", {})
-                .then(function (r) {
-                  meCaller.onboarded_at = r.onboarded_at || "done";
-                  switchTab("work");
-                  loadNext();
-                })
-                .catch(function (e) {
-                  done.disabled = false;
-                  done.textContent =
-                    "I’ve read everything — unlock the worksheet";
-                  alert(e.message);
-                });
-            });
+          wireTrainNav(body);
         }
 
         function saveTrainStep() {
           try {
-            localStorage.setItem("d1942_train_step", String(trainStep));
+            localStorage.setItem(trainKey(), String(trainStep));
           } catch (e) {}
         }
 
         // --------------------------------------------------------------- overview
-        function loadOverview() {
+        // Resolves once the overview is on screen. A load already in flight is
+        // reused rather than restarted, so the walkthrough can step through
+        // several overview steps while a slow load finishes.
+        function loadOverview(done) {
           var el = document.getElementById("admin-body");
+          if (el.__pending) {
+            if (typeof done === "function") el.__pending.then(done);
+            return el.__pending;
+          }
           el.innerHTML = '<div class="empty"><p>Loading overview...</p></div>';
-          api("overview", {})
+          el.__pending = api("overview", {})
             .then(function (d) {
+              el.__loaded = true;
               if (d.scope === "mine") renderMyOverview(el, d);
               else renderOverview(el, d);
             })
@@ -2106,7 +2370,12 @@
                 '<div class="empty"><h2>Could not load</h2><p>' +
                 esc(e.message) +
                 "</p></div>";
+            })
+            .then(function () {
+              el.__pending = null;
+              if (typeof done === "function") setTimeout(done, 0);
             });
+          return el.__pending;
         }
 
         // Monochrome ramp from white down to the site blue (--sky-blue), stable per
@@ -2535,7 +2804,7 @@
           var r2 = (lists && lists.round2) || [];
 
           var round1 =
-            "<h2>First round &mdash; to call (" +
+            '<h2 id="list-r1">First round &mdash; to call (' +
             r1.length +
             ")</h2>" +
             '<p class="list-note">Clubs nobody has spoken to yet, biggest first. Click a club for its full record.</p>' +
@@ -2568,7 +2837,7 @@
             );
 
           var round2 =
-            "<h2>Second round &mdash; call back (" +
+            '<h2 id="list-r2">Second round &mdash; call back (' +
             r2.length +
             ")</h2>" +
             '<p class="list-note">Already called, in priority order: clubs where the first call landed a direct ' +
@@ -2796,7 +3065,9 @@
                       "<td>" +
                       (x.call_group
                         ? esc(x.call_group) + " of 5"
-                        : '<span class="pill">any</span>') +
+                        : x.can_call === false
+                          ? '<span class="pill">oversight</span>'
+                          : '<span class="pill">any</span>') +
                       "</td>" +
                       "<td>" +
                       esc(x.calls) +
@@ -3009,6 +3280,7 @@
 
         function loadNext() {
           if (needsTraining()) return; // no clubs are claimed until training is done
+          if (!canCall()) return; // oversight-only accounts never claim a club
           document.getElementById("work-body").innerHTML =
             '<div class="empty"><p>Finding your next club...</p></div>';
           api("next", { round: roundMode })
@@ -3891,7 +4163,9 @@
         }
 
         // ------------------------------------------------------- resume session
-        if (token) {
+        if (setupToken || signupToken) {
+          // The invite / signup flow above already owns the screen.
+        } else if (token) {
           api("me", {})
             .then(function (r) {
               setStats(r.stats);
