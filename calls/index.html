@@ -228,7 +228,7 @@
       .train-say b, .train-dont b { display: block; font-size: 12px; color: var(--muted); margin-bottom: 4px; }
       .train-nav { display: flex; justify-content: space-between; gap: 12px; margin-top: 22px; }
       .train-nav .btn-primary { width: auto; padding: 13px 26px; }
-      .train-note { color: var(--muted); font-size: 13px; margin-top: 14px; text-align: center; }
+      .train-note { color: var(--muted); font-size: 13px; margin-top: 28px; text-align: center; }
       /* Interactive walkthrough: the page itself is shown behind a floating card,
          everything is dimmed except the part being explained, and nothing on the
          page can be clicked until the step moves on. */
@@ -606,7 +606,7 @@
             <button class="tab" id="tab-training">Training</button>
           </div>
           <div class="counters">
-            <div><b id="c-mine">0</b> my calls</div>
+            <div id="c-mine-wrap"><b id="c-mine">0</b> my calls</div>
             <div><b id="c-remaining">0</b> left to call</div>
             <div><b id="c-done">0</b> done</div>
             <div id="c-dnc-wrap"><b id="c-dnc">0</b> do not call</div>
@@ -908,6 +908,9 @@
           // Oversight-only admins have no list and no worksheet: hide the tab and
           // the round switch so nothing on the page can claim a club for them.
           document.getElementById("tab-work").classList.toggle("hidden", !canCall());
+          // "My calls" is meaningless for an account that never calls; the other
+          // counters cover every list for them, so those stay.
+          document.getElementById("c-mine-wrap").classList.toggle("hidden", !canCall());
           document.getElementById("round-wrap").classList.toggle("hidden", !canCall());
           // Everyone gets the overview now; non-admins are served a version scoped
           // to their own list and their own calls by the API.
