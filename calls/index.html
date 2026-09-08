@@ -466,14 +466,14 @@
       .team-row span { flex: 1; text-align: left; }
       .team-row b { display: inline; font-family: var(--heading-font); }
       .rank-row.team .who-col { flex: 0 0 150px; display: flex; flex-direction: column; line-height: 1.2; min-width: 0; }
-      .rank-row.team .bars-col { flex: 1 1 auto; display: flex; flex-direction: column; gap: 3px; min-width: 60px; }
+      .rank-row.team .bars-col { flex: 1 1 0; display: flex; flex-direction: column; gap: 3px; min-width: 40px; }
       .rank-row.team .bars-col .bar { width: auto; flex: none; }
       .rank-row.team .bars-col .bar.r2 { height: 5px; opacity: 0.85; }
       .rank-row.team .bars-col .bar.r2 span { background: var(--pollen-deep); }
-      .rank-row.team .n { display: flex; flex-direction: column; align-items: flex-end; line-height: 1.25; font-size: 12px; }
-      .rank-row.team .n b { font-family: var(--heading-font); font-size: 12px; }
-      .rank-row.team .n small { color: var(--muted); font-size: 12px; white-space: nowrap; }
-      .rank-row.team .n small::before { content: "R2 "; font-weight: 700; }
+      .rank-row.team .n { flex: 0 0 auto; min-width: 56px; display: flex; flex-direction: column; align-items: flex-end; line-height: 1.3; font-size: 11px; color: var(--muted); font-family: inherit; white-space: nowrap; }
+      .rank-row.team .n b { font-family: inherit; font-weight: 400; font-size: 11px; color: var(--muted); }
+      .rank-row.team .n small { font-size: 11px; }
+      .rank-row.team .n small::before { content: "R2 "; }
       .r2-badge { display: inline-block; font-style: normal; font-size: 9px; font-weight: 700; line-height: 1; padding: 2px 4px; border-radius: 4px; background: var(--pollen); color: var(--ink); border: 1px solid var(--ink); vertical-align: middle; }
       .sp .you.team .pc { position: relative; display: inline-grid; place-items: center; }
       .sp .you.team .pc .r2-badge { position: absolute; right: -4px; bottom: -2px; font-size: 8px; padding: 1px 3px; }
