@@ -2681,18 +2681,22 @@
               order.push(s);
             }
             s.calls++;
-            if (NO_CONTACT.indexOf(r.outcome) < 0) s.state = r.outcome === "not_interested" ? "out" : "done";
-            if (r.wants_info) s.houses = Math.max(s.houses, 1);
-            if (["interested_followup", "referred_to_board", "callback_scheduled"].indexOf(r.outcome) >= 0) s.houses = Math.max(s.houses, 2);
+            if (NO_CONTACT.indexOf(r.outcome) < 0) {
+              s.state = r.outcome === "not_interested" ? "out" : "done";
+              // One house: the decision maker was reached.
+              if (s.state === "done") s.houses = Math.max(s.houses, 1);
+            }
+            // Two houses: they want the partnership pack. A hotel: committed.
+            if (r.wants_info || r.outcome === "wants_info_only") s.houses = Math.max(s.houses, 2);
             if (r.outcome === "committed") s.hotel = true;
           });
           var lists = d.lists || {};
           (lists.round2 || []).forEach(function (t) {
             var s = byId[t.id];
             if (!s) {
-              s = byId[t.id] = { id: t.id, name: t.entity_name, where: t.where, egm: t.egm_count, state: "done", houses: t.direct ? 1 : 0, hotel: false, calls: t.calls || 1 };
+              s = byId[t.id] = { id: t.id, name: t.entity_name, where: t.where, egm: t.egm_count, state: "done", houses: 1, hotel: false, calls: t.calls || 1 };
               order.push(s);
-            } else if (s.state !== "out") s.state = "done";
+            } else if (s.state !== "out") { s.state = "done"; s.houses = Math.max(s.houses, 1); }
           });
           var done = order.filter(function (s) { return s.state !== "tried"; });
           var todo = (lists.round1 || []).map(function (t) {
@@ -2709,7 +2713,8 @@
           return { side: "r", c: 11, r: 2 + (i - 27) };
         }
 
-        function legendPanel(houses, hotels, laps, showPieces) {
+        function legendPanel(n, laps, showPieces) {
+          n = n || {};
           return (
             '<div class="panel"><h3 class="panel-title">Colour sets</h3><ul class="legend">' +
             TIERS.map(function (t) {
@@ -2718,10 +2723,10 @@
             "</ul></div>" +
             (showPieces
               ? '<div class="panel"><h3 class="panel-title">Pieces on the board</h3><ul class="legend">' +
-                '<li><span class="house"></span> House &mdash; wants the partnership pack<b style="margin-left:auto">' + houses + "</b></li>" +
-                '<li><span class="hotel"></span> Hotel &mdash; committed<b style="margin-left:auto">' + hotels + "</b></li>" +
-                '<li><span style="width:14px;text-align:center">✓</span> Called, decision maker reached</li>' +
-                '<li><span style="width:14px;text-align:center">✕</span> Not interested</li>' +
+                '<li><span class="house"></span> One house &mdash; decision maker reached<b style="margin-left:auto">' + (n.reached || 0) + "</b></li>" +
+                '<li><span class="house"></span><span class="house"></span> Two houses &mdash; wants the partnership pack<b style="margin-left:auto">' + (n.packs || 0) + "</b></li>" +
+                '<li><span class="hotel"></span> Hotel &mdash; committed<b style="margin-left:auto">' + (n.hotels || 0) + "</b></li>" +
+                '<li><span style="width:14px;text-align:center">✕</span> Crossed out &mdash; not interested<b style="margin-left:auto">' + (n.out || 0) + "</b></li>" +
                 "</ul>" +
                 (laps > 1
                   ? '<div class="laps">' + Array.apply(null, Array(laps)).map(function (_, i) {
@@ -2741,9 +2746,11 @@
           if (boardLap < 0) boardLap = Math.min(laps - 1, Math.floor(pos / SPACES));
           var start = boardLap * SPACES;
           var tk = myToken();
-          var houses = 0, hotels = 0, out = 0, tried = 0;
+          var reached = 0, packs = 0, hotels = 0, out = 0, tried = 0;
           all.forEach(function (s) {
-            if (s.hotel) hotels++; else houses += s.houses;
+            if (s.hotel) hotels++;
+            else if (s.houses >= 2) packs++;
+            else if (s.houses === 1) reached++;
             if (s.state === "out") out++;
             if (s.state === "tried") tried++;
           });
@@ -2766,7 +2773,7 @@
               '<span class="band" style="background:' + tier.colour + '"></span>' +
               '<span class="nm' + nmClass(shortName(s.name)) + '">' + esc(shortName(s.name)) + "</span>" +
               (marks ? '<span class="marks">' + marks + "</span>" : "") +
-              (s.state === "done" && !marks ? '<span class="tick">✓</span>' : "") +
+
               (s.state === "out" ? '<span class="tick">✕</span>' : "") +
               (isCurrent ? '<span class="you">' + (tokenIcon(tk) || "📍") + "</span>" : "") +
               "</div>"
@@ -2807,7 +2814,7 @@
             (all.length
               ? '<div class="board">' + corners + spaces + centre + "</div>"
               : '<div class="panel"><p style="margin:0;color:var(--muted)">No clubs in this list yet.</p></div>') +
-            '<div class="board-side">' + legendPanel(houses, hotels, laps, true) + "</div>" +
+            '<div class="board-side">' + legendPanel({ reached: reached, packs: packs, hotels: hotels, out: out }, laps, true) + "</div>" +
             "</div>";
           el.__boardData = d;
         }
@@ -2866,8 +2873,7 @@
               (here.length
                 ? '<span class="you team' + (here.length > 1 ? " many" : "") + '">' +
                   here.map(function (p) {
-                    return '<span class="pc' + (p.round === 2 ? " r2" : "") + '">' + (tokenIcon(p.piece) || "🎲") +
-                      (p.round === 2 ? '<i class="r2-badge">R2</i>' : "") + "</span>";
+                    return '<span class="pc">' + (tokenIcon(p.piece) || "🎲") + "</span>";
                   }).join("") + "</span>"
                 : "") +
               "</div>";
@@ -2896,7 +2902,7 @@
             "</div></div>";
 
           var side =
-            legendPanel(0, 0, 1, false) +
+            legendPanel(null, 1, false) +
             '<div class="panel"><h3 class="panel-title">Players</h3>' +
             (players.length
               ? players.map(function (p) {
