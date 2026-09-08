@@ -762,6 +762,35 @@
       .tab:hover:not(.on) {
         color: var(--white);
       }
+      .tab-badge { display: inline-block; margin-left: 6px; min-width: 18px; padding: 1px 5px; border-radius: 999px; background: var(--red); color: #fff; font-size: 11px; font-weight: 700; line-height: 16px; text-align: center; vertical-align: 1px; }
+      .cb-block { border: 1px dashed var(--line); border-radius: 10px; padding: 8px 14px; margin: 0 0 16px; background: var(--card-darkest); }
+      .cb-block summary { cursor: pointer; font-weight: 700; font-size: 14px; padding: 4px 0; list-style: none; }
+      .cb-block summary::before { content: "\1F4C5\00a0"; }
+      .cb-block[open] summary { margin-bottom: 8px; }
+      .cb-block .field { margin-bottom: 10px; }
+      .cb-block small { display: block; color: var(--muted); font-size: 12px; margin-top: -4px; }
+      .cb-banner { background: var(--sky-blue); color: #fff; padding: 10px 16px; font-size: 14px; text-align: center; }
+      .cb-banner b { font-weight: 700; }
+      .cal-wrap { max-width: 980px; margin: 0 auto; padding: 22px 20px 60px; }
+      .cal-head { display: flex; align-items: center; justify-content: space-between; gap: 12px; flex-wrap: wrap; margin-bottom: 14px; }
+      .cal-head h2 { margin: 0; }
+      .cal-scope { display: inline-flex; gap: 4px; }
+      .cal-day { margin: 18px 0 6px; font-family: var(--heading-font); font-weight: 700; font-size: 15px; display: flex; align-items: center; gap: 10px; }
+      .cal-day.due { color: #ff8a80; }
+      .cal-day small { color: var(--muted); font-weight: 400; font-size: 12px; }
+      .cal-row { display: grid; grid-template-columns: 84px 1fr auto; gap: 12px; align-items: center; padding: 10px 14px; background: var(--card-dark); border: 1px solid var(--line); border-radius: 10px; margin-bottom: 8px; }
+      .cal-row.past { opacity: 0.55; }
+      .cal-row .cal-time { font-family: var(--heading-font); font-weight: 700; font-size: 17px; }
+      .cal-row .cal-time small { display: block; font-size: 11px; color: var(--muted); font-weight: 400; }
+      .cal-row .cal-club b { display: block; font-size: 15px; }
+      .cal-row .cal-club span { color: var(--muted); font-size: 12px; }
+      .cal-row .cal-note { margin-top: 4px; font-size: 13px; }
+      .cal-row .cal-actions { display: flex; gap: 6px; flex-wrap: wrap; justify-content: flex-end; }
+      .cal-row .cal-actions button { font-family: inherit; font-size: 12px; padding: 6px 12px; border-radius: 999px; border: 1px solid var(--line); background: var(--card-darkest); color: var(--white); cursor: pointer; }
+      .cal-row .cal-actions button.go { background: var(--sky-blue); color: #fff; font-weight: 700; border-color: var(--sky-blue); }
+      .cal-row .cal-actions button:disabled { opacity: 0.45; cursor: default; }
+      .cal-empty { color: var(--muted); padding: 30px 0; text-align: center; }
+      @media (max-width: 640px) { .cal-row { grid-template-columns: 70px 1fr; } .cal-row .cal-actions { grid-column: 1 / -1; justify-content: flex-start; } }
       .tab.on {
         background: var(--sky-blue);
         color: var(--white);
@@ -1435,6 +1464,7 @@
           <div class="tabs" id="admin-tabs">
             <button class="tab on" id="tab-work">Worksheet</button>
             <button class="tab" id="tab-admin">Overview</button>
+            <button class="tab" id="tab-calendar">Calendar<span class="tab-badge hidden" id="cal-badge"></span></button>
             <button class="tab" id="tab-training">Training</button>
           </div>
           <div class="counters">
@@ -1453,6 +1483,7 @@
       <div id="work-body"></div>
       <div id="admin-body" class="hidden"></div>
       <div id="training-body" class="hidden"></div>
+      <div id="calendar-body" class="hidden"></div>
     </div>
 
     <!-- ======================================================== CLUB DRAWER -->
@@ -1762,6 +1793,11 @@
               .addEventListener("click", function () {
                 switchTab("training");
               });
+            document
+              .getElementById("tab-calendar")
+              .addEventListener("click", function () {
+                switchTab("calendar");
+              });
           }
           if (needsTraining()) {
             // Don't claim a club yet — the worksheet unlocks when they finish.
@@ -1786,21 +1822,14 @@
           if (needsTraining()) which = "training";
           if (which === "work" && !canCall()) which = "admin";
           endTourView();
-          ["work", "admin", "training"].forEach(function (t) {
+          ["work", "admin", "training", "calendar"].forEach(function (t) {
             document
               .getElementById("tab-" + t)
               .classList.toggle("on", t === which);
-            document
-              .getElementById(
-                t === "work"
-                  ? "work-body"
-                  : t === "admin"
-                    ? "admin-body"
-                    : "training-body",
-              )
-              .classList.toggle("hidden", t !== which);
+            bodyFor(t).classList.toggle("hidden", t !== which);
           });
           if (which === "admin") loadOverview();
+          if (which === "calendar") loadCalendar();
           if (which === "training") renderTraining();
         }
 
@@ -2103,6 +2132,13 @@
               "<p>Click any club, anywhere it appears, to open its full record: every call, every note, and every email the campaign has sent it &mdash; including whether it was opened. You can also log a call from there.</p>",
           },
           {
+            t: "Call-backs",
+            tour: { tab: "calendar", sel: "#calendar-body .cal-wrap" },
+            h:
+              "<p>When the right person isn&rsquo;t available &mdash; on leave for three weeks, say &mdash; open <b>Schedule a call-back</b> on the call form and pick a date. The club is held for you until then and nobody else is offered it.</p>" +
+              "<p>Booked call-backs live here. When one is due, the Calendar tab shows a count and <b>Call now</b> puts that club straight onto your worksheet.</p>",
+          },
+          {
             t: "You're ready",
             h:
               "<p>That&rsquo;s the whole tool. A few last things:</p>" +
@@ -2137,7 +2173,7 @@
         var tourDemoShown = false;
         var tourSeq = 0;
         function bodyFor(tab) {
-          return document.getElementById(tab === "work" ? "work-body" : tab === "admin" ? "admin-body" : "training-body");
+          return document.getElementById(tab + "-body");
         }
         function endTourView() {
           if (!tourShown) return;
@@ -2177,7 +2213,7 @@
           var seq = ++tourSeq;
           if (tab === "work" && !canCall()) tab = "admin";
           // Bodies only; the Training tab stays selected in the top bar.
-          ["work", "admin", "training"].forEach(function (t) {
+          ["work", "admin", "training", "calendar"].forEach(function (t) {
             bodyFor(t).classList.toggle("hidden", t !== tab);
           });
           var ready;
@@ -2191,6 +2227,15 @@
               tourDemoShown = true;
             }
             ready = Promise.resolve();
+          } else if (tab === "calendar") {
+            ready = new Promise(function (res) {
+              var el = document.getElementById("calendar-body");
+              el.innerHTML = "";
+              api("callbacks", { scope: canCall() ? "mine" : "all" })
+                .then(function (dd) { renderCalendar(el, dd); })
+                .catch(function () { el.innerHTML = '<div class="cal-wrap"><div class="panel cal-empty">Nothing scheduled.</div></div>'; })
+                .then(function () { setTimeout(res, 0); });
+            });
           } else {
             var ab = document.getElementById("admin-body");
             ready = ab.__loaded ? Promise.resolve() : new Promise(function (res) { loadOverview(res); });
@@ -2300,7 +2345,7 @@
 
           if (s.tour) return showTourStep(s, trainStep, steps.length);
           endTourView();
-          ["work", "admin", "training"].forEach(function (t) {
+          ["work", "admin", "training", "calendar"].forEach(function (t) {
             bodyFor(t).classList.toggle("hidden", t !== "training");
           });
 
@@ -3155,6 +3200,16 @@
               { empty: "No calls recorded yet." },
             ) +
             failingHtml +
+            "<h2>Scheduled call-backs</h2>" +
+            pagedTable(
+              "cbs",
+              "<th>When</th><th>Club</th><th>Caller</th><th>Why</th>",
+              (d.callbacks || []).map(function (c) {
+                return '<tr class="rowlink" data-club="' + esc(c.target_id) + '"><td class="nowrap">' + esc(fmtWhen(c.due_at)) + "</td><td>" + esc(c.club || "") +
+                  (c.where ? ' <span style="color:var(--muted)">' + esc(c.where) + "</span>" : "") + "</td><td>" + esc(c.caller || "") + "</td><td>" + esc(c.note || "") + "</td></tr>";
+              }),
+              { empty: "No call-backs booked." },
+            ) +
             "<h2>Do not call &mdash; already came to us</h2>" +
             pagedTable(
               "dnc",
@@ -3242,6 +3297,8 @@
             "f-a-meeting",
             "f-a-level",
             "f-gk-name",
+            "f-cb-date",
+            "f-cb-note",
           ].some(function (id) {
             var n = document.getElementById(id);
             return n && n.value.trim();
@@ -3289,6 +3346,7 @@
           api("next", { round: roundMode })
             .then(function (r) {
               setStats(r.stats);
+              setCalBadge(r.due_callbacks);
               current = r.target;
               if (!r.target) {
                 document.getElementById("work-body").innerHTML =
@@ -3306,6 +3364,7 @@
                 return;
               }
               render(r.target, r.history || [], r.round || roundMode);
+              if (r.callback) showCallbackBanner(r.callback);
             })
             .catch(function (e) {
               document.getElementById("work-body").innerHTML =
@@ -3313,6 +3372,178 @@
                 esc(e.message) +
                 "</p></div>";
             });
+        }
+
+        // ------------------------------------------------------------ call-backs
+        // A club can be booked for a later call from any call form: it waits
+        // until the chosen time, comes back only to the caller who booked it,
+        // and shows in their calendar meanwhile.
+        function callbackBlockHtml(prefix) {
+          return (
+            '<details class="cb-block" id="' + prefix + '-cb-block"><summary>Schedule a call-back</summary>' +
+            '<div class="field-row">' +
+            '<div class="field"><label for="' + prefix + '-cb-date">Date</label><input type="date" id="' + prefix + '-cb-date"></div>' +
+            '<div class="field"><label for="' + prefix + '-cb-time">Time</label><input type="time" id="' + prefix + '-cb-time" value="10:00"></div>' +
+            "</div>" +
+            '<div class="field"><label for="' + prefix + '-cb-note">Why</label><input type="text" id="' + prefix + '-cb-note" placeholder="e.g. decision maker on leave until the 29th" autocomplete="off">' +
+            "<small>The club is held for you until then and appears in your Calendar tab. Leave the date blank for no call-back.</small></div>" +
+            "</details>"
+          );
+        }
+        function readCallback(prefix) {
+          var dEl = document.getElementById(prefix + "-cb-date");
+          if (!dEl) return { at: null, note: null };
+          var date = dEl.value;
+          if (!date) return { at: null, note: null };
+          var time = (document.getElementById(prefix + "-cb-time") || {}).value || "10:00";
+          var when = new Date(date + "T" + time);
+          if (isNaN(when.getTime())) return { error: "That call-back date does not look right." };
+          if (when.getTime() < Date.now() - 60000) return { error: "The call-back time has already passed." };
+          return { at: when.toISOString(), note: (document.getElementById(prefix + "-cb-note") || {}).value || null };
+        }
+        function fmtWhen(iso) {
+          var d = new Date(iso);
+          return d.toLocaleDateString("en-AU", { weekday: "short", day: "numeric", month: "short" }) +
+            " " + d.toLocaleTimeString("en-AU", { hour: "numeric", minute: "2-digit" });
+        }
+        function showCallbackBanner(cb) {
+          document.getElementById("work-body").insertAdjacentHTML(
+            "afterbegin",
+            '<div class="cb-banner"><b>Call-back you booked</b> for ' + esc(fmtWhen(cb.due_at)) +
+              (cb.note ? " &mdash; " + esc(cb.note) : "") + "</div>",
+          );
+        }
+        function setCalBadge(n) {
+          var b = document.getElementById("cal-badge");
+          if (!b) return;
+          if (n == null) {
+            api("me", {}).then(function (r) { setCalBadge(r.due_callbacks || 0); }).catch(function () {});
+            return;
+          }
+          b.textContent = n;
+          b.classList.toggle("hidden", !n);
+        }
+
+        var calScope = "mine";
+        function loadCalendar() {
+          var el = document.getElementById("calendar-body");
+          el.innerHTML = '<div class="empty"><p>Loading your calendar...</p></div>';
+          var admin = !!(meCaller && meCaller.is_admin);
+          if (!canCall()) calScope = "all";
+          api("callbacks", { scope: admin ? calScope : "mine" })
+            .then(function (d) { renderCalendar(el, d); })
+            .catch(function (e) {
+              el.innerHTML = '<div class="empty"><h2>Could not load</h2><p>' + esc(e.message) + "</p></div>";
+            });
+        }
+        function dayKey(iso) {
+          var d = new Date(iso);
+          return d.getFullYear() + "-" + String(d.getMonth() + 1).padStart(2, "0") + "-" + String(d.getDate()).padStart(2, "0");
+        }
+        function dayLabel(iso) {
+          var d = new Date(iso), now = new Date();
+          var same = function (a, b) { return a.toDateString() === b.toDateString(); };
+          var tomorrow = new Date(now); tomorrow.setDate(now.getDate() + 1);
+          if (same(d, now)) return "Today";
+          if (same(d, tomorrow)) return "Tomorrow";
+          return d.toLocaleDateString("en-AU", { weekday: "long", day: "numeric", month: "long" });
+        }
+        function renderCalendar(el, d) {
+          var admin = !!(meCaller && meCaller.is_admin);
+          var rows = d.callbacks || [];
+          var open = rows.filter(function (c) { return c.state === "due" || c.state === "upcoming"; });
+          var past = rows.filter(function (c) { return c.state === "done" || c.state === "cancelled"; }).reverse();
+          var due = open.filter(function (c) { return c.state === "due"; });
+          setCalBadge(due.filter(function (c) { return c.mine; }).length);
+
+          function row(c) {
+            var t = new Date(c.due_at);
+            var canGo = canCall() && c.mine && (c.state === "due" || c.state === "upcoming") && !c.held_by_other && !c.do_not_call;
+            return (
+              '<div class="cal-row' + (c.state === "done" || c.state === "cancelled" ? " past" : "") + '" data-club="' + esc(c.target_id) + '">' +
+              '<div class="cal-time">' + esc(t.toLocaleTimeString("en-AU", { hour: "numeric", minute: "2-digit" })) +
+              (d.scope === "all" && c.caller ? "<small>" + esc(c.caller) + "</small>" : "") + "</div>" +
+              '<div class="cal-club"><b class="rowlink" data-club="' + esc(c.target_id) + '">' + esc(c.club || "") + "</b>" +
+              "<span>" + esc(c.where || "") + (c.phone ? " &middot; " + esc(c.phone) : "") + "</span>" +
+              (c.note ? '<div class="cal-note">' + esc(c.note) + "</div>" : "") +
+              (c.state === "done" ? '<div class="cal-note"><span class="pill ok">called</span></div>' : "") +
+              (c.state === "cancelled" ? '<div class="cal-note"><span class="pill">cancelled</span></div>' : "") +
+              (c.held_by_other ? '<div class="cal-note"><span class="pill bad">on a call with someone else right now</span></div>' : "") +
+              (c.do_not_call ? '<div class="cal-note"><span class="pill bad">now on the do-not-call list</span></div>' : "") +
+              "</div>" +
+              '<div class="cal-actions">' +
+              (canGo ? '<button type="button" class="go cal-go" data-id="' + esc(c.target_id) + '">Call now</button>' : "") +
+              ((c.state === "due" || c.state === "upcoming") && (c.mine || admin)
+                ? '<button type="button" class="cal-cancel" data-id="' + esc(c.id) + '">Cancel</button>'
+                : "") +
+              '<button type="button" class="cal-open" data-id="' + esc(c.target_id) + '">Details</button>' +
+              "</div></div>"
+            );
+          }
+
+          var html = '<div class="cal-wrap"><div class="cal-head"><h2>' +
+            (d.scope === "all" ? "Everyone&rsquo;s call-backs" : "Your call-backs") + "</h2>" +
+            (admin && canCall()
+              ? '<div class="tabs cal-scope"><button type="button" class="tab' + (calScope === "mine" ? " on" : "") + '" data-scope="mine">Mine</button>' +
+                '<button type="button" class="tab' + (calScope === "all" ? " on" : "") + '" data-scope="all">Everyone</button></div>'
+              : "") +
+            "</div>";
+
+          if (!open.length) {
+            html += '<div class="panel cal-empty">Nothing scheduled. Book a call-back from any call form when the right person isn&rsquo;t available yet &mdash; the club will wait here until then.</div>';
+          } else {
+            if (due.length) {
+              html += '<div class="cal-day due">Due now <small>' + due.length + " waiting</small></div>" + due.map(row).join("");
+            }
+            var byDay = {}, order = [];
+            open.filter(function (c) { return c.state === "upcoming"; }).forEach(function (c) {
+              var k = dayKey(c.due_at);
+              if (!byDay[k]) { byDay[k] = []; order.push(k); }
+              byDay[k].push(c);
+            });
+            order.forEach(function (k) {
+              html += '<div class="cal-day">' + esc(dayLabel(byDay[k][0].due_at)) + " <small>" + byDay[k].length + "</small></div>" + byDay[k].map(row).join("");
+            });
+          }
+          if (past.length) {
+            html += '<div class="cal-day" style="margin-top:28px">Recently done or cancelled</div>' + past.slice(0, 20).map(row).join("");
+          }
+          html += "</div>";
+          el.innerHTML = html;
+        }
+        document.addEventListener("click", function (e) {
+          var sc = e.target.closest && e.target.closest(".cal-scope .tab");
+          if (sc) { calScope = sc.getAttribute("data-scope"); loadCalendar(); return; }
+          var go = e.target.closest && e.target.closest(".cal-go");
+          if (go) { callNow(go.getAttribute("data-id")); return; }
+          var cx = e.target.closest && e.target.closest(".cal-cancel");
+          if (cx) {
+            if (!confirm("Cancel this call-back? The club goes back into the normal queue.")) return;
+            api("cancel_callback", { id: cx.getAttribute("data-id") })
+              .then(function () { loadCalendar(); })
+              .catch(function (err) { alert(err.message); });
+            return;
+          }
+          var op = e.target.closest && e.target.closest(".cal-open");
+          if (op) { openClub(op.getAttribute("data-id")); return; }
+        });
+        function callNow(targetId) {
+          if (current && current.id === targetId) { switchTab("work"); return; }
+          if (current && isFormDirty() && !confirm("You have unsaved answers on the current call. Drop them and switch to this club?")) return;
+          var prev = current;
+          current = null;
+          if (prev) api("unclaim", { target_id: prev.id }).catch(function () {});
+          api("claim_target", { target_id: targetId })
+            .then(function (r) {
+              setStats(r.stats);
+              current = r.target;
+              roundMode = r.round === 2 ? 2 : 1;
+              try { localStorage.setItem("d1942_round", String(roundMode)); } catch (err) {}
+              renderRoundSwitch();
+              switchTab("work");
+              render(r.target, r.history || [], r.round);
+            })
+            .catch(function (err) { alert(err.message); });
         }
 
         // A div wrapping dt/dd inside a dl is valid HTML and is what lets each fact
@@ -3588,6 +3819,7 @@
             '<form id="call-form">' +
             fieldsHtml +
             outcomeHtml +
+            callbackBlockHtml("f") +
             '<div class="field"><label for="f-notes">Any other notes on how the call went</label>' +
             '<textarea id="f-notes" rows="4"></textarea></div>' +
             '<div class="actions">' +
@@ -3763,6 +3995,13 @@
             }
           }
 
+          var cb = readCallback("f");
+          if (cb.error) {
+            msg("save-msg", cb.error, "error");
+            return;
+          }
+          var cbAt = cb.at, cbNote = cb.note;
+
           var btn = document.getElementById("save-btn");
           btn.disabled = true;
           btn.textContent = "Saving...";
@@ -3779,6 +4018,8 @@
             wants_info: wants,
             notes: notes,
             outcome: outcome,
+            callback_at: cbAt,
+            callback_note: cbNote,
           })
             .then(function (r) {
               // Rare: the claim expired mid-call and the club went to someone else. The
@@ -4090,6 +4331,7 @@
             '<option value="wrong_number">Wrong number / bad contact details</option>' +
             '<option value="other">Other &mdash; see notes</option>' +
             "</select></div>" +
+            callbackBlockHtml("d") +
             '<div class="field"><label for="d-notes">Notes</label><textarea id="d-notes" rows="3"></textarea></div>' +
             '<button type="submit" class="btn-primary" id="d-save-btn">Save this call</button>' +
             '<div class="msg" id="d-save-msg"></div>' +
@@ -4134,6 +4376,11 @@
                 msg("d-save-msg", "Choose an outcome before saving.", "error");
                 return;
               }
+              var dcb = readCallback("d");
+              if (dcb.error) {
+                msg("d-save-msg", dcb.error, "error");
+                return;
+              }
               var btn = document.getElementById("d-save-btn");
               btn.disabled = true;
               btn.textContent = "Saving...";
@@ -4146,8 +4393,11 @@
                 wants_info: wants,
                 notes: document.getElementById("d-notes").value,
                 outcome: outcome,
+                callback_at: dcb.at,
+                callback_note: dcb.note,
               })
                 .then(function () {
+                  setCalBadge(null);
                   openClub(t.id); // reload the drawer with the new call in the timeline
                   // The lists behind the drawer have changed too.
                   if (
@@ -4173,6 +4423,7 @@
             .then(function (r) {
               setStats(r.stats);
               startWork(r.caller);
+              setCalBadge(r.due_callbacks || 0);
             })
             .catch(function () {
               signOut();
