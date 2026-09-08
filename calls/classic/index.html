@@ -1240,6 +1240,8 @@
       .ci-extra { color: var(--muted); font-size: 13px; margin-top: 8px; overflow-wrap: anywhere; }
       .pg-search { display: flex; align-items: center; gap: 12px; margin: 0 0 8px; }
       .pg-search .pg-q { flex: 0 1 320px; width: auto; padding: 7px 12px; font-size: 13px; -webkit-appearance: none; appearance: none; }
+      .pg-search { flex-wrap: wrap; }
+      .pg-search .pg-f { width: auto; padding: 6px 28px 6px 10px; font-size: 12px; max-width: 220px; }
       .pg-search .pg-count { color: var(--muted); font-size: 13px; }
       .email-msg {
         background: rgba(255, 255, 255, 0.05);
@@ -2666,7 +2668,28 @@
         // Long tables render one page at a time; rows are kept in memory and the
         // container re-renders on Prev/Next.
         var PAGERS = {};
+        // Which dropdown filters each list offers. Rows carry the values as
+        // data-f-<attr> attributes, so the options are read straight off the rows.
+        var LIST_FILTERS = {
+          r1: [{ attr: "state", label: "State" }, { attr: "size", label: "Size" }, { attr: "tried", label: "Attempts" }, { attr: "referred", label: "Source" }],
+          r2: [{ attr: "state", label: "State" }, { attr: "contact", label: "Contact" }, { attr: "outcome", label: "Last outcome" }, { attr: "again", label: "Second call" }],
+          myrecent: [{ attr: "outcome", label: "Outcome" }, { attr: "round", label: "Call" }],
+          recent: [{ attr: "caller", label: "Caller" }, { attr: "outcome", label: "Outcome" }, { attr: "round", label: "Call" }],
+          cbs: [{ attr: "caller", label: "Caller" }],
+          dnc: [{ attr: "state", label: "State" }],
+        };
+        function fAttrs(map) {
+          return Object.keys(map).map(function (k) {
+            var v = map[k];
+            return v == null || v === "" ? "" : ' data-f-' + k + '="' + esc(v) + '"';
+          }).join("");
+        }
+        function fValue(html, attr) {
+          var m = html.match(new RegExp('data-f-' + attr + '="([^"]*)"'));
+          return m ? m[1].replace(/&amp;/g, "&").replace(/&quot;/g, '"').replace(/&#39;/g, "'").replace(/&lt;/g, "<").replace(/&gt;/g, ">") : "";
+        }
         function pagedTable(key, head, rows, opts) {
+          var filters = (opts && opts.filters) || LIST_FILTERS[key] || [];
           PAGERS[key] = {
             head: head,
             all: rows,
@@ -2675,17 +2698,31 @@
             empty: (opts && opts.empty) || "Nothing here yet.",
             page: 0,
             q: "",
+            f: {},
+            filters: filters,
           };
+          // Only offer a filter that would actually split the list.
+          var selects = filters.map(function (f) {
+            var seen = {};
+            rows.forEach(function (r) { var v = fValue(r, f.attr); if (v) seen[v] = (seen[v] || 0) + 1; });
+            var vals = Object.keys(seen).sort();
+            if (vals.length < 2) return "";
+            return '<select class="pg-f" data-pg="' + key + '" data-attr="' + f.attr + '" title="' + esc(f.label) + '">' +
+              '<option value="">' + esc(f.label) + ': all</option>' +
+              vals.map(function (v) { return '<option value="' + esc(v) + '">' + esc(v) + " (" + seen[v] + ")</option>"; }).join("") +
+              "</select>";
+          }).join("");
           // A search box for any list long enough to need one. Matches on the
           // visible text of the row, so club, town, contact, outcome and notes
           // all count.
           var search =
-            rows.length > 5
-              ? '<div class="pg-search"><input type="search" class="pg-q" data-pg="' +
-                key +
-                '" placeholder="Search this list" autocomplete="off"><span class="pg-count" data-pgc="' +
-                key +
-                '"></span></div>'
+            rows.length > 5 || selects
+              ? '<div class="pg-search">' +
+                (rows.length > 5
+                  ? '<input type="search" class="pg-q" data-pg="' + key + '" placeholder="Search this list" autocomplete="off">'
+                  : "") +
+                selects +
+                '<span class="pg-count" data-pgc="' + key + '"></span></div>'
               : "";
           return (
             search +
@@ -2701,12 +2738,14 @@
         }
         function pagedInner(key) {
           var o = PAGERS[key];
-          if (o.q) {
-            var q = o.q;
-            o.rows = o.all.filter(function (r) { return rowText(r).indexOf(q) >= 0; });
-          } else {
-            o.rows = o.all;
-          }
+          var q = o.q;
+          var active = Object.keys(o.f || {}).filter(function (k) { return o.f[k]; });
+          o.rows = o.all.filter(function (r) {
+            if (q && rowText(r).indexOf(q) < 0) return false;
+            for (var i = 0; i < active.length; i++) if (fValue(r, active[i]) !== o.f[active[i]]) return false;
+            return true;
+          });
+          o.filtered = !!(q || active.length);
           var total = o.rows.length;
           var pages = Math.max(1, Math.ceil(total / o.pageSize));
           if (o.page > pages - 1) o.page = pages - 1;
@@ -2717,7 +2756,7 @@
             "</tr></thead><tbody>" +
             (total
               ? o.rows.slice(s, s + o.pageSize).join("")
-              : '<tr><td colspan="99">' + (o.q ? "No matches." : o.empty) + "</td></tr>") +
+              : '<tr><td colspan="99">' + (o.filtered ? "No matches." : o.empty) + "</td></tr>") +
             "</tbody></table>" +
             (pages > 1
               ? '<div class="pager">' +
@@ -2762,8 +2801,35 @@
           var host = document.querySelector('[data-pager="' + key + '"]');
           if (host) host.innerHTML = pagedInner(key);
           var n = document.querySelector('[data-pgc="' + key + '"]');
-          if (n) n.textContent = o.q ? o.rows.length + " of " + o.all.length : "";
+          if (n) n.textContent = o.filtered ? o.rows.length + " of " + o.all.length : "";
         });
+        document.addEventListener("change", function (e) {
+          var sel = e.target.closest && e.target.closest(".pg-f");
+          if (!sel) return;
+          var key = sel.getAttribute("data-pg");
+          var o = PAGERS[key];
+          if (!o) return;
+          o.f[sel.getAttribute("data-attr")] = sel.value;
+          o.page = 0;
+          var host = document.querySelector('[data-pager="' + key + '"]');
+          if (host) host.innerHTML = pagedInner(key);
+          var n = document.querySelector('[data-pgc="' + key + '"]');
+          if (n) n.textContent = o.filtered ? o.rows.length + " of " + o.all.length : "";
+        });
+        // Filter values derived from a row.
+        var AU_STATES = ["NSW", "QLD", "VIC", "WA", "SA", "TAS", "NT", "ACT"];
+        function stateOf(where) {
+          var w = String(where || "").trim().split(/\s+/);
+          var last = w[w.length - 1] || "";
+          return AU_STATES.indexOf(last) >= 0 ? last : "";
+        }
+        function sizeBand(egm) {
+          if (egm == null || egm === "") return "Size unknown";
+          var n = Number(egm);
+          if (n >= 200) return "Large (200+ machines)";
+          if (n >= 100) return "Medium (100-199)";
+          return "Small (under 100)";
+        }
 
         // Horizontal stage timeline: one line across the panel, coloured in
         // white-to-blue steps to show the stages, each with its count and
@@ -2881,9 +2947,10 @@
                 return (
                   '<tr class="rowlink" data-club="' +
                   esc(t.id) +
-                  '">' +
+                  '"' + fAttrs({ state: stateOf(t.where), size: sizeBand(t.egm_count), tried: t.attempts ? "Tried before" : "Not yet tried", referred: t.referred_by ? "Referred on a call" : "Original list" }) + ">" +
                   "<td>" +
                   esc(t.entity_name) +
+                  (t.referred_by ? ' <span class="pill referral-pill" title="' + esc(t.referred_by) + '">referred</span>' : "") +
                   "</td>" +
                   "<td>" +
                   esc(t.where || "—") +
@@ -2915,7 +2982,7 @@
                 return (
                   '<tr class="rowlink" data-club="' +
                   esc(t.id) +
-                  '">' +
+                  '"' + fAttrs({ state: stateOf(t.where), contact: t.direct ? "Direct contact" : "Standard", outcome: outcomeLabel(t.last_outcome), again: t.called_again ? "Called again" : "Not yet" }) + ">" +
                   "<td>" +
                   (t.direct
                     ? '<span class="pill hot">direct contact</span>'
@@ -2986,7 +3053,7 @@
                 return (
                   '<tr class="rowlink" data-club="' +
                   esc(r.target_id || "") +
-                  '">' +
+                  '"' + fAttrs({ outcome: outcomeLabel(r.outcome), round: "Call " + (r.round || 1) }) + ">" +
                   '<td class="nowrap">' +
                   esc(when(r.created_at)) +
                   "</td>" +
@@ -3175,7 +3242,7 @@
                 return (
                   '<tr class="rowlink" data-club="' +
                   esc(r.target_id || "") +
-                  '">' +
+                  '"' + fAttrs({ caller: r.caller, outcome: outcomeLabel(r.outcome), round: "Call " + (r.round || 1) }) + ">" +
                   '<td class="nowrap">' +
                   esc(when(r.created_at)) +
                   "</td>" +
@@ -3223,7 +3290,7 @@
               "cbs",
               "<th>When</th><th>Club</th><th>Caller</th><th>Why</th>",
               (d.callbacks || []).map(function (c) {
-                return '<tr class="rowlink" data-club="' + esc(c.target_id) + '"><td class="nowrap">' + esc(fmtWhen(c.due_at)) + "</td><td>" + esc(c.club || "") +
+                return '<tr class="rowlink" data-club="' + esc(c.target_id) + '"' + fAttrs({ caller: c.caller }) + '><td class="nowrap">' + esc(fmtWhen(c.due_at)) + "</td><td>" + esc(c.club || "") +
                   (c.where ? ' <span style="color:var(--muted)">' + esc(c.where) + "</span>" : "") + "</td><td>" + esc(c.caller || "") + "</td><td>" + esc(c.note || "") + "</td></tr>";
               }),
               { empty: "No call-backs booked." },
@@ -3234,7 +3301,7 @@
               "<th>Club</th><th>Where</th><th>Why</th>",
               (d.do_not_call || []).map(function (x) {
                 return (
-                  "<tr><td>" +
+                  "<tr" + fAttrs({ state: x.state }) + "><td>" +
                   esc(x.entity_name) +
                   "</td><td>" +
                   esc([x.suburb, x.state].filter(Boolean).join(" ")) +
