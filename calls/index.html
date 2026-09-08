@@ -120,6 +120,10 @@
       .btn-primary:hover:not(:disabled) { background: var(--sky-deep); transform: translate(1px, 1px); box-shadow: 2px 2px 0 var(--ink); }
       .msg { margin-top: 16px; padding: 12px 16px; font-size: 14px; display: none; border-radius: 8px; }
       .msg.error { display: block; background: #fde7ea; border-left: 4px solid var(--red); color: #7a0b1c; }
+      /* The field a save is waiting on: scrolled to, focused and outlined. */
+      .field.field-bad label { color: var(--red); }
+      .field.field-bad input, .field.field-bad select, .field.field-bad textarea { border-color: var(--red) !important; box-shadow: 0 0 0 3px rgba(200,16,46,0.22); }
+      .field.field-bad .path, .field.field-bad .spoke { outline: 2px solid var(--red); outline-offset: 2px; border-radius: 8px; }
       .msg.ok { display: block; background: #e1f4fd; border-left: 4px solid var(--sky); color: #064a66; }
 
       /* ------------------------------------------------------------ worksheet */
@@ -451,10 +455,14 @@
       .sp.side-r .band { border-right: 2px solid var(--ink); }
       .sp.side-t .band { order: 2; border-bottom: 0; border-top: 2px solid var(--ink); }
       .sp.side-l, .sp.side-r { flex-direction: row; }
-      .sp .nm { flex: 1 1 auto; padding: 2px; text-align: center; display: flex; align-items: safe center; justify-content: center; font-family: var(--heading-font); font-weight: 700; text-transform: uppercase; letter-spacing: 0; overflow-wrap: break-word; hyphens: auto; min-width: 0; min-height: 0; overflow: hidden; }
+      /* Names wrap onto as many lines as they need, hyphenating long words,
+         and only shrink when the lines still would not fit the square. */
+      .sp .nm { flex: 1 1 auto; padding: 2px 1px; text-align: center; display: flex; align-items: safe center; justify-content: center; font-family: var(--heading-font); font-weight: 700; text-transform: uppercase; letter-spacing: 0; min-width: 0; min-height: 0; overflow: hidden; }
+      .sp .nm > span { display: block; max-width: 100%; overflow-wrap: break-word; -webkit-hyphens: auto; hyphens: auto; hyphenate-limit-chars: 6 3 2; }
       /* Long names step down in size so every word stays on the square. */
       .sp .nm.long { font-size: 6.5px; line-height: 1.05; }
       .sp .nm.longer { font-size: 5.5px; line-height: 1.05; letter-spacing: -0.01em; }
+      .sp .nm.longest { font-size: 4.8px; line-height: 1.05; letter-spacing: -0.02em; }
       .sp.done { background: var(--paper-2); }
       .sp.done .nm { color: var(--muted); }
       .sp.out .nm { text-decoration: line-through; color: #9aa39d; }
@@ -2846,7 +2854,8 @@
         // Class for a name that needs a smaller face to fit its square.
         function nmClass(name) {
           var n = String(name || "").length;
-          return n > 22 ? " longer" : n > 13 ? " long" : "";
+          var longest = String(name || "").split(/\s+/).reduce(function (m, w) { return Math.max(m, w.length); }, 0);
+          return longest >= 11 ? " longest" : longest >= 9 || n > 28 ? " longer" : longest >= 7 || n > 16 ? " long" : "";
         }
         function shortName(n) {
           var s = String(n || "")
@@ -2957,7 +2966,7 @@
               '" style="grid-row:' + cell.r + ';grid-column:' + cell.c + '" data-club="' + esc(s.id) +
               '" title="' + esc(s.name + (s.where ? " — " + s.where : "") + " · " + tierLabel(tier)) + '">' +
               '<span class="band" style="background:' + tier.colour + '"></span>' +
-              '<span class="nm' + nmClass(shortName(s.name)) + '">' + esc(shortName(s.name)) + "</span>" +
+              '<span class="nm' + nmClass(shortName(s.name)) + '" lang="en"><span>' + esc(shortName(s.name)) + "</span></span>" +
               (marks ? '<span class="marks">' + marks + "</span>" : "") +
 
               (s.state === "out" ? '<span class="tick">✕</span>' : "") +
@@ -2977,14 +2986,14 @@
               var bc = spaceCell(i), bt = TIERS[TEAM_SETS[i]];
               spaces +=
                 '<div class="sp side-' + bc.side + ' blank" style="grid-row:' + bc.r + ';grid-column:' + bc.c + '">' +
-                '<span class="band" style="background:' + bt.colour + '"></span><span class="nm"></span></div>';
+                '<span class="band" style="background:' + bt.colour + '"></span><span class="nm"><span></span></span></div>';
             }
           }
           var corners =
             '<div class="corner go" style="grid-row:11;grid-column:11"><img src="assets/chance/corner-go.png" alt="GO"><small>collect a call</small></div>' +
             '<div class="corner jail" style="grid-row:11;grid-column:1"><img src="assets/chance/corner-in-jail.png" alt=""><span class="cl">Do not call</span><small>' + esc(st.do_not_call != null ? st.do_not_call + " came to us" : "already enquired") + "</small></div>" +
             '<div class="corner" style="grid-row:1;grid-column:1"><img src="assets/chance/corner-free-parking.png" alt=""><span class="cl">Free parking</span><small>' + tried + " to try again" + "</small></div>" +
-            '<div class="corner" style="grid-row:1;grid-column:11"><img src="assets/chance/corner-goto-jail.png" alt=""><span class="cl">Not interested</span><small>' + out + " passed for now" + "</small></div>";
+            '<div class="corner" style="grid-row:1;grid-column:11"><img src="assets/chance/corner-goto-jail.png" alt=""><span class="cl">Not interested</span><small>' + out + " passed" + "</small></div>";
 
           var centre =
             '<div class="centre">' +
@@ -3055,7 +3064,7 @@
               (lead ? ' data-club="' + esc(lead.next.id) + '"' : "") +
               (title ? ' title="' + esc(title) + '"' : "") + ">" +
               '<span class="band" style="background:' + tier.colour + '"></span>' +
-              '<span class="nm' + (lead ? nmClass(shortName(lead.next.entity_name)) : "") + '">' + (lead ? esc(shortName(lead.next.entity_name)) : "") + "</span>" +
+              '<span class="nm' + (lead ? nmClass(shortName(lead.next.entity_name)) : "") + '" lang="en"><span>' + (lead ? esc(shortName(lead.next.entity_name)) : "") + "</span></span>" +
               (here.length
                 ? '<span class="you team' + (here.length > 1 ? " many" : "") + '">' +
                   here.map(function (p) {
@@ -3071,7 +3080,7 @@
             '<div class="corner go" style="grid-row:11;grid-column:11"><img src="assets/chance/corner-go.png" alt="GO"><small>collect a call</small></div>' +
             '<div class="corner jail" style="grid-row:11;grid-column:1"><img src="assets/chance/corner-in-jail.png" alt=""><span class="cl">Do not call</span><small>' + (c.do_not_call || 0) + " came to us" + "</small></div>" +
             '<div class="corner" style="grid-row:1;grid-column:1"><img src="assets/chance/corner-free-parking.png" alt=""><span class="cl">Free parking</span><small>' + (c.in_progress || 0) + " being called now" + "</small></div>" +
-            '<div class="corner" style="grid-row:1;grid-column:11"><img src="assets/chance/corner-goto-jail.png" alt=""><span class="cl">Not interested</span><small>' + out + " passed for now" + "</small></div>";
+            '<div class="corner" style="grid-row:1;grid-column:11"><img src="assets/chance/corner-goto-jail.png" alt=""><span class="cl">Not interested</span><small>' + out + " passed" + "</small></div>";
 
           var doneAll = players.reduce(function (n, p) { return n + p.done; }, 0);
           var totalAll = players.reduce(function (n, p) { return n + p.total; }, 0);
@@ -3869,7 +3878,7 @@
             // ------------------------------------------------------- right: form
             '<div class="pane pane-form"><div class="form-card">' +
             '<div class="form-head"><h2>Record the call</h2><span class="chest">&#129520;</span></div>' +
-            '<form id="call-form">' +
+            '<form id="call-form" novalidate>' +
             fieldsHtml +
             outcomeHtml +
             callbackBlockHtml("f") +
@@ -3952,6 +3961,30 @@
             });
         }
 
+        // A save that stops on a missing answer takes the caller to it: the
+        // message shows, the field is outlined and scrolled into view, and the
+        // outline clears as soon as they change it.
+        function flagField(msgId, target, text) {
+          msg(msgId, text, "error");
+          var el = typeof target === "string" ? document.getElementById(target) || document.querySelector(target) : target;
+          if (!el) return;
+          var field = el.closest(".field") || el;
+          document.querySelectorAll(".field-bad").forEach(function (n) { n.classList.remove("field-bad"); });
+          field.classList.add("field-bad");
+          // The form lives in its own scrolling pane (or the drawer), so scroll
+          // that container itself rather than trusting scrollIntoView.
+          var scroller = field.closest(".pane, .drawer-inner, #drawer") || document.scrollingElement;
+          var fr = field.getBoundingClientRect(), sr = scroller.getBoundingClientRect ? scroller.getBoundingClientRect() : { top: 0, height: window.innerHeight };
+          var delta = (fr.top - sr.top) - (sr.height / 2 - fr.height / 2);
+          if (scroller === document.scrollingElement) window.scrollTo(0, (window.scrollY || 0) + delta);
+          else scroller.scrollTop = scroller.scrollTop + delta;
+          var focusable = field.querySelector("input, select, textarea");
+          if (focusable) setTimeout(function () { focusable.focus({ preventScroll: true }); }, 250);
+          var clear = function () { field.classList.remove("field-bad"); field.removeEventListener("input", clear); field.removeEventListener("change", clear); };
+          field.addEventListener("input", clear);
+          field.addEventListener("change", clear);
+        }
+
         function onSave(e) {
           e.preventDefault();
           if (!current) return;
@@ -3967,12 +4000,7 @@
           var email =
             formRound >= 2 ? formCarryEmail : val("f-email").trim();
           if (wants && !email) {
-            msg(
-              "save-msg",
-              "To send more information you need their email address.",
-              "error",
-            );
-            document.getElementById("f-email").focus();
+            flagField("save-msg", "f-email", "To send more information you need their email address.");
             return;
           }
 
@@ -3985,7 +4013,7 @@
               '#call-form input[name="f-path"]:checked',
             );
             if (!pathEl) {
-              msg("save-msg", "Choose where the call landed.", "error");
+              flagField("save-msg", '#call-form input[name="f-path"]', "Choose where the call landed.");
               return;
             }
             var path = pathEl.value;
@@ -4006,8 +4034,7 @@
             } else if (path === "c") {
               var reason = document.getElementById("f-c-reason").value;
               if (!reason) {
-                msg("save-msg", "Choose why they are not interested.", "error");
-                document.getElementById("f-c-reason").focus();
+                flagField("save-msg", "f-c-reason", "Choose why they are not interested.");
                 return;
               }
               outcome = "not_interested";
@@ -4039,19 +4066,18 @@
           if (outcome === "wants_info_only" && !wants) {
             wants = true;
             if (!email) {
-              msg(
-                "save-msg",
-                "To send the partnership pack you need their email address.",
-                "error",
-              );
-              document.getElementById("f-email").focus();
+              flagField("save-msg", "f-email", "To send the partnership pack you need their email address.");
               return;
             }
+          }
+          if (!outcome) {
+            flagField("save-msg", "f-outcome", "Choose an outcome before saving.");
+            return;
           }
 
           var cb = readCallback("f");
           if (cb.error) {
-            msg("save-msg", cb.error, "error");
+            flagField("save-msg", "f-cb-date", cb.error);
             return;
           }
           var cbAt = cb.at, cbNote = cb.note;
@@ -4088,7 +4114,10 @@
               loadNext();
             })
             .catch(function (err) {
-              msg("save-msg", err.message, "error");
+              if (/outcome/i.test(err.message)) flagField("save-msg", "f-outcome", err.message);
+              else if (/email/i.test(err.message)) flagField("save-msg", "f-email", err.message);
+              else if (/call-back/i.test(err.message)) flagField("save-msg", "f-cb-date", err.message);
+              else msg("save-msg", err.message, "error");
               btn.disabled = false;
               btn.textContent = "Done — save and next";
             });
@@ -4368,7 +4397,7 @@
             ) +
             "</dl>" +
             "<h3>Record another call</h3>" +
-            '<form id="d-call-form">' +
+            '<form id="d-call-form" novalidate>' +
             '<div class="field-row">' +
             '<div class="field"><label for="d-dm">Decision maker</label><input type="text" id="d-dm" autocomplete="off"></div>' +
             '<div class="field"><label for="d-role">Their role</label><input type="text" id="d-role" autocomplete="off"></div>' +
@@ -4425,20 +4454,16 @@
                 outcome === "wants_info_only";
               var email = document.getElementById("d-email").value.trim();
               if (wants && !email) {
-                msg(
-                  "d-save-msg",
-                  "To send the partnership pack you need their email address.",
-                  "error",
-                );
+                flagField("d-save-msg", "d-email", "To send the partnership pack you need their email address.");
                 return;
               }
               if (!outcome) {
-                msg("d-save-msg", "Choose an outcome before saving.", "error");
+                flagField("d-save-msg", "d-outcome", "Choose an outcome before saving.");
                 return;
               }
               var dcb = readCallback("d");
               if (dcb.error) {
-                msg("d-save-msg", dcb.error, "error");
+                flagField("d-save-msg", "d-cb-date", dcb.error);
                 return;
               }
               var btn = document.getElementById("d-save-btn");
