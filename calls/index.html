@@ -2767,6 +2767,38 @@
           "It is your birthday. Every club puts you through to the decision maker.",
           "Income tax refund: collect one small sense of achievement.",
           "Doctor's fee: pay nothing, keep dialling.",
+          "Take a break. Stand up, stretch, look out a window. The clubs will still be there.",
+          "Go and make a cup of coffee. Do not pass GO on the way to the kettle.",
+          "Pat yourself on the back. If you can't reach, ask a colleague.",
+          "If you see this card, send Taylor a smiley face on Slack. No explanation needed.",
+          "Life insurance matures: collect one biscuit from the tin.",
+          "You are assessed for street repairs: that's another call closer to the anniversary.",
+          "Community Chest says: drink some water. Talking is thirsty work.",
+          "Holiday fund matures: take five minutes away from the screen.",
+          "Receive for services: a quiet, deserved moment of satisfaction.",
+          "Free parking. Sit here as long as you like, then dial the next one.",
+          "Go directly to the kitchen. Do not pass GO. Do collect a snack.",
+          "Chance: the next club picks up on the first ring. Probably.",
+          "The bank pays you a dividend of one deep breath.",
+          "You inherit a slightly warmer lead. Use it wisely.",
+          "From sale of stock you get to tell someone about Darwin 1942 again.",
+          "Pay poor tax: none. Keep going, you're doing well.",
+          "School fees: paid in full by clubs who said yes.",
+          "Building and loan matures: your notes are gold for whoever calls next.",
+          "Advance to Boardwalk. The Boardwalk is a walk around the block, then back to it.",
+          "You have been elected chairman of the board. Duties: one more call.",
+          "Doctor's orders: roll your shoulders, unclench your jaw, dial.",
+          "Get out of a long hold free. This card may be kept until needed.",
+          "Bank error in the team's favour: a veteran's story reaches one more town.",
+          "If you see this card, tell Taylor your favourite club name so far.",
+          "Collect one cup of tea. Return to the game when it's cold.",
+          "The RSL Club you just called has told a friend. Referrals welcome.",
+          "Second prize in the persistence contest: there is no first prize, persistence wins.",
+          "Go to jail? No. Go to lunch. You've earned it.",
+          "Grand tour of the office: walk to the far wall and back before the next call.",
+          "You are the first human voice this club has heard from the project. Nice work.",
+          "Property tax assessed: one tick on the board, paid in full.",
+          "Community Chest says: if you're ahead of your list, send the team a thumbs up.",
         ];
         var toastTimer;
         function toast(title, text) {
@@ -2776,12 +2808,22 @@
           clearTimeout(toastTimer);
           toastTimer = setTimeout(function () { t.classList.remove("show"); }, 3400);
         }
+        // Cards are dealt from a shuffled deck so nobody sees the same line twice
+        // before they've seen them all; the deck reshuffles when it runs out.
+        var chestDeck = [];
+        function drawChestCard() {
+          if (!chestDeck.length) {
+            chestDeck = CHEST_CARDS.slice();
+            for (var i = chestDeck.length - 1; i > 0; i--) {
+              var j = Math.floor(Math.random() * (i + 1));
+              var t = chestDeck[i]; chestDeck[i] = chestDeck[j]; chestDeck[j] = t;
+            }
+          }
+          return chestDeck.pop();
+        }
         function passGo() {
           var n = Number(document.getElementById("c-mine").textContent || 0) + 1;
-          toast(
-            (tokenName(myToken()) || "You") + " pass GO — call " + n + " in the bank",
-            CHEST_CARDS[Math.floor(Math.random() * CHEST_CARDS.length)],
-          );
+          toast((tokenName(myToken()) || "You") + " pass GO — call " + n + " in the bank", drawChestCard());
         }
 
         // ----------------------------------------------------------------- board
