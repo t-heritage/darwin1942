@@ -256,6 +256,16 @@
       .tab { background: none; border: 0; color: var(--muted); padding: 6px 18px; font-size: 13px; font-weight: 400; border-radius: 999px; font-family: inherit; transition: background 0.15s, color 0.15s; }
       .tab:hover:not(.on) { color: var(--ink); }
       .tab.on { background: var(--ink); color: #fff; font-weight: 700; }
+      #add-club-modal { position: fixed; inset: 0; z-index: 72; background: rgba(34,34,34,0.5); display: flex; align-items: center; justify-content: center; padding: 20px; overflow-y: auto; }
+      .add-card { background: var(--paper); border: 3px solid var(--ink); border-radius: var(--radius); box-shadow: 10px 10px 0 rgba(34,34,34,0.25); width: 100%; max-width: 560px; max-height: calc(100vh - 40px); overflow-y: auto; }
+      .add-card .band { background: var(--pollen); padding: 14px 22px; border-bottom: 3px solid var(--ink); display: flex; justify-content: space-between; align-items: flex-start; gap: 12px; }
+      .add-card .band h2 { font-size: 20px; margin: 0; }
+      .add-card .band p { margin: 2px 0 0; font-size: 13px; color: var(--muted); }
+      .add-card .band button { background: none; border: 0; font-size: 22px; line-height: 1; cursor: pointer; color: var(--ink); }
+      .add-card form { padding: 18px 22px 22px; }
+      .add-card .actions { margin-top: 6px; }
+      .referral-pill { background: var(--pollen); border: 1px solid var(--ink); }
+      .add-club-row { margin: 0 0 12px; }
       .tab-badge { display: inline-block; margin-left: 6px; min-width: 18px; padding: 1px 5px; border-radius: 999px; background: var(--red); color: #fff; font-size: 11px; font-weight: 700; line-height: 16px; text-align: center; vertical-align: 1px; }
       /* Scheduling a call-back from any call form. */
       .cb-block { border: 2px dashed var(--line); border-radius: 10px; padding: 8px 14px; margin: 0 0 16px; background: var(--paper-2); }
@@ -669,6 +679,7 @@
     </div>
 
     <!-- ======================================================== CLUB DRAWER -->
+    <div id="add-club-modal" class="hidden"></div>
     <div id="drawer-backdrop"></div>
     <aside id="drawer" class="drawer" aria-label="Club details">
       <div class="drawer-inner" id="drawer-inner"></div>
@@ -2072,6 +2083,7 @@
           var r2 = (lists && lists.round2) || [];
 
           var round1 =
+            (canCall() ? '<div class="add-club-row"><button type="button" class="pg-btn add-club-open">+ Add a club that was recommended to you</button></div>' : "") +
             '<h2 id="list-r1">First round &mdash; to call (' +
             r1.length +
             ")</h2>" +
@@ -2544,6 +2556,7 @@
               ? row("Phone number", '<a class="phone-cta inline" href="' + esc(telHref) + '">' + esc(phone) + "</a>", true)
               : row("Phone number", '<span style="color:var(--muted);font-weight:400">Not on file</span>', true)) +
             row("Contact on file", t.primary_person) +
+            row("Referred by", t.referred_by_name ? t.referred_by_name + (t.referral_note ? " \u2014 " + t.referral_note : "") : "") +
             row("Email on file", t.primary_email) +
             (websites
               ? row("Website", '<a href="' + esc(websites) + '" target="_blank" rel="noopener">' + esc(webLabel) + "</a>", true)
@@ -3251,6 +3264,90 @@
             });
         }
 
+        // ------------------------------------------------------------- add club
+        // "You should talk to X at Y RSL": a club recommended on a call gets a
+        // row on the sheet, a place in this caller's round-1 list ahead of the
+        // cold clubs, and a note of who referred it.
+        var STATES = ["NSW", "QLD", "VIC", "WA", "SA", "TAS", "NT", "ACT"];
+        function openAddClub() {
+          var fromClub = current ? current.entity_name : "";
+          var dm = (document.getElementById("f-dm") || {}).value || "";
+          var referred = fromClub ? (dm ? dm + " at " + fromClub : fromClub) : "";
+          var m = document.getElementById("add-club-modal");
+          m.innerHTML =
+            '<div class="add-card"><div class="band"><div><h2>Add a club</h2><p>It gets a row on the campaign sheet and goes into your round 1 list, ahead of the cold clubs.</p></div>' +
+            '<button type="button" id="add-club-close" aria-label="Close">&times;</button></div>' +
+            '<form id="add-club-form">' +
+            '<div class="field"><label for="ac-name">Club name <span class="req">*</span></label><input type="text" id="ac-name" required autocomplete="off" placeholder="e.g. Bathurst RSL Club"></div>' +
+            '<div class="field-row">' +
+            '<div class="field"><label for="ac-suburb">Suburb / town</label><input type="text" id="ac-suburb" autocomplete="off"></div>' +
+            '<div class="field"><label for="ac-state">State</label><select id="ac-state"><option value="">Choose...</option>' +
+            STATES.map(function (st) { return '<option value="' + st + '">' + st + "</option>"; }).join("") + "</select></div>" +
+            "</div>" +
+            '<div class="field-row">' +
+            '<div class="field"><label for="ac-phone">Phone</label><input type="tel" id="ac-phone" autocomplete="off"></div>' +
+            '<div class="field"><label for="ac-email">Email</label><input type="email" id="ac-email" autocomplete="off"></div>' +
+            "</div>" +
+            '<div class="field-row">' +
+            '<div class="field"><label for="ac-contact">Who to ask for</label><input type="text" id="ac-contact" autocomplete="off" placeholder="Name"></div>' +
+            '<div class="field"><label for="ac-role">Their role</label><input type="text" id="ac-role" autocomplete="off"></div>' +
+            "</div>" +
+            '<div class="field"><label for="ac-ref">Who referred them <span class="req">*</span></label><input type="text" id="ac-ref" required autocomplete="off" value="' + esc(referred) + '" placeholder="e.g. Jane Smith at Dee Why RSL"></div>' +
+            '<div class="field"><label for="ac-note">Anything they told you</label><input type="text" id="ac-note" autocomplete="off" placeholder="e.g. secretary is keen, runs ClubGRANTS"></div>' +
+            '<div class="actions"><button type="submit" class="btn-primary" id="ac-save">Add to my list</button>' +
+            '<button type="button" class="btn-ghost" id="ac-cancel">Cancel</button></div>' +
+            '<div class="msg" id="ac-msg"></div>' +
+            "</form></div>";
+          m.classList.remove("hidden");
+          document.getElementById("ac-name").focus();
+          var close = function () { m.classList.add("hidden"); m.innerHTML = ""; };
+          document.getElementById("add-club-close").addEventListener("click", close);
+          document.getElementById("ac-cancel").addEventListener("click", close);
+          document.getElementById("add-club-form").addEventListener("submit", function (e) {
+            e.preventDefault();
+            clearMsg("ac-msg");
+            var btn = document.getElementById("ac-save");
+            btn.disabled = true;
+            btn.textContent = "Adding...";
+            api("add_club", {
+              entity_name: document.getElementById("ac-name").value,
+              suburb: document.getElementById("ac-suburb").value,
+              state: document.getElementById("ac-state").value,
+              primary_phone: document.getElementById("ac-phone").value,
+              primary_email: document.getElementById("ac-email").value,
+              contact_name: document.getElementById("ac-contact").value,
+              contact_role: document.getElementById("ac-role").value,
+              referred_by_name: document.getElementById("ac-ref").value,
+              referral_note: document.getElementById("ac-note").value,
+              referred_by_target_id: current ? current.id : null,
+            })
+              .then(function (r) {
+                if (r.duplicate) {
+                  msg("ac-msg", (r.target.entity_name || "That club") + " is already on the list" +
+                    (r.target.call_group ? " (list " + r.target.call_group + ")" : "") + ".", "error");
+                  btn.disabled = false;
+                  btn.textContent = "Add to my list";
+                  return;
+                }
+                close();
+                if (typeof toast === "function") toast("Club added", r.target.entity_name + " is in your round 1 list.");
+                else alert(r.target.entity_name + " has been added to your round 1 list.");
+                api("me", {}).then(function (me) { setStats(me.stats); }).catch(function () {});
+                var ab = document.getElementById("admin-body");
+                if (ab && !ab.classList.contains("hidden")) loadOverview();
+              })
+              .catch(function (err) {
+                msg("ac-msg", err.message, "error");
+                btn.disabled = false;
+                btn.textContent = "Add to my list";
+              });
+          });
+        }
+        document.addEventListener("click", function (e) {
+          if (e.target.closest && (e.target.closest("#add-club-btn") || e.target.closest(".add-club-open"))) openAddClub();
+          if (e.target.id === "add-club-modal") { e.target.classList.add("hidden"); e.target.innerHTML = ""; }
+        });
+
         // ------------------------------------------------------------ call-backs
         // A club can be booked for a later call from any call form: it waits
         // until the chosen time, comes back only to the caller who booked it,
@@ -3673,6 +3770,7 @@
             '<div class="actions">' +
             '<button type="submit" class="btn-primary" id="save-btn">Done &mdash; save and next</button>' +
             '<button type="button" class="btn-ghost" id="skip-btn">Skip for now</button>' +
+            '<button type="button" class="btn-ghost" id="add-club-btn" title="Were you told about another club worth calling? Add it to your list.">Got a referral? Add a club</button>' +
             "</div>" +
             '<div class="msg" id="save-msg"></div>' +
             "</form>" +
@@ -4137,6 +4235,7 @@
               : "") +
             '<dl class="facts">' +
             drawerFact("Contact on file", t.primary_person) +
+            drawerFact("Referred by", t.referred_by_name ? t.referred_by_name + (t.referral_note ? " \u2014 " + t.referral_note : "") : "") +
             drawerFact("Email on file", t.primary_email) +
             (websites
               ? '<div class="fact"><dt>Website</dt><dd><a href="' +
