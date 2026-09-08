@@ -2776,7 +2776,16 @@
           var spaces = "";
           for (var i = 0; i < SPACES; i++) {
             var s = all[start + i];
-            if (s) spaces += space(s, i);
+            if (s) {
+              spaces += space(s, i);
+            } else {
+              // Past the end of the list the ring still reads as a board: blank
+              // spaces carry the colour sets the way the team board does.
+              var bc = spaceCell(i), bt = TIERS[TEAM_SETS[i]];
+              spaces +=
+                '<div class="sp side-' + bc.side + ' blank" style="grid-row:' + bc.r + ';grid-column:' + bc.c + '">' +
+                '<span class="band" style="background:' + bt.colour + '"></span><span class="nm"></span></div>';
+            }
           }
           var corners =
             '<div class="corner go" style="grid-row:11;grid-column:11"><small>collect a call</small><b>GO</b><small>&larr; this way</small></div>' +
