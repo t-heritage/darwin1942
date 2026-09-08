@@ -2671,10 +2671,10 @@
         // Which dropdown filters each list offers. Rows carry the values as
         // data-f-<attr> attributes, so the options are read straight off the rows.
         var LIST_FILTERS = {
-          r1: [{ attr: "state", label: "State" }, { attr: "size", label: "Size" }, { attr: "tried", label: "Attempts" }, { attr: "referred", label: "Source" }],
-          r2: [{ attr: "state", label: "State" }, { attr: "contact", label: "Contact" }, { attr: "outcome", label: "Last outcome" }, { attr: "again", label: "Second call" }],
-          myrecent: [{ attr: "outcome", label: "Outcome" }, { attr: "round", label: "Call" }],
-          recent: [{ attr: "caller", label: "Caller" }, { attr: "outcome", label: "Outcome" }, { attr: "round", label: "Call" }],
+          r1: [{ attr: "state", label: "State" }, { attr: "size", label: "Size" }, { attr: "tried", label: "Attempts" }, { attr: "activity", label: "Last activity" }, { attr: "referred", label: "Source" }],
+          r2: [{ attr: "state", label: "State" }, { attr: "contact", label: "Contact" }, { attr: "outcome", label: "Last outcome" }, { attr: "activity", label: "Last activity" }, { attr: "again", label: "Second call" }],
+          myrecent: [{ attr: "activity", label: "When" }, { attr: "outcome", label: "Outcome" }, { attr: "round", label: "Call" }],
+          recent: [{ attr: "activity", label: "When" }, { attr: "caller", label: "Caller" }, { attr: "outcome", label: "Outcome" }, { attr: "round", label: "Call" }],
           cbs: [{ attr: "caller", label: "Caller" }],
           dnc: [{ attr: "state", label: "State" }],
         };
@@ -2709,7 +2709,7 @@
             if (vals.length < 2) return "";
             return '<select class="pg-f" data-pg="' + key + '" data-attr="' + f.attr + '" title="' + esc(f.label) + '">' +
               '<option value="">' + esc(f.label) + ': all</option>' +
-              vals.map(function (v) { return '<option value="' + esc(v) + '">' + esc(v) + " (" + seen[v] + ")</option>"; }).join("") +
+              vals.map(function (v) { return '<option value="' + esc(v) + '">' + esc(v.replace(/^\d+ /, "")) + " (" + seen[v] + ")</option>"; }).join("") +
               "</select>";
           }).join("");
           // A search box for any list long enough to need one. Matches on the
@@ -2822,6 +2822,16 @@
           var w = String(where || "").trim().split(/\s+/);
           var last = w[w.length - 1] || "";
           return AU_STATES.indexOf(last) >= 0 ? last : "";
+        }
+        // Buckets sort in a sensible order because of the leading digit.
+        function activityBand(iso) {
+          if (!iso) return "5 No activity yet";
+          var age = Date.now() - new Date(iso).getTime();
+          var day = 86400000;
+          if (age < day && new Date(iso).toDateString() === new Date().toDateString()) return "1 Today";
+          if (age < 7 * day) return "2 Last 7 days";
+          if (age < 30 * day) return "3 Last 30 days";
+          return "4 Older than 30 days";
         }
         function sizeBand(egm) {
           if (egm == null || egm === "") return "Size unknown";
@@ -2947,7 +2957,7 @@
                 return (
                   '<tr class="rowlink" data-club="' +
                   esc(t.id) +
-                  '"' + fAttrs({ state: stateOf(t.where), size: sizeBand(t.egm_count), tried: t.attempts ? "Tried before" : "Not yet tried", referred: t.referred_by ? "Referred on a call" : "Original list" }) + ">" +
+                  '"' + fAttrs({ state: stateOf(t.where), size: sizeBand(t.egm_count), tried: t.attempts ? "Tried before" : "Not yet tried", activity: activityBand(t.last_activity), referred: t.referred_by ? "Referred on a call" : "Original list" }) + ">" +
                   "<td>" +
                   esc(t.entity_name) +
                   (t.referred_by ? ' <span class="pill referral-pill" title="' + esc(t.referred_by) + '">referred</span>' : "") +
@@ -2982,7 +2992,7 @@
                 return (
                   '<tr class="rowlink" data-club="' +
                   esc(t.id) +
-                  '"' + fAttrs({ state: stateOf(t.where), contact: t.direct ? "Direct contact" : "Standard", outcome: outcomeLabel(t.last_outcome), again: t.called_again ? "Called again" : "Not yet" }) + ">" +
+                  '"' + fAttrs({ state: stateOf(t.where), contact: t.direct ? "Direct contact" : "Standard", outcome: outcomeLabel(t.last_outcome), activity: activityBand(t.last_call_at), again: t.called_again ? "Called again" : "Not yet" }) + ">" +
                   "<td>" +
                   (t.direct
                     ? '<span class="pill hot">direct contact</span>'
@@ -3053,7 +3063,7 @@
                 return (
                   '<tr class="rowlink" data-club="' +
                   esc(r.target_id || "") +
-                  '"' + fAttrs({ outcome: outcomeLabel(r.outcome), round: "Call " + (r.round || 1) }) + ">" +
+                  '"' + fAttrs({ activity: activityBand(r.created_at), outcome: outcomeLabel(r.outcome), round: "Call " + (r.round || 1) }) + ">" +
                   '<td class="nowrap">' +
                   esc(when(r.created_at)) +
                   "</td>" +
@@ -3242,7 +3252,7 @@
                 return (
                   '<tr class="rowlink" data-club="' +
                   esc(r.target_id || "") +
-                  '"' + fAttrs({ caller: r.caller, outcome: outcomeLabel(r.outcome), round: "Call " + (r.round || 1) }) + ">" +
+                  '"' + fAttrs({ activity: activityBand(r.created_at), caller: r.caller, outcome: outcomeLabel(r.outcome), round: "Call " + (r.round || 1) }) + ">" +
                   '<td class="nowrap">' +
                   esc(when(r.created_at)) +
                   "</td>" +
