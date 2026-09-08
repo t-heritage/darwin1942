@@ -431,11 +431,13 @@
         width: 440px; max-width: calc(100vw - 24px); min-height: 220px;
         background: #f58a4e; color: #1a1a1a; border: 2px solid #1a1a1a; border-radius: 10px;
         box-shadow: 6px 6px 0 rgba(26,26,26,0.35); padding: 14px 18px 18px; z-index: 80;
-        opacity: 0; transition: opacity 0.2s, transform 0.2s;
+        opacity: 0; transition: opacity 0.2s, transform 0.2s, visibility 0s 0.2s;
         display: grid; grid-template-columns: 170px 1fr; grid-template-rows: auto 1fr; column-gap: 14px; row-gap: 6px;
         text-align: left;
+        /* Invisible cards must not sit over the buttons and eat clicks. */
+        visibility: hidden; pointer-events: none;
       }
-      .toast.show { opacity: 1; transform: translateX(-50%) translateY(0); }
+      .toast.show { opacity: 1; transform: translateX(-50%) translateY(0); visibility: visible; transition: opacity 0.2s, transform 0.2s, visibility 0s; }
       .toast .ch-title { grid-column: 1 / -1; font-family: "Kaushan Script", "Brush Script MT", cursive; font-size: 30px; line-height: 1; letter-spacing: 0.5px; }
       .toast .ch-img { grid-column: 1; align-self: center; justify-self: center; width: 170px; height: 150px; object-fit: contain; }
       .toast .ch-text { grid-column: 2; align-self: center; font-family: var(--heading-font); font-weight: 700; font-size: 17px; line-height: 1.25; text-transform: uppercase; letter-spacing: 0.3px; }
