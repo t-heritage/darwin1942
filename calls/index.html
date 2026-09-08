@@ -421,6 +421,17 @@
       .team-row span { flex: 1; text-align: left; }
       .team-row b { display: inline; font-family: var(--heading-font); }
       .rank-row.team .who-col { flex: 0 0 150px; display: flex; flex-direction: column; line-height: 1.2; min-width: 0; }
+      .rank-row.team .bars-col { flex: 1 1 auto; display: flex; flex-direction: column; gap: 3px; min-width: 60px; }
+      .rank-row.team .bars-col .bar { width: auto; flex: none; }
+      .rank-row.team .bars-col .bar.r2 { height: 5px; opacity: 0.85; }
+      .rank-row.team .bars-col .bar.r2 span { background: var(--pollen-deep); }
+      .rank-row.team .n { display: flex; flex-direction: column; align-items: flex-end; line-height: 1.15; }
+      .rank-row.team .n b { font-family: var(--heading-font); }
+      .rank-row.team .n small { color: var(--muted); font-size: 10px; }
+      .rank-row.team .n small::before { content: "R2 "; }
+      .r2-badge { display: inline-block; font-style: normal; font-size: 9px; font-weight: 700; line-height: 1; padding: 2px 4px; border-radius: 4px; background: var(--pollen); color: var(--ink); border: 1px solid var(--ink); vertical-align: middle; }
+      .sp .you.team .pc { position: relative; display: inline-grid; place-items: center; }
+      .sp .you.team .pc .r2-badge { position: absolute; right: -4px; bottom: -2px; font-size: 8px; padding: 1px 3px; }
       .rank-row.team .who-col small { color: var(--muted); font-size: 11px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
       .corner { border: 1px solid var(--ink); background: var(--paper); display: flex; flex-direction: column; align-items: center; justify-content: center; text-align: center; padding: 4px; font-family: var(--heading-font); font-weight: 700; font-size: 11px; line-height: 1.15; text-transform: uppercase; }
       .corner b { font-size: clamp(16px, 2.4vw, 26px); line-height: 1; display: block; }
@@ -2421,7 +2432,7 @@
         // Everything Monopoly lives here: colour sets, the title deed, tokens,
         // the board, and the demo fixtures behind ?demo=1.
         var DEMO_KIND = new URLSearchParams(location.search).get("demo") || "";
-        var DEMO = DEMO_KIND === "1" || DEMO_KIND === "admin";
+        var DEMO = DEMO_KIND === "1" || DEMO_KIND === "admin" || DEMO_KIND === "short";
         var DEMO_ADMIN = DEMO_KIND === "admin";
 
         // Colour sets by size of the club (poker machines), cheapest to dearest.
@@ -2809,7 +2820,15 @@
               var listTotal = Math.max(0, (c.group_total || 0) - (c.group_dnc || 0));
               var done = Math.max(0, listTotal - (c.group_remaining || 0));
               var pos = listTotal ? Math.min(SPACES - 1, Math.floor((done / listTotal) * SPACES)) : 0;
-              return { name: c.name, username: c.username, piece: c.piece, calls: c.calls || 0, done: done, total: listTotal, pos: pos, next: c.next_club || null, group: c.call_group };
+              // Round-2 progress is its own track: call-backs done out of
+              // (done + waiting). A caller whose worksheet is on round 2 is
+              // badged, and their piece sits on the call-back they're up to.
+              var r2Total = (c.r2_done || 0) + (c.r2_waiting || 0);
+              return {
+                name: c.name, username: c.username, piece: c.piece, calls: c.calls || 0,
+                done: done, total: listTotal, pos: pos, next: c.next_club || null, group: c.call_group,
+                round: c.round === 2 ? 2 : 1, r2Done: c.r2_done || 0, r2Total: r2Total,
+              };
             })
             .sort(function (a, b) { return b.done - a.done || a.name.localeCompare(b.name); });
 
@@ -2826,7 +2845,7 @@
             // than a blank track.
             var tier = lead ? tierOf(lead.next.egm_count) : TIERS[TEAM_SETS[i]];
             var title = here.length
-              ? here.map(function (p) { return p.name + (p.next ? " — up to " + p.next.entity_name : " — list complete"); }).join("\n")
+              ? here.map(function (p) { return p.name + (p.round === 2 ? " (round 2)" : "") + (p.next ? " — up to " + p.next.entity_name : (p.round === 2 ? " — no call-backs waiting" : " — list complete")); }).join("\n")
               : "";
             spaces +=
               '<div class="sp side-' + cell.side + (here.length ? " current" : " blank") +
@@ -2837,7 +2856,10 @@
               '<span class="nm' + (lead ? nmClass(shortName(lead.next.entity_name)) : "") + '">' + (lead ? esc(shortName(lead.next.entity_name)) : "") + "</span>" +
               (here.length
                 ? '<span class="you team' + (here.length > 1 ? " many" : "") + '">' +
-                  here.map(function (p) { return tokenIcon(p.piece) || "🎲"; }).join("") + "</span>"
+                  here.map(function (p) {
+                    return '<span class="pc' + (p.round === 2 ? " r2" : "") + '">' + (tokenIcon(p.piece) || "🎲") +
+                      (p.round === 2 ? '<i class="r2-badge">R2</i>' : "") + "</span>";
+                  }).join("") + "</span>"
                 : "") +
               "</div>";
           }
@@ -2869,12 +2891,16 @@
             '<div class="panel"><h3 class="panel-title">Players</h3>' +
             (players.length
               ? players.map(function (p) {
-                  return '<div class="rank-row team' + (meCaller && p.username === meCaller.username ? " me" : "") + '"><span class="tk">' + (tokenIcon(p.piece) || "🎲") + "</span>" +
-                    "<span class='who-col'><b>" + esc(p.name) + "</b><small>" +
-                    (p.next ? "Up to " + esc(p.next.entity_name) + (p.next.holding ? " (on it now)" : "") : "List complete") +
-                    "</small></span>" +
-                    '<span class="bar"><span style="width:' + (p.total ? Math.round((p.done / p.total) * 100) : 0) + '%"></span></span>' +
-                    '<span class="n">' + p.done + "/" + p.total + "</span></div>";
+                  var upTo = p.next
+                    ? (p.round === 2 ? "Calling back " : "Up to ") + esc(p.next.entity_name) + (p.next.holding ? " (on it now)" : "")
+                    : (p.round === 2 ? "No call-backs waiting" : "List complete");
+                  return '<div class="rank-row team' + (meCaller && p.username === meCaller.username ? " me" : "") + (p.round === 2 ? " on-r2" : "") + '"><span class="tk">' + (tokenIcon(p.piece) || "🎲") + "</span>" +
+                    "<span class='who-col'><b>" + esc(p.name) + (p.round === 2 ? ' <i class="r2-badge">R2</i>' : "") + "</b><small>" + upTo + "</small></span>" +
+                    '<span class="bars-col">' +
+                    '<span class="bar" title="Round 1: first calls"><span style="width:' + (p.total ? Math.round((p.done / p.total) * 100) : 0) + '%"></span></span>' +
+                    '<span class="bar r2" title="Round 2: call-backs"><span style="width:' + (p.r2Total ? Math.round((p.r2Done / p.r2Total) * 100) : 0) + '%"></span></span>' +
+                    "</span>" +
+                    '<span class="n"><b>' + p.done + "/" + p.total + "</b><small>" + p.r2Done + "/" + p.r2Total + "</small></span></div>";
                 }).join("")
               : '<p style="margin:0;color:var(--muted)">Nobody has signed up yet.</p>') +
             "</div>";
@@ -2895,7 +2921,8 @@
         // ------------------------------------------------------------ demo mode
         // ?demo=1 runs the whole page against fixtures so the design can be looked
         // at without a login. Nothing is sent anywhere.
-        var DEMO_CALLER = { id: "demo", name: "Demo caller", username: "demo", is_admin: false, call_group: 2, onboarded_at: "2026-09-01T00:00:00Z", piece: null };
+        // Demo callers start with a piece so the picker never hides the board.
+        var DEMO_CALLER = { id: "demo", name: "Demo caller", username: "demo", is_admin: false, call_group: 2, onboarded_at: "2026-09-01T00:00:00Z", piece: "race-car" };
         var DEMO_PIECES = [{ piece: "dog", name: "Danella", username: "danella" }, { piece: "top-hat", name: "Taylor", username: "taylor" }];
         var DEMO_CLUBS = [
           ["Rooty Hill RSL Club", "ROOTY HILL", "NSW", 699, 6, "$203,883,454", "(02) 9625 5500", "www.rootyhillrsl.com.au", "Reception", "info@rootyhillrsl.com.au", 43],
@@ -2936,7 +2963,7 @@
           ["Mildura RSL", "MILDURA", "VIC", 40, null, "$2,800,000", "(03) 5023 0621", "", "", "", null],
           ["Gympie RSL", "GYMPIE", "QLD", 35, null, "", "(07) 5482 1231", "", "", "", null],
           ["Yeppoon RSL", "YEPPOON", "QLD", 12, null, "", "(07) 4939 1100", "", "", "", null],
-        ].map(function (r, i) {
+        ].slice(0, DEMO_KIND === "short" ? 20 : undefined).map(function (r, i) {
           return {
             id: "demo-" + i, entity_name: r[0], suburb: r[1], state: r[2], egm_count: r[3], gaming_rank: r[4],
             gaming_revenue: r[5], primary_phone: r[6], websites: r[7], primary_person: r[8], primary_email: r[9],
@@ -3008,10 +3035,11 @@
                 funnel: {}, delivery: { waiting: 0, failing: 0 }, failing: [], do_not_call: [],
                 by_outcome: byOut, lists: { round1: round1, round2: round2 }, recent: DEMO_CALLS.slice().reverse(),
                 callers: [
-                  { name: "Danella", username: "danella", active: true, is_admin: true, call_group: 1, piece: "dog", calls: 22, group_total: 40, group_dnc: 2, group_remaining: 24, next_club: nx(0) },
-                  { name: DEMO_CALLER.name, username: DEMO_CALLER.username, active: true, is_admin: false, call_group: 2, piece: DEMO_CALLER.piece, calls: 10, group_total: 40, group_dnc: 2, group_remaining: 30, next_club: nx(1) },
-                  { name: "Rod Hopping", username: "rod", active: true, is_admin: true, call_group: 3, piece: "battleship", calls: 31, group_total: 39, group_dnc: 1, group_remaining: 10, next_club: nx(2) },
-                  { name: "Sam", username: "sam", active: true, is_admin: false, call_group: 4, piece: "boot", calls: 9, group_total: 39, group_dnc: 2, group_remaining: 30, next_club: nx(3) },
+                  { name: "Danella", username: "danella", active: true, is_admin: true, call_group: 1, piece: "dog", calls: 22, group_total: 40, group_dnc: 2, group_remaining: 24, round: 2, r2_waiting: 6, r2_done: 3, next_club: Object.assign(nx(4), { holding: false }) },
+                  { name: DEMO_CALLER.name, username: DEMO_CALLER.username, active: true, is_admin: false, call_group: 2, piece: DEMO_CALLER.piece, calls: 10, group_total: 40, group_dnc: 2, group_remaining: 30, round: 1, r2_waiting: 4, r2_done: 0, next_club: nx(1) },
+                  { name: "Rod Hopping", username: "rod", active: true, is_admin: true, call_group: 3, piece: "battleship", calls: 31, group_total: 39, group_dnc: 1, group_remaining: 10, round: 2, r2_waiting: 9, r2_done: 11, next_club: Object.assign(nx(7), { holding: true }) },
+                  { name: "Sam", username: "sam", active: true, is_admin: false, call_group: 4, piece: "boot", calls: 9, group_total: 39, group_dnc: 2, group_remaining: 30, round: 1, r2_waiting: 2, r2_done: 0, next_club: nx(3) },
+                  { name: "Priya", username: "priya", active: true, is_admin: false, call_group: 5, piece: "iron", calls: 40, group_total: 38, group_dnc: 2, group_remaining: 0, round: 2, r2_waiting: 0, r2_done: 14, next_club: null },
                   { name: "Taylor", username: "taylor", active: true, is_admin: true, call_group: null, piece: "top-hat", calls: 0, group_total: 196, group_dnc: 9, group_remaining: 150, next_club: null },
                 ],
               };
