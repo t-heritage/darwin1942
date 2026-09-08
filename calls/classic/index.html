@@ -291,6 +291,12 @@
         overflow-y: auto;
         overscroll-behavior: contain;
       }
+      /* Scrolling panes drop their bottom padding in some browsers; keep clear space under the last card. */
+      .pane::after {
+        content: "";
+        display: block;
+        height: 48px;
+      }
       .pane-left {
         border-right: 0;
       }
