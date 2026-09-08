@@ -6,6 +6,8 @@
     <meta name="robots" content="noindex, nofollow" />
     <title>Community Chest | Darwin 1942</title>
     <link rel="icon" href="/favicon.ico" />
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link href="https://fonts.googleapis.com/css2?family=Kaushan+Script&display=swap" rel="stylesheet" />
     <style>
       :root {
         --tea: #ceebcd;
@@ -417,14 +419,24 @@
       .demo-bar a { color: #fff; font-weight: 700; }
 
       /* --------------------------------------------------------------- toast */
+      /* The Chance card: orange stock, script title, a figure on the left and
+         the instruction in capitals on the right, like the real cards. */
       .toast {
         position: fixed; left: 50%; bottom: 26px; transform: translateX(-50%) translateY(20px);
-        background: var(--pollen); border: 3px solid var(--ink); border-radius: var(--radius);
-        box-shadow: 6px 6px 0 var(--ink); padding: 12px 20px; font-size: 14px; z-index: 80;
-        opacity: 0; transition: opacity 0.2s, transform 0.2s; max-width: 420px; text-align: center;
+        width: 440px; max-width: calc(100vw - 24px); min-height: 220px;
+        background: #f58a4e; color: #1a1a1a; border: 2px solid #1a1a1a; border-radius: 10px;
+        box-shadow: 6px 6px 0 rgba(26,26,26,0.35); padding: 14px 18px 30px; z-index: 80;
+        opacity: 0; transition: opacity 0.2s, transform 0.2s;
+        display: grid; grid-template-columns: 170px 1fr; grid-template-rows: auto 1fr; column-gap: 14px; row-gap: 6px;
+        text-align: left;
       }
       .toast.show { opacity: 1; transform: translateX(-50%) translateY(0); }
-      .toast b { display: block; font-family: var(--heading-font); font-size: 16px; }
+      .toast .ch-title { grid-column: 1 / -1; font-family: "Kaushan Script", "Brush Script MT", cursive; font-size: 30px; line-height: 1; letter-spacing: 0.5px; }
+      .toast .ch-img { grid-column: 1; align-self: center; justify-self: center; width: 170px; height: 150px; object-fit: contain; }
+      .toast .ch-text { grid-column: 2; align-self: center; font-family: var(--heading-font); font-weight: 700; font-size: 17px; line-height: 1.25; text-transform: uppercase; letter-spacing: 0.3px; }
+      .toast .ch-text small { display: block; text-transform: none; font-family: inherit; font-weight: 400; font-size: 13px; margin-top: 8px; line-height: 1.35; }
+      .toast .ch-foot { position: absolute; left: 0; right: 0; bottom: 8px; text-align: center; font-family: var(--heading-font); font-weight: 700; font-size: 10px; letter-spacing: 0.4px; text-transform: uppercase; opacity: 0.85; }
+      @media (max-width: 520px) { .toast { grid-template-columns: 120px 1fr; } .toast .ch-img { width: 120px; height: 110px; } .toast .ch-text { font-size: 14px; } }
 
       /* --------------------------------------------------------------- board */
       .board-wrap { --board-max: min(720px, calc(100vh - 130px)); padding: 20px 20px 72px; display: grid; grid-template-columns: minmax(0, var(--board-max)) minmax(240px, 1fr); gap: 20px; max-width: 1200px; margin: 0 auto; align-items: start; }
@@ -481,10 +493,11 @@
       .corner { border: 1px solid var(--ink); background: var(--paper); display: flex; flex-direction: column; align-items: center; justify-content: center; text-align: center; padding: 4px; font-family: var(--heading-font); font-weight: 700; font-size: 11px; line-height: 1.15; text-transform: uppercase; }
       .corner b { font-size: clamp(16px, 2.4vw, 26px); line-height: 1; display: block; }
       .corner small { display: block; font-weight: 400; text-transform: none; color: var(--muted); font-size: 10px; margin-top: 2px; }
-      .corner.go { background: var(--pollen); }
-      .corner.go b { color: var(--red); font-size: clamp(20px, 3.4vw, 40px); }
+      .corner img { display: block; width: 68%; max-height: 62%; object-fit: contain; margin: 0 auto 2px; }
+      .corner.go img { width: 88%; max-height: 74%; }
+      .corner .cl { display: block; font-size: clamp(9px, 1.3vw, 13px); line-height: 1.1; }
+      .corner.go { background: var(--paper); }
       .corner.jail { background: var(--paper); }
-      .corner.jail .bars { font-size: clamp(14px, 2.2vw, 24px); }
       .centre { grid-area: 2 / 2 / 11 / 11; display: flex; flex-direction: column; align-items: center; justify-content: center; text-align: center; padding: 6%; gap: 6px; }
       .centre .nameplate { position: relative; width: min(340px, 92%); aspect-ratio: 1662 / 602; background: url("assets/name-plate.png") center/contain no-repeat; }
       .centre .nameplate span { position: absolute; left: 7%; right: 7%; top: 77%; transform: translateY(-50%); text-align: center; font-family: var(--heading-font); font-weight: 700; color: #fff; text-transform: uppercase; font-size: clamp(13px, 2.2vw, 24px); line-height: 1.05; letter-spacing: 0.02em; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
@@ -2758,55 +2771,62 @@
         });
 
         // ----------------------------------------------------------------- toast
+        // Each card names the figure drawn on it (calls/assets/chance/<img>.png).
         var CHEST_CARDS = [
-          "Bank error in your favour: one more club off the list.",
-          "Advance to the next club. Do not stop at reception.",
-          "You have won second prize in a beauty contest. The prize is another phone call.",
-          "Grand opera night: the whole team applauds your persistence.",
-          "Get out of voicemail free. Keep this card until needed.",
-          "It is your birthday. Every club puts you through to the decision maker.",
-          "Income tax refund: collect one small sense of achievement.",
-          "Doctor's fee: pay nothing, keep dialling.",
-          "Advance to the nearest window. Stretch, look out, collect one break. The clubs will wait.",
-          "Go and make a cup of coffee. Do not pass GO on the way to the kettle.",
-          "You have been voted most persistent caller. Collect one pat on the back from each player.",
-          "Bank pays you a dividend of one smiley face. Deliver it to Taylor on Slack, no explanation required.",
-          "Life insurance matures: collect one biscuit from the tin.",
-          "You are assessed for street repairs: that's another call closer to the anniversary.",
-          "Community Chest says: drink some water. Talking is thirsty work.",
-          "Holiday fund matures: take five minutes away from the screen.",
-          "Receive for services: a quiet, deserved moment of satisfaction.",
-          "Free parking. Sit here as long as you like, then dial the next one.",
-          "Go directly to the kitchen. Do not pass GO. Do collect a snack.",
-          "Chance: the next club picks up on the first ring. Probably.",
-          "The bank pays you a dividend of one deep breath.",
-          "You inherit a slightly warmer lead. Use it wisely.",
-          "From sale of stock you get to tell someone about Darwin 1942 again.",
-          "Pay poor tax: none. Keep going, you're doing well.",
-          "School fees: paid in full by clubs who said yes.",
-          "Building and loan matures: your notes are gold for whoever calls next.",
-          "Advance to Boardwalk. The Boardwalk is a walk around the block, then back to it.",
-          "You have been elected chairman of the board. Duties: one more call.",
-          "Doctor's fee: roll your shoulders and unclench your jaw. Then advance to the next club.",
-          "Get out of a long hold free. This card may be kept until needed.",
-          "Bank error in the team's favour: a veteran's story reaches one more town.",
-          "Chance: tell Taylor the best club name you have called so far. Collect her reply.",
-          "Collect one cup of tea. Return to the game when it is cold or you have drunk all of it.",
-          "The RSL Club you just called has told a friend. Referrals welcome.",
-          "Second prize in the persistence contest: there is no first prize, persistence wins.",
-          "Go to jail? No. Go to lunch. You've earned it.",
-          "Grand tour of the office: walk to the far wall and back before the next call.",
-          "You are the first human voice this club has heard from the project. Nice work.",
-          "Property tax assessed: one tick on the board, paid in full.",
-          "You are ahead of your list. Pay the team one thumbs up on Slack.",
+          { img: "refund", t: "Bank error in your favour: one more club off the list." },
+          { img: "bindle", t: "Advance to the next club. Do not stop at reception." },
+          { img: "beauty", t: "You have won second prize in a beauty contest. The prize is another phone call." },
+          { img: "opera", t: "Grand opera night: the whole team applauds your persistence." },
+          { img: "free", t: "Get out of voicemail free. Keep this card until needed." },
+          { img: "dance", t: "It is your birthday. Every club puts you through to the decision maker." },
+          { img: "chest", t: "Income tax refund: collect one small sense of achievement." },
+          { img: "hospital", t: "Doctor's fee: pay nothing, keep dialling." },
+          { img: "run", t: "Advance to the nearest window. Stretch, look out, collect one break. The clubs will wait." },
+          { img: "desk", t: "Go and make a cup of coffee. Do not pass GO on the way to the kettle." },
+          { img: "hug", t: "You have been voted most persistent caller. Collect one pat on the back from each player." },
+          { img: "bulb", t: "Bank pays you a dividend of one smiley face. Deliver it to Taylor on Slack, no explanation required." },
+          { img: "insurance", t: "Life insurance matures: collect one biscuit from the tin." },
+          { img: "repairs", t: "You are assessed for street repairs: that's another call closer to the anniversary." },
+          { img: "tap", t: "Community Chest says: drink some water. Talking is thirsty work." },
+          { img: "walk", t: "Holiday fund matures: take five minutes away from the screen." },
+          { img: "ring", t: "Receive for services: a quiet, deserved moment of satisfaction." },
+          { img: "corner-free-parking", t: "Free parking. Sit here as long as you like, then dial the next one." },
+          { img: "train", t: "Go directly to the kitchen. Do not pass GO. Do collect a snack." },
+          { img: "question", t: "Chance: the next club picks up on the first ring. Probably." },
+          { img: "shrug", t: "The bank pays you a dividend of one deep breath." },
+          { img: "wedding", t: "You inherit a slightly warmer lead. Use it wisely." },
+          { img: "extra", t: "From sale of stock you get to tell someone about Darwin 1942 again." },
+          { img: "schoolfees", t: "Pay poor tax: none. Keep going, you're doing well." },
+          { img: "carry", t: "School fees: paid in full by clubs who said yes." },
+          { img: "chair", t: "Building and loan matures: your notes are gold for whoever calls next." },
+          { img: "pulled", t: "Advance to Boardwalk. The Boardwalk is a walk around the block, then back to it." },
+          { img: "dig", t: "You have been elected chairman of the board. Duties: one more call." },
+          { img: "loco", t: "Doctor's fee: roll your shoulders and unclench your jaw. Then advance to the next club." },
+          { img: "jailbird", t: "Get out of a long hold free. This card may be kept until needed." },
+          { img: "go-board", t: "Bank error in the team's favour: a veteran's story reaches one more town." },
+          { img: "tumble", t: "Chance: tell Taylor the best club name you have called so far. Collect her reply." },
+          { img: "desk", t: "Collect one cup of tea. Return to the game when it is cold or you have drunk all of it." },
+          { img: "arrest", t: "The RSL Club you just called has told a friend. Referrals welcome." },
+          { img: "beauty", t: "Second prize in the persistence contest: there is no first prize, persistence wins." },
+          { img: "chased", t: "Go to jail? No. Go to lunch. You've earned it." },
+          { img: "walk", t: "Grand tour of the office: walk to the far wall and back before the next call." },
+          { img: "extra", t: "You are the first human voice this club has heard from the project. Nice work." },
+          { img: "repairs", t: "Property tax assessed: one tick on the board, paid in full." },
+          { img: "hug", t: "You are ahead of your list. Pay the team one thumbs up on Slack." },
         ];
         var toastTimer;
-        function toast(title, text) {
+        // Every pop-up is a Chance card: the instruction in capitals beside a
+        // figure, a script "Chance" up top and a small footer line underneath.
+        function toast(headline, detail, img, foot) {
           var t = document.getElementById("toast");
-          t.innerHTML = "<b>" + esc(title) + "</b>" + esc(text);
+          t.innerHTML =
+            '<span class="ch-title">Chance</span>' +
+            '<img class="ch-img" src="assets/chance/' + esc(img || "bulb") + '.png" alt="">' +
+            '<div class="ch-text">' + esc(headline) + (detail ? "<small>" + esc(detail) + "</small>" : "") + "</div>" +
+            '<div class="ch-foot">' + esc(foot || "Darwin 1942 \u00b7 Heritage Films") + "</div>";
           t.classList.add("show");
           clearTimeout(toastTimer);
-          toastTimer = setTimeout(function () { t.classList.remove("show"); }, 3400);
+          toastTimer = setTimeout(function () { t.classList.remove("show"); }, 5200);
         }
         // Cards are dealt from a shuffled deck so nobody sees the same line twice
         // before they've seen them all; the deck reshuffles when it runs out.
@@ -2823,7 +2843,8 @@
         }
         function passGo() {
           var n = Number(document.getElementById("c-mine").textContent || 0) + 1;
-          toast((tokenName(myToken()) || "You") + " pass GO — call " + n + " in the bank", drawChestCard());
+          var card = drawChestCard();
+          toast(card.t, "", card.img, (tokenName(myToken()) || "You") + " passes GO \u00b7 call " + n + " in the bank");
         }
 
         // ----------------------------------------------------------------- board
@@ -2997,10 +3018,10 @@
             }
           }
           var corners =
-            '<div class="corner go" style="grid-row:11;grid-column:11"><small>collect a call</small><b>GO</b><small>&larr; this way</small></div>' +
-            '<div class="corner jail" style="grid-row:11;grid-column:1"><span class="bars">&#128683;</span>Do not call<small>' + esc(st.do_not_call != null ? st.do_not_call + " came to us" : "already enquired") + "</small></div>" +
-            '<div class="corner" style="grid-row:1;grid-column:1">&#128663; Free parking<small>' + tried + " to try again</small></div>" +
-            '<div class="corner" style="grid-row:1;grid-column:11">Not interested<small>' + out + " passed for now</small></div>";
+            '<div class="corner go" style="grid-row:11;grid-column:11"><img src="assets/chance/corner-go.png" alt="GO"><small>collect a call</small></div>' +
+            '<div class="corner jail" style="grid-row:11;grid-column:1"><img src="assets/chance/corner-in-jail.png" alt=""><span class="cl">Do not call</span><small>' + esc(st.do_not_call != null ? st.do_not_call + " came to us" : "already enquired") + "</small></div>" +
+            '<div class="corner" style="grid-row:1;grid-column:1"><img src="assets/chance/corner-free-parking.png" alt=""><span class="cl">Free parking</span><small>' + tried + " to try again" + "</small></div>" +
+            '<div class="corner" style="grid-row:1;grid-column:11"><img src="assets/chance/corner-goto-jail.png" alt=""><span class="cl">Not interested</span><small>' + out + " passed for now" + "</small></div>";
 
           var centre =
             '<div class="centre">' +
@@ -3084,10 +3105,10 @@
           var c = d.counters || {};
           var out = (d.by_outcome || {}).not_interested || 0;
           var corners =
-            '<div class="corner go" style="grid-row:11;grid-column:11"><small>collect a call</small><b>GO</b><small>&larr; this way</small></div>' +
-            '<div class="corner jail" style="grid-row:11;grid-column:1"><span class="bars">&#128683;</span>Do not call<small>' + (c.do_not_call || 0) + " came to us</small></div>" +
-            '<div class="corner" style="grid-row:1;grid-column:1">&#128663; Free parking<small>' + (c.in_progress || 0) + " being called now</small></div>" +
-            '<div class="corner" style="grid-row:1;grid-column:11">Not interested<small>' + out + " passed for now</small></div>";
+            '<div class="corner go" style="grid-row:11;grid-column:11"><img src="assets/chance/corner-go.png" alt="GO"><small>collect a call</small></div>' +
+            '<div class="corner jail" style="grid-row:11;grid-column:1"><img src="assets/chance/corner-in-jail.png" alt=""><span class="cl">Do not call</span><small>' + (c.do_not_call || 0) + " came to us" + "</small></div>" +
+            '<div class="corner" style="grid-row:1;grid-column:1"><img src="assets/chance/corner-free-parking.png" alt=""><span class="cl">Free parking</span><small>' + (c.in_progress || 0) + " being called now" + "</small></div>" +
+            '<div class="corner" style="grid-row:1;grid-column:11"><img src="assets/chance/corner-goto-jail.png" alt=""><span class="cl">Not interested</span><small>' + out + " passed for now" + "</small></div>";
 
           var doneAll = players.reduce(function (n, p) { return n + p.done; }, 0);
           var totalAll = players.reduce(function (n, p) { return n + p.total; }, 0);
@@ -3454,7 +3475,7 @@
                   return;
                 }
                 close();
-                if (typeof toast === "function") toast("Club added", r.target.entity_name + " is in your round 1 list.");
+                if (typeof toast === "function") toast("Club added", r.target.entity_name + " is in your round 1 list.", "extra");
                 else alert(r.target.entity_name + " has been added to your round 1 list.");
                 api("me", {}).then(function (me) { setStats(me.stats); }).catch(function () {});
                 var ab = document.getElementById("admin-body");
@@ -4093,7 +4114,7 @@
           })
             .then(function (r) {
               passGo();
-              if (r && r.callback_at) toast("Call-back booked", "Back in your calendar for " + fmtWhen(r.callback_at) + ".");
+              if (r && r.callback_at) toast("Call-back booked", "Back in your calendar for " + fmtWhen(r.callback_at) + ".", "desk");
               // Rare: the claim expired mid-call and the club went to someone else. The
               // call is still saved, but say so rather than moving on silently.
               if (r && r.warning) {
@@ -4473,7 +4494,7 @@
                 callback_note: dcb.note,
               })
                 .then(function (r) {
-                  if (r && r.callback_at) toast("Call-back booked", "In your calendar for " + fmtWhen(r.callback_at) + ".");
+                  if (r && r.callback_at) toast("Call-back booked", "In your calendar for " + fmtWhen(r.callback_at) + ".", "desk");
                   setCalBadge(null);
                   openClub(t.id); // reload the drawer with the new call in the timeline
                   // The lists behind the drawer have changed too.
