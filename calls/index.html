@@ -2776,35 +2776,35 @@
         // ----------------------------------------------------------------- toast
         // Each card names the figure drawn on it (calls/assets/chance/<img>.png).
         var CHEST_CARDS = [
-          { img: "refund", t: "Bank error in your favour: one more club off the list." },
+          { img: "tumble", t: "Bank error in your favour: one more club off the list." },
           { img: "bindle", t: "Advance to the next club. Do not stop at reception." },
           { img: "beauty", t: "You have won second prize in a beauty contest. The prize is another phone call." },
           { img: "opera", t: "Grand opera night: the whole team applauds your persistence." },
           { img: "free", t: "Get out of voicemail free. Keep this card until needed." },
           { img: "dance", t: "It is your birthday. Every club puts you through to the decision maker." },
-          { img: "chest", t: "Income tax refund: collect one small sense of achievement." },
+          { img: "refund", t: "Income tax refund: collect one small sense of achievement." },
           { img: "hospital", t: "Doctor's fee: pay nothing, keep dialling." },
           { img: "run", t: "Advance to the nearest window. Stretch, look out, collect one break. The clubs will wait." },
           { img: "desk", t: "Go and make a cup of coffee. Do not pass GO on the way to the kettle." },
           { img: "hug", t: "You have been voted most persistent caller. Collect one pat on the back from each player." },
-          { img: "bulb", t: "Bank pays you a dividend of one smiley face. Deliver it to Taylor on Slack, no explanation required." },
+          { img: "hug", t: "Bank pays you a dividend of one smiley face. Deliver it to Taylor on Slack, no explanation required." },
           { img: "insurance", t: "Life insurance matures: collect one biscuit from the tin." },
           { img: "repairs", t: "You are assessed for street repairs: that's another call closer to the anniversary." },
-          { img: "tap", t: "Community Chest says: drink some water. Talking is thirsty work." },
+          { img: "pulled", t: "Community Chest says: drink some water. Talking is thirsty work." },
           { img: "walk", t: "Holiday fund matures: take five minutes away from the screen." },
-          { img: "ring", t: "Receive for services: a quiet, deserved moment of satisfaction." },
-          { img: "corner-free-parking", t: "Free parking. Sit here as long as you like, then dial the next one." },
+          { img: "carry", t: "Receive for services: a quiet, deserved moment of satisfaction." },
+          { img: "desk", t: "Free parking. Sit here as long as you like, then dial the next one." },
           { img: "train", t: "Go directly to the kitchen. Do not pass GO. Do collect a snack." },
-          { img: "question", t: "Chance: the next club picks up on the first ring. Probably." },
+          { img: "go-board", t: "Chance: the next club picks up on the first ring. Probably." },
           { img: "shrug", t: "The bank pays you a dividend of one deep breath." },
           { img: "wedding", t: "You inherit a slightly warmer lead. Use it wisely." },
           { img: "extra", t: "From sale of stock you get to tell someone about Darwin 1942 again." },
-          { img: "schoolfees", t: "Pay poor tax: none. Keep going, you're doing well." },
-          { img: "carry", t: "School fees: paid in full by clubs who said yes." },
+          { img: "dig", t: "Pay poor tax: none. Keep going, you're doing well." },
+          { img: "schoolfees", t: "School fees: paid in full by clubs who said yes." },
           { img: "chair", t: "Building and loan matures: your notes are gold for whoever calls next." },
-          { img: "pulled", t: "Advance to Boardwalk. The Boardwalk is a walk around the block, then back to it." },
-          { img: "dig", t: "You have been elected chairman of the board. Duties: one more call." },
-          { img: "loco", t: "Doctor's fee: roll your shoulders and unclench your jaw. Then advance to the next club." },
+          { img: "walk", t: "Advance to Boardwalk. The Boardwalk is a walk around the block, then back to it." },
+          { img: "dance", t: "You have been elected chairman of the board. Duties: one more call." },
+          { img: "hospital", t: "Doctor's fee: roll your shoulders and unclench your jaw. Then advance to the next club." },
           { img: "jailbird", t: "Get out of a long hold free. This card may be kept until needed." },
           { img: "go-board", t: "Bank error in the team's favour: a veteran's story reaches one more town." },
           { img: "tumble", t: "Chance: tell Taylor the best club name you have called so far. Collect her reply." },
@@ -2824,7 +2824,7 @@
           var t = document.getElementById("toast");
           t.innerHTML =
             '<span class="ch-title">Chance</span>' +
-            '<img class="ch-img" src="assets/chance/' + esc(img || "bulb") + '.png" alt="">' +
+            '<img class="ch-img" src="assets/chance/' + esc(img || "extra") + '.png" alt="">' +
             '<div class="ch-text">' + esc(headline) + (detail ? "<small>" + esc(detail) + "</small>" : "") + "</div>" +
             '<div class="ch-foot">' + esc(foot || "Darwin 1942 \u00b7 Heritage Films") + "</div>";
           t.classList.add("show");
