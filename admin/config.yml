@@ -70,6 +70,6 @@ collections:
       - label: Release text
         name: body
         widget: markdown
-        hint: The full text of the release. Use the toolbar for headings, bold, links, quotes and lists.
+        hint: The full text of the release, starting from the first paragraph. Do not add "FOR IMMEDIATE RELEASE" or repeat the headline; the website adds both automatically. The first paragraph is shown in bold. Use the toolbar for headings, bold, links, quotes and lists.
         buttons: [bold, italic, link, heading-two, heading-three, quote, bulleted-list, numbered-list]
         editor_components: [image]

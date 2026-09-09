@@ -346,7 +346,7 @@
   .release-meta span + span::before{content:"\00b7";margin:0 12px;color:rgba(255,255,255,0.5);}
   .release-title{
     font-family:var(--heading-font);
-    font-size:clamp(30px, 3.6vw, 46px);
+    font-size:clamp(22px, 2.4vw, 30px);
     font-weight:400;
     letter-spacing:1.5px;
     line-height:1.08;
@@ -356,7 +356,7 @@
   .release-title a{color:inherit;text-decoration:none;}
   .release-title a:hover{text-decoration:underline;}
   .release-summary{
-    font-size:21px;
+    font-size:17px;
     line-height:1.6;
     color:#ffffff;
     max-width:740px;
@@ -365,9 +365,31 @@
   .release-body{
     font-size:19px;
     line-height:1.75;
-    color:#a8c4d8;
+    color:var(--white);
     max-width:740px;
   }
+  /* Release page banner: smaller headline so it wraps over a couple of lines */
+  .release-hero .page-hero-content h1{
+    font-size:clamp(30px, 3.6vw, 48px);
+    line-height:1.1;
+    max-width:900px;
+  }
+  .release-dateline{
+    font-size:15px;
+    font-weight:400;
+    letter-spacing:1px;
+    text-transform:uppercase;
+    color:var(--white);
+    margin-bottom:14px;
+  }
+  .release-body h2.release-heading{
+    margin-top:0;
+    margin-bottom:22px;
+    font-size:28px;
+  }
+  .release-body > p:first-of-type{font-weight:700;}
+  .release-body .release-interview{margin:30px 0;font-style:italic;}
+  .release-body .release-interview + *{margin-top:30px;}
   .release-body p + p, .release-body ul, .release-body ol, .release-body blockquote, .release-body h2, .release-body h3{margin-top:18px;}
   .release-body h2, .release-body h3{
     font-family:var(--heading-font);
@@ -431,7 +453,7 @@
     letter-spacing:1.5px;
     margin-bottom:12px;
   }
-  .media-contact p{font-size:17px;line-height:1.65;color:#a8c4d8;}
+  .media-contact p{font-size:17px;line-height:1.65;color:var(--white);}
   .media-contact p + p{margin-top:12px;}
   .media-contact a{color:var(--white);}
 

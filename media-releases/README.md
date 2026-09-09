@@ -9,6 +9,8 @@ No files need editing by hand.
 2. Click **New Media Release**.
 3. Fill in the headline, release date, a one-or-two-sentence summary, and paste the release text.
    The toolbar gives headings, bold, links, quotes and lists.
+   Start the text from the first paragraph: "FOR IMMEDIATE RELEASE: date" and the headline are added
+   by the website automatically, and the first paragraph is shown in bold.
 4. Optionally upload the formatted PDF under **PDF version**.
 5. Leave **Published** ticked and click **Publish**. The website updates within a couple of minutes.
 
