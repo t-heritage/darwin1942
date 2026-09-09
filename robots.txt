@@ -2,5 +2,6 @@ User-agent: *
 Allow: /
 Disallow: /rsl/
 Disallow: /calls/
+Disallow: /admin/
 
 Sitemap: https://darwin1942.com/sitemap.xml

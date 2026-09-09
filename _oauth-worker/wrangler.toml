@@ -1,0 +1,11 @@
+name = "darwin1942-cms-auth"
+main = "worker.js"
+compatibility_date = "2025-06-01"
+
+[vars]
+# Origins allowed to receive the GitHub token. Add http://localhost:8765 while testing locally.
+ALLOWED_ORIGINS = "https://darwin1942.com,https://www.darwin1942.com"
+
+# Secrets are NOT stored here. After deploying, run:
+#   npx wrangler secret put GITHUB_CLIENT_ID
+#   npx wrangler secret put GITHUB_CLIENT_SECRET

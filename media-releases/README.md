@@ -1,26 +1,28 @@
-# Media releases — how to publish one
+# Media releases — how they work
 
-The page at https://darwin1942.com/media-releases/ is driven by `releases.json` in this folder.
-Nothing else needs editing.
+Releases are written in the online editor at **https://darwin1942.com/admin/** (Decap CMS).
+No files need editing by hand.
 
-1. Export the release as a PDF and name it `YYYY-MM-DD-short-title.pdf` (lowercase, hyphens, no spaces),
-   e.g. `2026-09-15-darwin-1942-production-announced.pdf`.
-2. Copy the PDF into `media-releases/files/`.
-3. Add an entry to the **top** of `releases.json`:
+## Adding a release (client)
 
-   ```json
-   {
-     "date": "2026-09-15",
-     "title": "Darwin 1942 documentary announced for 85th anniversary",
-     "summary": "One or two sentences that appear under the title on the page.",
-     "file": "files/2026-09-15-darwin-1942-production-announced.pdf"
-   }
-   ```
+1. Go to darwin1942.com/admin and click **Login with GitHub**.
+2. Click **New Media Release**.
+3. Fill in the headline, release date, a one-or-two-sentence summary, and paste the release text.
+   The toolbar gives headings, bold, links, quotes and lists.
+4. Optionally upload the formatted PDF under **PDF version**.
+5. Leave **Published** ticked and click **Publish**. The website updates within a couple of minutes.
 
-   Entries are separated by commas inside the square brackets. `summary` is optional.
-   The page sorts by `date` (newest first) and shows the date as e.g. "15 September 2026".
-4. Commit and push to `main`. GitHub Pages redeploys in a minute or two.
+To work on a release without showing it yet, untick **Published** before clicking Publish; it is
+saved but hidden. Tick it again when the embargo lifts.
 
-Link to use in media emails: **darwin1942.com/media-releases**
-(this redirects to the /media-releases/ page). Individual PDFs can be linked directly, e.g.
-https://darwin1942.com/media-releases/files/2026-09-15-darwin-1942-production-announced.pdf
+## Where things live
+
+- Each release is a Markdown file in `/_releases/` named `YYYY-MM-DD-headline.md`.
+- Uploaded PDFs and images go to `/media-releases/files/`.
+- `/media-releases/` (this folder's `index.html`) lists every published release in full, newest first.
+- Each release also has its own page at `/media-releases/headline/` (the date is dropped from the address), with its own
+  title and description for link previews.
+- Page templates: `/_layouts/default.html`, `/_layouts/release.html`, `/_includes/`.
+- Editor configuration: `/admin/config.yml`. Login service: `/_oauth-worker/` (one-time setup there).
+
+Link for media emails: **darwin1942.com/media-releases**

@@ -1,0 +1,75 @@
+# Decap CMS configuration for the Darwin 1942 media release editor.
+# Editor lives at https://darwin1942.com/admin/
+
+backend:
+  name: github
+  repo: t-heritage/darwin1942
+  branch: main
+  # The tiny login service that lets the editor talk to GitHub.
+  # See _oauth-worker/README.md — replace with the deployed Worker URL.
+  base_url: https://darwin1942-cms-auth.REPLACE-ME.workers.dev
+  auth_endpoint: auth
+  commit_messages:
+    create: "Media release: {{slug}}"
+    update: "Update media release: {{slug}}"
+    delete: "Remove media release: {{slug}}"
+    uploadMedia: "Upload {{path}}"
+    deleteMedia: "Remove {{path}}"
+
+site_url: https://darwin1942.com
+display_url: https://darwin1942.com
+logo_url: https://darwin1942.com/images/logo.webp
+
+# PDFs and images uploaded through the editor land here.
+media_folder: media-releases/files
+public_folder: /media-releases/files
+
+collections:
+  - name: releases
+    label: Media Releases
+    label_singular: Media Release
+    description: Each release is published in full at darwin1942.com/media-releases and on its own page. Untick "Published" to save a release without showing it yet.
+    folder: _releases
+    create: true
+    delete: true
+    slug: "{{year}}-{{month}}-{{day}}-{{slug}}"
+    summary: "{{date | date('DD MMM YYYY')}}  —  {{title}}"
+    sortable_fields: [date, title]
+    editor:
+      preview: false
+    fields:
+      - label: Headline
+        name: title
+        widget: string
+        hint: The release headline, as it should appear on the website.
+      - label: Release date
+        name: date
+        widget: datetime
+        format: "YYYY-MM-DD"
+        date_format: "DD/MM/YYYY"
+        time_format: false
+        picker_utc: false
+      - label: Summary
+        name: summary
+        widget: text
+        required: false
+        hint: One or two sentences shown under the headline. Also used as the description when the release is shared.
+      - label: PDF version
+        name: pdf
+        widget: file
+        required: false
+        hint: Upload the formatted PDF of the release. It appears as a "Download PDF" button.
+        media_library:
+          config:
+            multiple: false
+      - label: Published
+        name: published
+        widget: boolean
+        default: true
+        hint: Untick to save the release without showing it on the website. Tick again when it is ready to go live.
+      - label: Release text
+        name: body
+        widget: markdown
+        hint: The full text of the release. Use the toolbar for headings, bold, links, quotes and lists.
+        buttons: [bold, italic, link, heading-two, heading-three, quote, bulleted-list, numbered-list]
+        editor_components: [image]

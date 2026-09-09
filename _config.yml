@@ -1,0 +1,35 @@
+# Jekyll config for GitHub Pages.
+# The site is plain HTML; Jekyll is only used to build the media releases
+# (Markdown files in _releases, written through the editor at /admin/).
+# Files without front matter are copied through untouched, so the existing
+# pages are unaffected by this file.
+title: Darwin 1942
+description: Darwin 1942 is a feature-length commemorative documentary honouring the WW2 Veterans who defended Australian soil, marking the 85th anniversary of the Bombing of Darwin.
+url: https://darwin1942.com
+timezone: Australia/Sydney
+future: true
+
+markdown: kramdown
+kramdown:
+  input: GFM
+  hard_wrap: false
+
+collections:
+  releases:
+    output: true
+    permalink: /media-releases/:title/
+
+defaults:
+  - scope:
+      path: ""
+      type: releases
+    values:
+      layout: release
+
+exclude:
+  - README.md
+  - media-releases/README.md
+  - node_modules
+  - Gemfile
+  - Gemfile.lock
+  - vendor

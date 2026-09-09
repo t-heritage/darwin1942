@@ -1,0 +1,36 @@
+---
+layout: default
+---
+<section class="page-hero">
+  <img class="page-hero-bg" src="/images/background.webp" alt="Darwin 1942">
+  <div class="page-hero-overlay"></div>
+  <div class="page-hero-content">
+    <div class="hero-label">MEDIA RELEASE &middot; {{ page.date | date: "%-d %B %Y" }}</div>
+    <h1>{{ page.title | upcase }}</h1>
+    {% if page.summary %}<p class="hero-sub">{{ page.summary }}</p>{% endif %}
+  </div>
+</section>
+
+<section class="content-section dark">
+  <div class="content-wrap">
+    <a class="back-link" href="/media-releases/">&larr; ALL MEDIA RELEASES</a>
+    <article class="release-body">
+      {{ content }}
+    </article>
+    <div class="release-actions">
+      {% if page.pdf %}<a class="btn" href="{{ page.pdf }}" target="_blank" rel="noopener">DOWNLOAD PDF</a>{% endif %}
+      <a class="btn" href="/contact">MEDIA ENQUIRIES</a>
+    </div>
+
+    <div class="media-contact">
+      <h3>MEDIA ENQUIRIES</h3>
+      <p>Journalists and media outlets are welcome to reproduce the content of this release. For interviews, images or further information, please <a href="/contact">contact us</a> or call <a href="tel:+61299669596">02 9966 9596</a>.</p>
+      <p>Darwin 1942 is produced by Australian Television and Media Group and distributed by Heritage Films.</p>
+    </div>
+  </div>
+</section>
+
+<div class="cta-strip">
+  <h2>PARTNER WITH DARWIN 1942</h2>
+  <a class="btn" href="/get-involved">GET INVOLVED</a>
+</div>
