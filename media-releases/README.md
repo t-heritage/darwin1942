@@ -19,7 +19,7 @@ saved but hidden. Tick it again when the embargo lifts.
 
 - Each release is a Markdown file in `/_releases/` named `YYYY-MM-DD-headline.md`.
 - Uploaded PDFs and images go to `/media-releases/files/`.
-- `/media-releases/` (this folder's `index.html`) lists every published release in full, newest first.
+- `/media-releases/` (this folder's `index.html`) lists every published release as an overview (date, headline, summary), newest first; the headline links to the full release.
 - Each release also has its own page at `/media-releases/headline/` (the date is dropped from the address), with its own
   title and description for link previews.
 - Page templates: `/_layouts/default.html`, `/_layouts/release.html`, `/_includes/`.

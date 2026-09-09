@@ -47,8 +47,6 @@ DARWIN 1942: the forgotten war that reshaped Australia will be released in Febru
 - More information about Richard Attieh: [tvgroup.com.au/RichardAttieh](http://www.tvgroup.com.au/RichardAttieh)
 - Images and promotional assets for DARWIN 1942: [Key Artwork](https://atvmg.sharepoint.com/:f:/s/Share/IgBONbayazDCTKzKBMEYDJKdAWpuQH9PfvmOJuoea6ZxTI0?e=wPIncF)
 
-ENDS.
-
 ### Media contact
 
 Richard Attieh
