@@ -757,8 +757,10 @@
     border:0;color:var(--white);font-family:inherit;font-size:16px;outline:none;}
   .choice-follow{margin-top:10px;margin-left:34px;display:none;}
   .choice-follow.show{display:block;}
-  .choice-follow .follow-label{display:block;font-size:14px;letter-spacing:0.5px;color:rgba(255,255,255,0.85);margin-bottom:8px;}
+  .choice-follow .follow-row{display:flex;align-items:center;gap:12px;flex-wrap:wrap;}
+  .choice-follow .follow-label{flex:0 0 auto;font-size:15px;color:rgba(255,255,255,0.7);margin:0;}
   .choice-follow .follow-label .required{color:#ff5a6e;}
+  .choice-follow .follow-row select{flex:1 1 240px;}
   .choice-follow select{width:100%;padding:12px 14px;background:rgba(255,255,255,0.08);
     border:1px solid rgba(255,255,255,0.22);color:var(--white);font-family:inherit;font-size:16px;outline:none;border-radius:0;
     -webkit-appearance:none;appearance:none;}
@@ -852,6 +854,7 @@
           <li>
             <label><input type="radio" name="interest_level" value="count_us_in"> Count us in. We'd like to secure a partnership package for our Club.</label>
             <div class="choice-follow" id="package-follow">
+              <div class="follow-row">
               <label for="ri-package" class="follow-label">Which package option? <span class="required">*</span></label>
               <select id="ri-package" name="package_option">
                 <option value="" disabled selected>Select a package</option>
@@ -862,6 +865,7 @@
                 <option value="$85,000 multi-site package">$85,000 multi-site — 10 RSL Sub Branches and Clubs, 2 screenings each over 12 months, 17,500 watch-at-home licences, 70 schools</option>
                 <option value="Not sure yet">Not sure yet — please advise</option>
               </select>
+              </div>
               <p class="follow-hint">Package details are in the <a href="/rsl/assets/darwin1942-rsl-presentation.pdf" target="_blank" rel="noopener">partnership presentation</a>.</p>
             </div>
           </li>
