@@ -31,6 +31,16 @@ layout: default
   </div>
 </section>
 
+<script>
+  // Colour variants for review: /media-releases/<slug>/?theme=navy or ?theme=white
+  (function(){
+    var t = new URLSearchParams(location.search).get('theme');
+    if (t === 'navy' || t === 'white') {
+      document.querySelector('.release-section').classList.add('theme-' + t);
+    }
+  })();
+</script>
+
 <div class="cta-strip">
   <h2>PARTNER WITH DARWIN 1942</h2>
   <a class="btn" href="/get-involved">GET INVOLVED</a>

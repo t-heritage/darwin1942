@@ -366,11 +366,21 @@
     line-height:1.75;
     color:var(--white);
   }
-  /* Media release pages: body text runs in the same container as the banner */
-  .content-wrap.release-wrap{max-width:none;}
+  /* Media release pages: body text fills the standard 960px content container */
   .release-wrap .media-contact{max-width:none;}
-  /* Individual release page */
+  /* Individual release page. Colour variants: append ?theme=navy or ?theme=white to the URL */
   .content-section.release-section{background:#348EC4;}
+  .release-section.theme-navy{background:var(--card-dark);}
+  .release-section.theme-white{background:var(--white);color:var(--dark);}
+  .theme-white .release-body,
+  .theme-white .release-body h2, .theme-white .release-body h3,
+  .theme-white .release-body a, .theme-white .release-body strong,
+  .theme-white .release-body blockquote,
+  .theme-white .release-dateline,
+  .theme-white .media-contact p, .theme-white .media-contact a{color:var(--dark);}
+  .theme-white .media-contact{border-color:rgba(11,28,44,0.25);background:rgba(11,28,44,0.04);}
+  .theme-white .btn{border-color:var(--dark);color:var(--dark);}
+  .theme-white .release-actions .btn:hover{background:var(--dark);color:var(--white);}
   .release-hero .page-hero-content .back-link{margin-bottom:20px;}
   /* Release page banner: smaller headline so it wraps over a couple of lines */
   .release-hero .page-hero-content h1{
