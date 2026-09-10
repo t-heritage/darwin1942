@@ -193,8 +193,8 @@
       .history li { margin-bottom: 6px; }
 
       /* ------------------------------------------------------------ the form */
-      .form-card { background: var(--paper); border: 3px solid var(--ink); border-radius: var(--radius); box-shadow: 8px 8px 0 rgba(34,34,34,0.18); overflow: visible; }
-      .form-head { display: flex; align-items: center; justify-content: space-between; gap: 12px; padding: 12px 20px; background: var(--pollen); border-bottom: 3px solid var(--ink); margin: 0; border-radius: calc(var(--radius) - 3px) calc(var(--radius) - 3px) 0 0; }
+      .form-card { background: var(--paper); border: 3px solid var(--ink); border-radius: var(--radius); box-shadow: 8px 8px 0 rgba(34,34,34,0.18); overflow: hidden; }
+      .form-head { display: flex; align-items: center; justify-content: space-between; gap: 12px; padding: 12px 20px; background: var(--pollen); border-bottom: 3px solid var(--ink); margin: 0; }
       .form-head h2 { font-size: 18px; }
       .form-head .chest { font-size: 20px; }
       .form-card form { padding: 18px 20px 20px; }
@@ -221,10 +221,9 @@
          pane (the scroller on desktop, the viewport on mobile) so they are always
          reachable without scrolling. */
       .pane-form .actions {
-        position: sticky; bottom: 0; z-index: 6; margin: 18px -20px -20px;
-        padding: 14px 20px; background: var(--paper); border-top: 2px solid var(--ink);
-        border-radius: 0 0 calc(var(--radius) - 3px) calc(var(--radius) - 3px);
-        box-shadow: 0 -8px 16px rgba(34,34,34,0.10);
+        position: sticky; bottom: 0; z-index: 6; margin: 20px -24px -24px;
+        padding: 16px 24px; background: var(--pollen); border-top: 3px solid var(--ink);
+        box-shadow: 0 -8px 16px rgba(34,34,34,0.12);
       }
       .btn-ghost { background: var(--paper); border: 2px solid var(--ink); color: var(--ink); padding: 12px 20px; font-size: 14px; font-weight: 400; border-radius: 8px; font-family: inherit; }
       .btn-ghost:hover:not(:disabled) { background: var(--paper-2); }
@@ -1377,7 +1376,7 @@
             t: "Done, or skip",
             tour: { tab: "work", sel: ".actions", demo: true, needsCall: true },
             h:
-              "<p><b>Done &mdash; save and next</b> records the call, sends it to the campaign sheet and the email journey, and hands you the next club. Nothing is ever lost: if the page ever misbehaves, what you saved is still safe.</p>" +
+              "<p><b>Done</b> records the call, sends it to the campaign sheet and the email journey, and hands you the next club. Nothing is ever lost: if the page ever misbehaves, what you saved is still safe.</p>" +
               "<p><b>Skip for now</b> hands the club back for a couple of hours without recording anything &mdash; for when you need to step away mid-club.</p>",
           },
           {
@@ -4119,14 +4118,17 @@
             '<div class="field"><label for="f-notes">Any other notes on how the call went</label>' +
             '<textarea id="f-notes" rows="4"></textarea></div>' +
             '<div class="msg" id="save-msg"></div>' +
-            '<div class="actions">' +
-            '<button type="submit" class="btn-primary" id="save-btn">Done &mdash; save and next</button>' +
-            '<button type="button" class="btn-ghost" id="skip-btn">Skip for now</button>' +
-            '<button type="button" class="btn-ghost" data-handoff="' + esc(t.id) + '" data-club-name="' + esc(t.entity_name) + '" title="Hand this club to another caller’s list.">Hand to someone else</button>' +
-            '<button type="button" class="btn-ghost" id="add-club-btn" title="Were you told about another club worth calling? Add it to your list.">Got a referral? Add a club</button>' +
-            "</div>" +
             "</form>" +
-            "</div></div>" +
+            "</div>" +
+            // The action bar sits outside the card so it spans the whole form
+            // pane and reads as a toolbar; the card ends above it with a gap.
+            '<div class="actions">' +
+            '<button type="submit" form="call-form" class="btn-primary" id="save-btn">Done</button>' +
+            '<button type="button" class="btn-ghost" id="skip-btn">Skip</button>' +
+            '<button type="button" class="btn-ghost" data-handoff="' + esc(t.id) + '" data-club-name="' + esc(t.entity_name) + '" title="Hand this club to another caller’s list.">Reallocate</button>' +
+            '<button type="button" class="btn-ghost" id="add-club-btn" title="Were you told about another club worth calling? Add it to your list.">Referral? Add a club</button>' +
+            "</div>" +
+            "</div>" +
             "</div>";
 
           document.getElementById("work-body").innerHTML = html;
@@ -4355,7 +4357,7 @@
               else if (/call-back/i.test(err.message)) flagField("save-msg", "f-cb-date", err.message);
               else msg("save-msg", err.message, "error");
               btn.disabled = false;
-              btn.textContent = "Done — save and next";
+              btn.textContent = "Done";
             });
         }
 
