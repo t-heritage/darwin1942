@@ -2684,7 +2684,7 @@
         }
 
         // The club as a title deed: colour band for its set, then the "rent" table.
-        function deedHtml(t, round, phone, telHref, websites, webLabel, place, distance) {
+        function deedHtml(t, round, phone, telHref, websites, webLabel, place, distance, dmPhone, dmName) {
           var tier = tierOf(t.egm_count);
           function row(label, value, raw) {
             if (!value && value !== 0) return "";
@@ -2701,6 +2701,13 @@
             (phone
               ? row("Phone number", '<a class="phone-cta inline" href="' + esc(telHref) + '">' + esc(phone) + "</a>", true)
               : row("Phone number", '<span style="color:var(--muted);font-weight:400">Not on file</span>', true)) +
+            (dmPhone
+              ? row(
+                  dmName ? dmName + "’s direct line" : "Decision maker’s line",
+                  '<a class="phone-cta inline" href="tel:' + esc(dmPhone.replace(/[^0-9+]/g, "")) + '">' + esc(dmPhone) + "</a>",
+                  true,
+                )
+              : "") +
             row("Contact on file", t.primary_person) +
             row("Referred by", t.referred_by_name ? t.referred_by_name + (t.referral_note ? " \u2014 " + t.referral_note : "") : "") +
             row("Email on file", t.primary_email) +
@@ -4044,11 +4051,23 @@
               "</div>";
           }
 
+          // The decision maker's direct line, captured on an earlier call, so a
+          // call-back can ring the person rather than the club switchboard. Newest
+          // history first, so the first record carrying a number is the latest.
+          var dmPhone = "", dmName = "";
+          for (var hi = 0; hi < history.length; hi++) {
+            if (history[hi].decision_maker_phone) {
+              dmPhone = history[hi].decision_maker_phone;
+              dmName = history[hi].decision_maker_name || "";
+              break;
+            }
+          }
+
           var html =
             '<div class="work">' +
             // -------------------------------------------------- left: who + script
             '<div class="pane pane-left">' +
-            deedHtml(t, round, phone, telHref, websites, webLabel, place, distance) +
+            deedHtml(t, round, phone, telHref, websites, webLabel, place, distance, dmPhone, dmName) +
             // The script is deliberately plain HTML you can edit in this file.
             '<div class="script">' +
             "<h2>Call script</h2>" +
