@@ -372,10 +372,11 @@
   /* Individual release page */
   .content-section.release-section{background:#348EC4;}
   .release-hero .page-hero-content .back-link{margin-bottom:20px;}
+  /* Release page banner: smaller headline so it wraps over a couple of lines */
   .release-hero .page-hero-content h1{
-    font-size:51px;
-    font-weight:400;
+    font-size:clamp(30px, 3.6vw, 48px);
     line-height:1.1;
+    max-width:900px;
   }
   .release-body > p:first-of-type{
     font-size:26px;
@@ -394,7 +395,8 @@
   .release-body h2.release-heading{
     margin-top:0;
     margin-bottom:22px;
-    font-size:28px;
+    font-size:51px;
+    font-weight:400;
   }
   .release-body .release-interview{margin:30px 0;font-style:italic;}
   .release-body .release-interview + *{margin-top:30px;}
