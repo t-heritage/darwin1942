@@ -221,20 +221,18 @@
          pane (the scroller on desktop, the viewport on mobile) so they are always
          reachable without scrolling. */
       .pane-form .actions {
-        position: sticky; bottom: 0; z-index: 6; margin: 20px -24px -24px;
+        position: sticky; bottom: 0; z-index: 6; margin: 20px -24px 0;
         padding: 16px 24px; background: var(--pollen); border-top: 3px solid var(--ink);
         box-shadow: 0 -8px 16px rgba(34,34,34,0.12);
         flex-wrap: nowrap; gap: 8px;
       }
-      /* Keep all four on one line: buttons shrink, text never wraps, Done takes
-         the slack. */
+      /* All four on one line and equal width: shared flex basis, text never wraps. */
       .pane-form .actions .btn-ghost,
       .pane-form .actions .btn-primary {
-        flex: 0 1 auto; min-width: 0; padding: 12px 12px; font-size: 13px; white-space: nowrap;
+        flex: 1 1 0; min-width: 0; padding: 12px 10px; font-size: 13px; white-space: nowrap; text-align: center; overflow: hidden; text-overflow: ellipsis;
       }
-      .pane-form .actions .btn-primary { flex: 1 1 auto; }
       /* Only once the panes stack does the toolbar get too narrow — let it wrap. */
-      @media (max-width: 640px) { .pane-form .actions { flex-wrap: wrap; } }
+      @media (max-width: 640px) { .pane-form .actions { flex-wrap: wrap; } .pane-form .actions .btn-ghost, .pane-form .actions .btn-primary { flex: 1 1 auto; } }
       .btn-ghost { background: var(--paper); border: 2px solid var(--ink); color: var(--ink); padding: 12px 20px; font-size: 14px; font-weight: 400; border-radius: 8px; font-family: inherit; }
       .btn-ghost:hover:not(:disabled) { background: var(--paper-2); }
 
