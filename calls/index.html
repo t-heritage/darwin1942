@@ -131,8 +131,13 @@
       .pane { padding: 24px; height: 100%; overflow-y: auto; overscroll-behavior: contain; }
       /* Scrolling panes drop their bottom padding in some browsers; keep clear space under the last card. */
       .pane::after { content: ""; display: block; height: 48px; }
+      /* The form pane scrolls inside .form-scroll (which carries its own bottom
+         padding) and pins the toolbar at the very bottom, so it must not get the
+         spacer — it would sit below the toolbar and leave a gap. */
+      .pane-form::after { content: none; }
       .pane-left { border-right: 0; }
-      .pane-form { background: var(--tea-deep); }
+      .pane-form { background: var(--tea-deep); padding: 0; display: flex; flex-direction: column; overflow: hidden; }
+      .form-scroll { flex: 1 1 auto; min-height: 0; overflow-y: auto; overscroll-behavior: contain; padding: 24px; }
       @media (max-width: 980px) {
         html, body { height: auto; overflow: auto; }
         #view-work { height: auto; }
@@ -220,18 +225,25 @@
       /* The worksheet's Done/Skip buttons stay pinned to the bottom of the form
          pane (the scroller on desktop, the viewport on mobile) so they are always
          reachable without scrolling. */
+      /* The toolbar is a fixed row at the bottom of the form pane — the card
+         scrolls above it, so it is always flush to the bottom with no gap. */
       .pane-form .actions {
-        position: sticky; bottom: 0; z-index: 6; margin: 20px -24px 0;
-        padding: 16px 24px; background: var(--pollen); border-top: 3px solid var(--ink);
+        flex: 0 0 auto; z-index: 6; margin: auto 0 0; gap: 8px; flex-wrap: nowrap;
+        padding: 14px 24px; background: var(--pollen); border-top: 3px solid var(--ink);
         box-shadow: 0 -8px 16px rgba(34,34,34,0.12);
-        flex-wrap: nowrap; gap: 8px;
       }
       /* All four on one line and equal width: shared flex basis, text never wraps. */
       .pane-form .actions .btn-ghost,
       .pane-form .actions .btn-primary {
         flex: 1 1 0; min-width: 0; padding: 12px 10px; font-size: 13px; white-space: nowrap; text-align: center; overflow: hidden; text-overflow: ellipsis;
       }
-      /* Only once the panes stack does the toolbar get too narrow — let it wrap. */
+      /* When the panes stack the pane is no longer height-bound, so the card
+         scroll region relaxes and the toolbar sticks to the viewport instead. */
+      @media (max-width: 980px) {
+        .pane-form { display: block; overflow: visible; }
+        .form-scroll { overflow: visible; min-height: 0; }
+        .pane-form .actions { position: sticky; bottom: 0; }
+      }
       @media (max-width: 640px) { .pane-form .actions { flex-wrap: wrap; } .pane-form .actions .btn-ghost, .pane-form .actions .btn-primary { flex: 1 1 auto; } }
       .btn-ghost { background: var(--paper); border: 2px solid var(--ink); color: var(--ink); padding: 12px 20px; font-size: 14px; font-weight: 400; border-radius: 8px; font-family: inherit; }
       .btn-ghost:hover:not(:disabled) { background: var(--paper-2); }
@@ -4117,7 +4129,7 @@
             historyHtml +
             "</div>" +
             // ------------------------------------------------------- right: form
-            '<div class="pane pane-form"><div class="form-card">' +
+            '<div class="pane pane-form"><div class="form-scroll"><div class="form-card">' +
             '<div class="form-head"><h2>Record the call</h2><span class="chest">&#129520;</span></div>' +
             '<form id="call-form" novalidate>' +
             fieldsHtml +
@@ -4127,9 +4139,10 @@
             '<textarea id="f-notes" rows="4"></textarea></div>' +
             '<div class="msg" id="save-msg"></div>' +
             "</form>" +
-            "</div>" +
-            // The action bar sits outside the card so it spans the whole form
-            // pane and reads as a toolbar; the card ends above it with a gap.
+            "</div></div>" +
+            // The action bar is a fixed row at the bottom of the form pane (the
+            // card scrolls above it), so it reads as a toolbar and never leaves
+            // a gap at the bottom.
             '<div class="actions">' +
             '<button type="submit" form="call-form" class="btn-primary" id="save-btn">Done</button>' +
             '<button type="button" class="btn-ghost" id="skip-btn">Skip</button>' +
