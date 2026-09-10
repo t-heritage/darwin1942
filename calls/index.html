@@ -224,7 +224,17 @@
         position: sticky; bottom: 0; z-index: 6; margin: 20px -24px -24px;
         padding: 16px 24px; background: var(--pollen); border-top: 3px solid var(--ink);
         box-shadow: 0 -8px 16px rgba(34,34,34,0.12);
+        flex-wrap: nowrap; gap: 8px;
       }
+      /* Keep all four on one line: buttons shrink, text never wraps, Done takes
+         the slack. */
+      .pane-form .actions .btn-ghost,
+      .pane-form .actions .btn-primary {
+        flex: 0 1 auto; min-width: 0; padding: 12px 12px; font-size: 13px; white-space: nowrap;
+      }
+      .pane-form .actions .btn-primary { flex: 1 1 auto; }
+      /* Only once the panes stack does the toolbar get too narrow — let it wrap. */
+      @media (max-width: 640px) { .pane-form .actions { flex-wrap: wrap; } }
       .btn-ghost { background: var(--paper); border: 2px solid var(--ink); color: var(--ink); padding: 12px 20px; font-size: 14px; font-weight: 400; border-radius: 8px; font-family: inherit; }
       .btn-ghost:hover:not(:disabled) { background: var(--paper-2); }
 
