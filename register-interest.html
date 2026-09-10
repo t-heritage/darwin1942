@@ -752,8 +752,15 @@
     border:0;border-bottom:1px solid rgba(255,255,255,0.4);color:var(--white);font-family:inherit;font-size:16px;outline:none;}
   .choice-follow{margin-top:10px;margin-left:34px;display:none;}
   .choice-follow.show{display:block;}
-  .choice-follow input{width:100%;padding:12px 14px;background:rgba(255,255,255,0.08);
-    border:1px solid rgba(255,255,255,0.22);color:var(--white);font-family:inherit;font-size:16px;outline:none;border-radius:0;}
+  .choice-follow .follow-label{display:block;font-size:14px;letter-spacing:0.5px;color:rgba(255,255,255,0.85);margin-bottom:8px;}
+  .choice-follow .follow-label .required{color:#ff5a6e;}
+  .choice-follow select{width:100%;padding:12px 14px;background:rgba(255,255,255,0.08);
+    border:1px solid rgba(255,255,255,0.22);color:var(--white);font-family:inherit;font-size:16px;outline:none;border-radius:0;
+    -webkit-appearance:none;appearance:none;}
+  .choice-follow select:focus{border-color:var(--white);background:rgba(255,255,255,0.12);}
+  .choice-follow select option{background:var(--card-dark);color:var(--white);}
+  .choice-follow .follow-hint{margin-top:8px;font-size:13px;color:rgba(255,255,255,0.65);}
+  .choice-follow .follow-hint a{color:var(--white);}
   .form-subheading{
     font-family:var(--heading-font);font-size:26px;letter-spacing:1px;color:var(--white);margin:8px 0 14px;
   }
@@ -840,7 +847,17 @@
           <li>
             <label><input type="radio" name="interest_level" value="count_us_in"> Count us in. We'd like to secure a partnership package for our Club.</label>
             <div class="choice-follow" id="package-follow">
-              <input type="text" id="ri-package" name="package_option" placeholder="Which package option? (optional)">
+              <label for="ri-package" class="follow-label">Which package option? <span class="required">*</span></label>
+              <select id="ri-package" name="package_option">
+                <option value="" disabled selected>Select a package</option>
+                <option value="$5,000 package">$5,000 — 2 screenings over 12 months, 1,000 watch-at-home licences</option>
+                <option value="$10,000 package">$10,000 — 4 screenings over 12 months, 2,500 watch-at-home licences, 2 schools</option>
+                <option value="$20,000 package">$20,000 — unlimited screenings for 5 years, 5,000 watch-at-home licences, 5 schools, 10 community groups, membership growth campaign</option>
+                <option value="$35,000 package">$35,000 — unlimited screenings for 10 years, 7,500 watch-at-home licences, 10 schools, 15 community groups, membership growth campaign</option>
+                <option value="$85,000 multi-site package">$85,000 multi-site — 10 RSL Sub Branches and Clubs, 2 screenings each over 12 months, 17,500 watch-at-home licences, 70 schools</option>
+                <option value="Not sure yet">Not sure yet — please advise</option>
+              </select>
+              <p class="follow-hint">Package details are in the <a href="/rsl/assets/darwin1942-rsl-presentation.pdf" target="_blank" rel="noopener">partnership presentation</a>.</p>
             </div>
           </li>
           <li><label><input type="radio" name="interest_level" value="very_interested"> Very interested — we'd like to discuss our options</label></li>
@@ -907,7 +924,8 @@
   form.addEventListener('submit', function(e){
     e.preventDefault();
     msg.style.display = 'none';
-    document.getElementById('err-interest').classList.remove('show');
+    var errEl = document.getElementById('err-interest');
+    errEl.classList.remove('show'); errEl.textContent = 'Please choose one option.';
 
     // Browser validation for the contact fields, then our own for the radio group.
     if (!form.checkValidity()) { form.reportValidity(); return; }
@@ -915,6 +933,13 @@
     if (!level) {
       document.getElementById('err-interest').classList.add('show');
       document.getElementById('q-interest').scrollIntoView({behavior:'smooth', block:'center'});
+      return;
+    }
+    if (level === 'count_us_in' && !document.getElementById('ri-package').value) {
+      var err = document.getElementById('err-interest');
+      err.textContent = 'Please choose the package option your Club would like to secure.';
+      err.classList.add('show');
+      document.getElementById('package-follow').scrollIntoView({behavior:'smooth', block:'center'});
       return;
     }
 
