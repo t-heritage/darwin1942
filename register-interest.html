@@ -1,0 +1,995 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
+<meta http-equiv="Pragma" content="no-cache">
+<meta http-equiv="Expires" content="0">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Register Your Club's Interest | Darwin 1942 — The Forgotten War That Reshaped Australia</title>
+<link rel="canonical" href="https://darwin1942.com/register-interest">
+<meta name="description" content="Register your RSL Sub Branch or Club's interest in partnering with Darwin 1942. Complete the form to connect with our team.">
+<meta name="robots" content="index, follow, max-image-preview:large, max-snippet:-1">
+<meta property="og:type" content="website">
+<meta property="og:site_name" content="Darwin 1942">
+<meta property="og:locale" content="en_AU">
+<meta property="og:url" content="https://darwin1942.com/register-interest">
+<meta property="og:title" content="Register Your Club's Interest — Darwin 1942">
+<meta property="og:description" content="Register your RSL Sub Branch or Club's interest in partnering with Darwin 1942. Complete the form to connect with our team.">
+<meta property="og:image" content="https://darwin1942.com/images/og-darwin1942.jpg">
+<meta property="og:image:width" content="1200">
+<meta property="og:image:height" content="630">
+<meta property="og:image:alt" content="Darwin under attack, 19 February 1942">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:title" content="Register Your Club's Interest — Darwin 1942">
+<meta name="twitter:description" content="Register your RSL Sub Branch or Club's interest in partnering with Darwin 1942. Complete the form to connect with our team.">
+<meta name="twitter:image" content="https://darwin1942.com/images/og-darwin1942.jpg">
+<script>
+// Old .html links still resolve (GitHub Pages serves the same file for both
+// /page and /page.html), so a redirect stub in this file would point at itself.
+// Instead, rewrite the address bar to the canonical extensionless URL — same
+// page, no extra request, and anything copied from the bar is the clean form.
+(function(){
+  var p = location.pathname;
+  if (!/\.html$/.test(p) || !window.history || !history.replaceState) return;
+  var clean = p.replace(/\/index\.html$/, "/").replace(/\.html$/, "");
+  if (clean !== p) history.replaceState(null, "", clean + location.search + location.hash);
+})();
+</script>
+<link rel="icon" type="image/png" sizes="32x32" href="images/favicon/favicon-32x32.png">
+<link rel="icon" type="image/png" sizes="16x16" href="images/favicon/favicon-16x16.png">
+<link rel="icon" type="image/png" sizes="192x192" href="images/favicon/favicon-192.png">
+<link rel="apple-touch-icon" sizes="180x180" href="images/favicon/apple-touch-icon.png">
+<link rel="shortcut icon" href="favicon.ico">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --sky-blue:#2b8cc4;
+    --red:#c8102e;
+    --white:#ffffff;
+    --dark:#0b1c2c;
+    --card-dark:#081524;
+    --heading-font:'Bebas Neue', 'Arial Narrow', Arial, sans-serif;
+  }
+  *{box-sizing:border-box;margin:0;padding:0;}
+  body{
+    font-family:'Arial Narrow', Arial, sans-serif;
+    background:linear-gradient(160deg, #3492cc 0%, #2480b0 60%, #1e6e98 100%) fixed;
+    color:var(--white);
+  }
+
+  /* NAV */
+  header.nav{
+    position:absolute;
+    top:0;left:0;right:0;
+    display:flex;
+    align-items:center;
+    justify-content:space-between;
+    padding:28px 40px 0;
+    z-index:10;
+  }
+  .brand .title{
+    font-family:var(--heading-font);
+    font-weight:400;
+    font-size:32px;
+    letter-spacing:1.5px;
+    color:var(--white);
+    text-decoration:none;
+    display:block;
+  }
+  nav ul{list-style:none;display:flex;gap:42px;}
+  nav a{
+    font-family:var(--heading-font);
+    color:var(--white);
+    text-decoration:none;
+    font-size:22px;
+    font-weight:400;
+    letter-spacing:1.5px;
+    text-shadow:0 2px 8px rgba(4,14,26,0.55), 0 4px 16px rgba(4,14,26,0.3);
+  }
+  nav li.active a{
+    color:var(--white);
+    text-decoration:underline;
+    text-decoration-color:var(--white);
+    text-decoration-thickness:2px;
+    text-underline-offset:6px;
+  }
+
+  /* Hamburger menu — full-page overlay when open; logo/toggle stay pinned above it. */
+  header.nav .brand, header.nav .nav-toggle{
+    position:relative;
+    z-index:600;
+  }
+  header.nav nav{
+    position:fixed;
+    inset:0;
+    pointer-events:none;
+  }
+  header.nav nav ul{
+    display:none;
+  }
+  header.nav nav ul.nav-open{
+    display:flex;
+    position:fixed;
+    inset:0;
+    width:100%;
+    height:100%;
+    margin:0;
+    list-style:none;
+    background:var(--dark);
+    flex-direction:column;
+    flex-wrap:nowrap;
+    align-items:flex-start;
+    justify-content:center;
+    gap:0;
+    z-index:500;
+    pointer-events:auto;
+    overflow-y:auto;
+    padding:calc(60px + 2vh) 56px calc(20px + 2vh);
+  }
+  header.nav nav ul.nav-open li{
+    width:auto;
+    max-width:none;
+    text-align:left;
+  }
+  header.nav nav ul li a{
+    display:block;
+    padding:clamp(2px, 0.8vh, 6px) 0;
+    font-size:clamp(17px, 4.4vh, 32px);
+    line-height:1.15;
+    letter-spacing:0.5px;
+    border-bottom:none;
+    transition:color 0.2s, padding-left 0.2s;
+  }
+  header.nav nav ul li a:hover{
+    color:var(--red);
+    padding-left:14px;
+  }
+  header.nav nav ul li.active a{
+    color:var(--red);
+    border-bottom:none;
+    text-decoration:none;
+  }
+  header.nav nav ul.nav-open li.nav-cta{
+    margin-top:clamp(14px, 3vh, 28px);
+    padding-top:clamp(14px, 3vh, 24px);
+    width:100%;
+    display:flex;
+    flex-direction:column;
+    align-items:flex-start;
+    gap:clamp(8px, 1.6vh, 14px);
+  }
+  header.nav nav ul.nav-open li.nav-cta a.nav-cta-btn{
+    display:inline-block;
+    box-sizing:border-box;
+    max-width:100%;
+    background:var(--white);
+    color:var(--dark);
+    font-family:var(--heading-font);
+    font-size:clamp(15px, min(4.4vh, 7vw), 32px);
+    font-weight:400;
+    letter-spacing:1px;
+    padding:clamp(8px, 1.4vh, 14px) clamp(18px, 6vw, 34px);
+    text-decoration:none;
+    text-transform:uppercase;
+    text-shadow:none;
+    border-bottom:none;
+    white-space:nowrap;
+    transition:background 0.2s, color 0.2s;
+  }
+  header.nav nav ul.nav-open li.nav-cta a.nav-cta-btn:hover,
+  header.nav nav ul.nav-open li.nav-cta.active a.nav-cta-btn{
+    background:var(--red);
+    color:var(--white);
+  }
+  header.nav nav ul.nav-open li.nav-cta .nav-cta-note{
+    font-family:'Arial Narrow', Arial, sans-serif;
+    font-size:clamp(10px, 1.3vh, 13px);
+    letter-spacing:0.3px;
+    color:rgba(255,255,255,0.5);
+    line-height:1.5;
+    max-width:600px;
+  }
+  body.menu-open{overflow:hidden;}
+  body.menu-open header.nav{
+    position:fixed;
+    top:0;left:0;right:0;
+    z-index:700;
+    background:transparent;
+  }
+  body.menu-open .nav-toggle{
+    background:var(--white);
+    color:var(--dark);
+    border-radius:50%;
+    width:42px;
+    height:42px;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    font-size:19px;
+    padding:0;
+  }
+  @media (max-width:640px){
+    header.nav nav ul.nav-open{padding:calc(56px + 2vh) 28px calc(18px + 2vh);}
+  }
+
+  html{scroll-behavior:smooth;}
+  @media (prefers-reduced-motion:reduce){html{scroll-behavior:auto;}}
+  #rsl-form{scroll-margin-top:70px;}
+
+  /* PAGE HERO */
+  .page-hero{
+    position:relative;
+    width:100%;
+    min-height:52vh;
+    overflow:hidden;
+    display:flex;
+    align-items:flex-end;
+  }
+  .page-hero-bg{
+    position:absolute;
+    inset:0;
+    width:100%;height:100%;
+    object-fit:cover;
+    object-position:center top;
+  }
+  .page-hero-overlay{
+    position:absolute;
+    inset:0;
+    background:none;
+  }
+  .page-hero-content{
+    position:relative;
+    z-index:2;
+    padding:160px 40px 60px;
+  }
+  .page-hero-content h1{
+    font-family:var(--heading-font);
+    font-size:clamp(52px, 7vw, 90px);
+    font-weight:400;
+    letter-spacing:2px;
+    line-height:1;
+    color:var(--white);
+    text-shadow:0 4px 12px rgba(4,14,26,0.45), 0 12px 40px rgba(4,14,26,0.3), 0 32px 80px rgba(4,14,26,0.2);
+  }
+  .page-hero-content .hero-sub{text-shadow:0 2px 8px rgba(4,14,26,0.45), 0 8px 24px rgba(4,14,26,0.3);
+    margin-top:18px;
+    font-size:18px;
+    line-height:1.6;
+    color:#ffffff;
+    max-width:640px;
+  }
+  .page-hero-content .btn{
+    margin-top:28px;
+  }
+  .btn{
+    display:inline-block;
+    border:1px solid var(--white);
+    color:var(--white);
+    text-decoration:none;
+    font-family:var(--heading-font);
+    font-size:14px;
+    font-weight:400;
+    letter-spacing:1.5px;
+    padding:14px 32px;
+    text-shadow:0 2px 8px rgba(4,14,26,0.45);
+    transition:background 0.2s, color 0.2s;
+  }
+  .btn:hover{background:var(--white);color:var(--red);text-shadow:none;}
+
+  /* CONTENT */
+  .content-section{
+    background:var(--sky-blue);
+    padding:72px 40px;
+  }
+  .content-section.dark{
+    background:var(--card-dark);
+  }
+  .content-wrap{
+    max-width:960px;
+    margin:0 auto;
+  }
+  .section-label{
+    font-family:var(--heading-font);
+    font-size:15px;
+    letter-spacing:4px;
+    color:#ffffff;
+    margin-bottom:12px;
+  }
+  .section-heading{
+    font-family:var(--heading-font);
+    font-size:clamp(32px, 4vw, 52px);
+    font-weight:400;
+    letter-spacing:1.5px;
+    margin-bottom:28px;
+    line-height:1.1;
+  }
+  .section-body{
+    font-size:19px;
+    line-height:1.75;
+    color:#d8eaf6;
+    max-width:780px;
+  }
+  .section-body p + p{margin-top:18px;}
+  .content-section.dark .section-body{color:#a8c4d8;}
+
+  /* BENEFITS */
+  .benefits-list{
+    list-style:none;
+    margin-top:32px;
+    display:flex;
+    flex-direction:column;
+    gap:16px;
+  }
+  .benefits-list li{
+    display:flex;
+    align-items:flex-start;
+    gap:18px;
+    font-size:19px;
+    line-height:1.75;
+    color:#a8c4d8;
+  }
+  .benefits-list li::before{
+    content:'';
+    display:block;
+    width:3px;
+    min-height:20px;
+    background:var(--red);
+    margin-top:4px;
+    flex-shrink:0;
+  }
+
+  /* GUARANTEE BLOCK */
+  .guarantee-block{
+    border:1px solid rgba(200,16,46,0.4);
+    background:rgba(200,16,46,0.07);
+    padding:36px 40px;
+    margin-top:52px;
+  }
+  .guarantee-block h3{
+    font-family:var(--heading-font);
+    font-size:24px;
+    letter-spacing:1px;
+    margin-bottom:14px;
+    color:var(--white);
+  }
+  .guarantee-block p{
+    font-size:19px;
+    line-height:1.75;
+    color:#a8c4d8;
+  }
+  .guarantee-block p + p{margin-top:12px;}
+
+  /* EXPERIENCE BLOCK */
+  .experience-block{
+    background:rgba(255,255,255,0.05);
+    border-top:3px solid var(--red);
+    padding:36px 40px;
+    margin-top:52px;
+  }
+  .experience-block h3{
+    font-family:var(--heading-font);
+    font-size:22px;
+    letter-spacing:1px;
+    margin-bottom:14px;
+  }
+  .experience-block p{
+    font-size:19px;
+    line-height:1.75;
+    color:#a8c4d8;
+  }
+
+  /* FORM SECTION */
+  .form-section{
+    background:var(--dark);
+    padding:80px 40px;
+  }
+  .form-wrap{
+    max-width:720px;
+    margin:0 auto;
+  }
+  .form-section .section-label{color:#ffffff;}
+  .form-section .section-heading{color:var(--white);}
+
+  .form-intro{
+    font-size:16px;
+    line-height:1.7;
+    color:#ffffff;
+    margin-bottom:48px;
+    max-width:600px;
+  }
+
+  .form-grid{
+    display:grid;
+    grid-template-columns:1fr 1fr;
+    gap:24px 32px;
+  }
+  .form-group{
+    display:flex;
+    flex-direction:column;
+  }
+  .form-group.full{
+    grid-column:1 / -1;
+  }
+  .form-group label{
+    font-family:var(--heading-font);
+    font-size:14px;
+    letter-spacing:1.5px;
+    color:var(--white);
+    margin-bottom:8px;
+  }
+  .form-group label .required{
+    color:var(--red);
+    margin-left:2px;
+  }
+  .form-group input,
+  .form-group select{
+    background:rgba(255,255,255,0.06);
+    border:1px solid rgba(255,255,255,0.18);
+    color:var(--white);
+    font-family:'Arial Narrow', Arial, sans-serif;
+    font-size:16px;
+    padding:14px 16px;
+    outline:none;
+    transition:border-color 0.2s;
+    -webkit-appearance:none;
+    appearance:none;
+    border-radius:0;
+  }
+  .form-group select{
+    background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8' viewBox='0 0 12 8'%3E%3Cpath d='M1 1l5 5 5-5' stroke='%23ffffff' stroke-width='1.5' fill='none' stroke-linecap='round'/%3E%3C/svg%3E");
+    background-repeat:no-repeat;
+    background-position:right 16px center;
+    padding-right:40px;
+    cursor:pointer;
+  }
+  .form-group select option{
+    background:var(--dark);
+    color:var(--white);
+  }
+  .form-group input::placeholder{color:rgba(255,255,255,0.28);}
+  .form-group input:focus,
+  .form-group select:focus{
+    border-color:var(--red);
+    background:rgba(255,255,255,0.09);
+  }
+
+  .form-submit{
+    margin-top:36px;
+  }
+  .btn-submit{
+    display:inline-block;
+    background:var(--red);
+    border:2px solid var(--red);
+    color:var(--white);
+    font-family:var(--heading-font);
+    font-size:16px;
+    letter-spacing:2px;
+    padding:16px 52px;
+    cursor:pointer;
+    text-transform:uppercase;
+    transition:background 0.2s;
+    border-radius:0;
+    -webkit-appearance:none;
+    appearance:none;
+  }
+  .btn-submit:hover{background:transparent;}
+
+  .form-note{
+    margin-top:20px;
+    font-size:13px;
+    color:#4a6a80;
+    line-height:1.6;
+  }
+
+  /* FOOTER */
+  footer{
+    background:var(--sky-blue);
+    min-height:56px;
+    padding:18px 40px;
+    display:flex;
+    align-items:center;
+    justify-content:space-between;
+  }
+  .socials{display:flex;gap:14px;}
+  .socials a{
+    width:36px;height:36px;
+    border:1.5px solid var(--dark);
+    border-radius:50%;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    color:var(--dark);
+    text-decoration:none;
+  }
+  .socials svg{width:18px;height:18px;fill:var(--dark);}
+  .copyright{font-family:var(--heading-font);font-size:15px;letter-spacing:0.5px;color:var(--dark);}
+  .footer-spacer{width:130px;}
+
+  @media (max-width:900px){
+    .form-grid{grid-template-columns:1fr;}
+    .form-group.full{grid-column:auto;}
+    nav ul{gap:18px;}
+    nav a{font-size:14px;}
+    .guarantee-block,.experience-block{padding:28px 24px;}
+  }
+  @media (max-width:640px){
+    header.nav{padding:18px 20px 0;}
+    nav ul{flex-wrap:wrap;gap:10px 16px;}
+    nav a{font-size:11px;}
+    .page-hero-content{padding:130px 20px 48px;}
+    .content-section{padding:48px 20px;}
+    .form-section{padding:56px 20px;}
+    footer{flex-direction:column;gap:14px;padding:18px 20px;}
+    .footer-spacer{display:none;}
+  }
+
+  /* HAMBURGER */
+  .nav-toggle{
+    display:block;
+    background:none;
+    border:none;
+    color:var(--white);
+    font-size:28px;
+    cursor:pointer;
+    padding:4px 8px;
+    line-height:1;
+    z-index:20;
+    margin-left:auto;
+  }
+  @media (max-width:768px){
+    header.nav{
+      position:fixed;
+      background:rgba(8,21,36,0.95);
+      padding:14px 20px;
+      flex-wrap:nowrap;
+      align-items:center;
+    }
+    .nav-toggle{display:block;}
+    /* push page content below fixed nav */
+    .page-hero{padding-top:56px;}
+  }
+
+  @media (max-width:768px){
+    .page-hero{min-height:38vh;}
+    .page-hero-content{padding:110px 20px 40px;}
+    .content-section{padding:44px 20px;}
+    .cta-strip{padding:40px 20px;}
+    .btn,.btn-cta{display:block;width:100%;text-align:center;box-sizing:border-box;}
+    footer{flex-direction:column;gap:12px;padding:18px 20px;text-align:center;}
+    .footer-spacer{display:none;}
+  }
+  @media (max-width:1024px) and (min-width:769px){
+    .page-hero{min-height:44vh;}
+    .page-hero-content{padding:140px 32px 52px;}
+    .content-section{padding:60px 32px;}
+  }
+
+  @media (max-width:768px){
+    .form-section{padding:44px 20px;}
+    .form-grid{grid-template-columns:1fr;}
+    .form-group.full{grid-column:auto;}
+    .guarantee-block,.experience-block{padding:24px 20px;}
+    .btn-submit{width:100%;}
+  }
+
+
+  /* GRAIN OVERLAY */
+  body::after{
+    content:"";
+    position:fixed;
+    inset:0;
+    width:100%;
+    height:100%;
+    pointer-events:none;
+    z-index:9999;
+    opacity:0.045;
+    background-image:url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)'/%3E%3C/svg%3E");
+    background-size:180px 180px;
+    background-repeat:repeat;
+  }
+
+  /* Dropdown parent is a label, not a link */
+  header.nav nav ul li a.nav-parent{cursor:pointer;}
+
+  /* Dropdown inside the hamburger overlay: always shown, indented */
+  header.nav nav ul.nav-open ul.dropdown{
+    display:block;
+    list-style:none;
+    padding-left:22px;
+  }
+
+  /* DESKTOP NAV — inline menu, hamburger hidden */
+  @media (min-width:1025px){
+    .nav-toggle{display:none;}
+    header.nav nav{
+      position:static;
+      inset:auto;
+      pointer-events:auto;
+    }
+    header.nav nav ul,
+    header.nav nav ul.nav-open{
+      display:flex;
+      position:static;
+      inset:auto;
+      width:auto;
+      height:auto;
+      margin:0;
+      padding:0;
+      background:none;
+      overflow:visible;
+      flex-direction:row;
+      flex-wrap:nowrap;
+      align-items:center;
+      justify-content:flex-end;
+      gap:clamp(14px, 1.7vw, 30px);
+      z-index:auto;
+    }
+    header.nav nav ul > li{
+      position:relative;
+      width:auto;
+      max-width:none;
+    }
+    header.nav nav ul > li > a{
+      padding:0 0 6px;
+      font-size:clamp(17px, 1.75vw, 29px);
+      line-height:1.15;
+      letter-spacing:1.5px;
+      white-space:nowrap;
+      /* Border rather than text-decoration so the rule runs unbroken
+         under the label and its dropdown caret. */
+      text-decoration:none;
+      border-bottom:2px solid transparent;
+    }
+    header.nav nav ul li a:hover{padding-left:0;}
+    header.nav nav ul > li.active > a{
+      color:var(--white);
+      text-decoration:none;
+      border-bottom-color:var(--white);
+    }
+    header.nav nav ul > li.has-dropdown:has(.dropdown li.active) > a{
+      color:var(--white);
+      text-decoration:none;
+      border-bottom-color:var(--white);
+    }
+
+    /* THE STORY dropdown */
+    header.nav nav ul > li.has-dropdown > a::after{
+      content:'\25BE';
+      font-size:0.68em;
+      margin-left:8px;
+      letter-spacing:0;
+      vertical-align:middle;
+    }
+    header.nav nav ul.dropdown{
+      display:block;
+      position:absolute;
+      top:100%;
+      left:0;
+      min-width:220px;
+      margin:0;
+      padding:8px 0;
+      list-style:none;
+      background:rgba(11,28,44,0.96);
+      opacity:0;
+      visibility:hidden;
+      transform:translateY(6px);
+      transition:opacity 0.18s ease, transform 0.18s ease, visibility 0.18s;
+      z-index:50;
+    }
+    header.nav nav ul > li.has-dropdown:hover > ul.dropdown,
+    header.nav nav ul > li.has-dropdown:focus-within > ul.dropdown{
+      opacity:1;
+      visibility:visible;
+      transform:translateY(0);
+    }
+    header.nav nav ul.dropdown li{width:100%;}
+    header.nav nav ul.dropdown li a{
+      display:block;
+      padding:9px 20px;
+      font-size:clamp(16px, 1.35vw, 23px);
+      line-height:1.2;
+      letter-spacing:1.5px;
+      white-space:nowrap;
+      text-shadow:none;
+      transition:color 0.2s, padding-left 0.2s;
+    }
+    header.nav nav ul.dropdown li a:hover{
+      color:var(--red);
+      padding-left:26px;
+    }
+    header.nav nav ul.dropdown li.active a{
+      color:var(--red);
+      text-decoration:none;
+    }
+
+    /* DONATE is a plain item here; the button treatment is overlay-only */
+    header.nav nav ul > li.nav-cta{display:block;}
+    header.nav nav ul > li.nav-cta .nav-cta-note{display:none;}
+    header.nav nav ul > li.nav-cta > a.nav-cta-btn{
+      background:none;
+      color:var(--white);
+      padding:0 0 6px;
+      text-transform:none;
+      text-shadow:0 2px 8px rgba(4,14,26,0.55), 0 4px 16px rgba(4,14,26,0.3);
+      border-bottom:2px solid transparent;
+    }
+    header.nav nav ul > li.nav-cta > a.nav-cta-btn:hover{
+      background:none;
+      color:var(--red);
+    }
+    header.nav nav ul > li.nav-cta.active > a.nav-cta-btn{
+      color:var(--white);
+      border-bottom-color:var(--white);
+    }
+  }
+
+  /* REGISTER INTEREST FORM — choice groups */
+  .form-group textarea{
+    width:100%;padding:14px 16px;background:rgba(255,255,255,0.08);
+    border:1px solid rgba(255,255,255,0.22);color:var(--white);font-family:inherit;font-size:16px;
+    border-radius:0;outline:none;min-height:96px;resize:vertical;
+  }
+  .form-group textarea:focus{border-color:var(--white);background:rgba(255,255,255,0.12);}
+  .form-question{margin-top:40px;}
+  .form-question .q-title{
+    font-family:var(--heading-font);font-size:26px;letter-spacing:1px;color:var(--white);margin-bottom:6px;
+  }
+  .form-question .q-hint{font-size:15px;color:rgba(255,255,255,0.7);margin-bottom:16px;}
+  .form-question .q-title .required{color:#ff5a6e;margin-left:4px;}
+  .choice-list{list-style:none;display:flex;flex-direction:column;gap:10px;}
+  .choice-list label{
+    display:flex;align-items:flex-start;gap:14px;padding:14px 16px;cursor:pointer;
+    background:rgba(255,255,255,0.06);border:1px solid rgba(255,255,255,0.18);
+    font-size:17px;line-height:1.4;color:var(--white);transition:background 0.15s,border-color 0.15s;
+  }
+  .choice-list label:hover{background:rgba(255,255,255,0.1);}
+  .choice-list label:has(input:checked){background:rgba(255,255,255,0.14);border-color:var(--white);}
+  .choice-list input{flex:0 0 auto;width:20px;height:20px;margin-top:2px;accent-color:var(--red);cursor:pointer;}
+  .choice-list .choice-other{flex:1 1 auto;margin-left:8px;padding:6px 10px;background:rgba(255,255,255,0.1);
+    border:0;border-bottom:1px solid rgba(255,255,255,0.4);color:var(--white);font-family:inherit;font-size:16px;outline:none;}
+  .choice-follow{margin-top:10px;margin-left:34px;display:none;}
+  .choice-follow.show{display:block;}
+  .choice-follow input{width:100%;padding:12px 14px;background:rgba(255,255,255,0.08);
+    border:1px solid rgba(255,255,255,0.22);color:var(--white);font-family:inherit;font-size:16px;outline:none;border-radius:0;}
+  .form-subheading{
+    font-family:var(--heading-font);font-size:26px;letter-spacing:1px;color:var(--white);margin:8px 0 14px;
+  }
+  .field-error{display:none;margin-top:8px;color:#ffb3bd;font-size:14px;}
+  .field-error.show{display:block;}
+</style>
+</head>
+<body>
+
+<header class="nav">
+  <div class="brand">
+    <a class="title" href="/">DARWIN 1942</a>
+  </div>
+  <button class="nav-toggle" id="nav-toggle" aria-label="Toggle navigation" aria-expanded="false">&#9776;</button>
+  <nav>
+    <ul id="nav-menu">
+      <li class="has-dropdown">
+        <a class="nav-parent" tabindex="0">ABOUT</a>
+        <ul class="dropdown">
+          <li><a href="/the-story">THE STORY</a></li>
+          <li><a href="/about-the-film">ABOUT THE FILM</a></li>
+          <li><a href="/media-releases/">MEDIA RELEASES</a></li>
+        </ul>
+      </li>
+      <li><a href="/community-impact">COMMUNITY IMPACT</a></li>
+      <li class="active"><a href="/get-involved">RSL</a></li>
+      <li><a href="/veteran-stories">VETERAN STORIES</a></li>
+      <li><a href="/contact">CONTACT</a></li>
+      <li><a href="/subscribe">SUBSCRIBE</a></li>
+      <li class="nav-cta">
+        <a class="nav-cta-btn" href="/donate">DONATE</a>
+        <div class="nav-cta-note">Commemorating the 85th anniversary of the Bombing of Darwin &middot; Free digital licences for RSL Sub Branches &amp; Clubs &middot; Nationwide release 2027</div>
+      </li>
+    </ul>
+  </nav>
+</header>
+
+
+<section class="page-hero">
+  <img class="page-hero-bg" src="images/background.webp" alt="Darwin 1942">
+  <div class="page-hero-overlay"></div>
+  <div class="page-hero-content">
+    <h1>REGISTER YOUR CLUB'S INTEREST</h1>
+    <p class="hero-sub">Complete the form to connect with our team ahead of the 85th anniversary of the bombing of Darwin in February 2027.</p>
+    <a class="btn" href="#rsl-form">COMPLETE THE FORM</a>
+  </div>
+</section>
+
+<section class="form-section" id="rsl-form">
+  <div class="form-wrap">
+    <div class="section-label">Register Your Club's Interest</div>
+    <h2 class="section-heading">COMPLETE THE FORM TO CONNECT WITH OUR TEAM</h2>
+
+    <form name="rsl-register-interest" id="register-interest-form" novalidate>
+
+      <h3 class="form-subheading">CONTACT DETAILS</h3>
+      <div class="form-grid">
+        <div class="form-group">
+          <label for="ri-name">Name <span class="required">*</span></label>
+          <input type="text" id="ri-name" name="name" placeholder="Full name" required autocomplete="name">
+        </div>
+        <div class="form-group">
+          <label for="ri-position">Position <span class="required">*</span></label>
+          <input type="text" id="ri-position" name="position" placeholder="e.g. President, Secretary, General Manager" required autocomplete="organization-title">
+        </div>
+        <div class="form-group">
+          <label for="ri-club">Club <span class="required">*</span></label>
+          <input type="text" id="ri-club" name="club_name" placeholder="e.g. Townsville RSL Sub Branch, Merrylands RSL Club" required autocomplete="organization">
+        </div>
+        <div class="form-group">
+          <label for="ri-email">Email <span class="required">*</span></label>
+          <input type="email" id="ri-email" name="email" placeholder="your@email.com.au" required autocomplete="email">
+        </div>
+        <div class="form-group">
+          <label for="ri-phone">Phone <span class="required">*</span></label>
+          <input type="tel" id="ri-phone" name="phone" placeholder="e.g. 07 1234 5678" required autocomplete="tel">
+        </div>
+      </div>
+
+      <div class="form-question" id="q-interest">
+        <div class="q-title">1. HOW INTERESTED ARE YOU IN PARTNERING WITH DARWIN 1942?<span class="required">*</span></div>
+        <div class="q-hint">Required. Choose one.</div>
+        <ul class="choice-list">
+          <li>
+            <label><input type="radio" name="interest_level" value="count_us_in"> Count us in. We'd like to secure a partnership package for our Club.</label>
+            <div class="choice-follow" id="package-follow">
+              <input type="text" id="ri-package" name="package_option" placeholder="Which package option? (optional)">
+            </div>
+          </li>
+          <li><label><input type="radio" name="interest_level" value="very_interested"> Very interested — we'd like to discuss our options</label></li>
+          <li><label><input type="radio" name="interest_level" value="potentially_interested"> Potentially interested — I need to discuss it internally</label></li>
+          <li><label><input type="radio" name="interest_level" value="interested_no_opportunities"> Interested in the project, but not currently considering any opportunities</label></li>
+          <li><label><input type="radio" name="interest_level" value="updates_only"> I'd simply like to receive updates.</label></li>
+        </ul>
+        <div class="field-error" id="err-interest">Please choose one option.</div>
+      </div>
+
+      <div class="form-question" id="q-aspects">
+        <div class="q-title">2. WHICH ASPECTS OF THE PRESENTATION ARE MOST VALUABLE?</div>
+        <div class="q-hint">Select all that apply.</div>
+        <ul class="choice-list">
+          <li><label><input type="checkbox" name="valued_aspects" value="Commemorative events and community screenings"> Commemorative events and community screenings</label></li>
+          <li><label><input type="checkbox" name="valued_aspects" value="School engagement - screenings and educational resources"> School engagement - screenings and educational resources</label></li>
+          <li><label><input type="checkbox" name="valued_aspects" value="Sharing the film with our local community"> Sharing the film with our local community</label></li>
+          <li><label><input type="checkbox" name="valued_aspects" value="Providing the film to families in our community"> Providing the film to families in our community</label></li>
+          <li><label><input type="checkbox" name="valued_aspects" value="Connecting with local community groups such as Probus, Men's Sheds, Lions etc."> Connecting with local community groups such as Probus, Men's Sheds, Lions etc.</label></li>
+          <li><label><input type="checkbox" name="valued_aspects" value="Membership growth / attracting new members"> Membership growth / attracting new members</label></li>
+          <li><label><input type="checkbox" name="valued_aspects" value="Using the project to increase community engagement"> Using the project to increase community engagement</label></li>
+          <li><label><input type="checkbox" name="valued_aspects" value="Promoting our Club's involvement in the Darwin 1942 story"> Promoting our Club's involvement in the Darwin 1942 story</label></li>
+          <li><label><input type="checkbox" name="valued_aspects" value="Supporting the production and preservation of Veteran stories"> Supporting the production and preservation of Veteran stories</label></li>
+          <li><label><input type="checkbox" name="valued_aspects" value="Other" id="ri-aspect-other"> Other: <input type="text" class="choice-other" id="ri-aspect-other-text" name="valued_aspects_other" placeholder="Please describe" aria-label="Other aspect"></label></li>
+        </ul>
+      </div>
+
+      <div class="form-submit">
+        <button type="submit" class="btn-submit" id="ri-submit-btn">SUBMIT</button>
+      </div>
+      <p class="form-note">We respect your privacy. Your details will only be used to respond to your enquiry about partnering with Darwin 1942.</p>
+      <div id="ri-form-message" style="display:none;margin-top:24px;padding:18px 24px;font-size:15px;line-height:1.6;"></div>
+    </form>
+  </div>
+</section>
+
+<script>
+(function(){
+  var INTAKE_URL = 'https://nwchcduhlhhppvyhxbpo.supabase.co/functions/v1/darwin1942-intake';
+  var form = document.getElementById('register-interest-form');
+  var btn = document.getElementById('ri-submit-btn');
+  var msg = document.getElementById('ri-form-message');
+  var pkgFollow = document.getElementById('package-follow');
+  var otherBox = document.getElementById('ri-aspect-other');
+  var otherText = document.getElementById('ri-aspect-other-text');
+
+  // Show the package field only for "Count us in".
+  Array.prototype.forEach.call(form.querySelectorAll('input[name="interest_level"]'), function(r){
+    r.addEventListener('change', function(){
+      pkgFollow.classList.toggle('show', form.interest_level.value === 'count_us_in');
+    });
+  });
+  // Typing in the "Other" box ticks it; clearing the box unticks it.
+  otherText.addEventListener('input', function(){ otherBox.checked = otherText.value.trim() !== ''; });
+  otherText.addEventListener('click', function(e){ e.stopPropagation(); });
+
+  function showMsg(ok, text){
+    msg.style.cssText = 'display:block;margin-top:24px;padding:18px 24px;font-size:15px;line-height:1.6;' +
+      (ok ? 'background:rgba(63,163,232,0.12);border-left:3px solid #3fa3e8;color:#c8dff0;'
+          : 'background:rgba(200,16,46,0.1);border-left:3px solid #c8102e;color:#e8a0a8;');
+    msg.textContent = text;
+  }
+
+  form.addEventListener('submit', function(e){
+    e.preventDefault();
+    msg.style.display = 'none';
+    document.getElementById('err-interest').classList.remove('show');
+
+    // Browser validation for the contact fields, then our own for the radio group.
+    if (!form.checkValidity()) { form.reportValidity(); return; }
+    var level = form.interest_level.value;
+    if (!level) {
+      document.getElementById('err-interest').classList.add('show');
+      document.getElementById('q-interest').scrollIntoView({behavior:'smooth', block:'center'});
+      return;
+    }
+
+    var aspects = [];
+    Array.prototype.forEach.call(form.querySelectorAll('input[name="valued_aspects"]:checked'), function(c){
+      if (c.value === 'Other') {
+        var t = otherText.value.trim();
+        aspects.push(t ? 'Other: ' + t : 'Other');
+      } else aspects.push(c.value);
+    });
+
+    var labelFor = form.querySelector('input[name="interest_level"]:checked').parentNode.textContent.trim();
+
+    var payload = {
+      event_type: 'contacted_about_darwin1942',
+      source: 'register-interest',
+      name: document.getElementById('ri-name').value.trim(),
+      position: document.getElementById('ri-position').value.trim(),
+      club_name: document.getElementById('ri-club').value.trim(),
+      email: document.getElementById('ri-email').value.trim(),
+      phone: document.getElementById('ri-phone').value.trim(),
+      interest_level: level,
+      interest_level_label: labelFor,
+      package_option: level === 'count_us_in' ? document.getElementById('ri-package').value.trim() : '',
+      valued_aspects: aspects,
+      valued_aspects_other: otherText.value.trim()
+    };
+
+    btn.disabled = true;
+    btn.textContent = 'SUBMITTING...';
+
+    fetch(INTAKE_URL, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(payload)
+    })
+    .then(function(res){
+      if (!res.ok) return res.text().then(function(t){ throw new Error(t); });
+      showMsg(true, 'Thank you, one of the DARWIN 1942 team members will be in touch soon.');
+      form.reset();
+      pkgFollow.classList.remove('show');
+      btn.textContent = 'SUBMITTED';
+      msg.scrollIntoView({behavior:'smooth', block:'center'});
+    })
+    .catch(function(){
+      showMsg(false, 'Something went wrong. Please try again or contact us directly.');
+      btn.disabled = false;
+      btn.textContent = 'SUBMIT';
+    });
+  });
+})();
+</script>
+
+<footer>
+  <div class="socials">
+    <a href="https://www.facebook.com/Darwin1942Documentary/" target="_blank" rel="noopener noreferrer" aria-label="Facebook"><svg viewBox="0 0 24 24"><path d="M22 12a10 10 0 1 0-11.6 9.9v-7H7.9V12h2.5V9.8c0-2.5 1.5-3.9 3.8-3.9 1.1 0 2.2.2 2.2.2v2.5h-1.3c-1.2 0-1.6.8-1.6 1.6V12h2.8l-.4 2.9h-2.4v7A10 10 0 0 0 22 12Z"/></svg></a>
+  </div>
+  <div class="copyright">© 2026 AUSTRALIAN TELEVISION AND MEDIA GROUP PTY LTD. ALL RIGHTS RESERVED.</div>
+  <div class="footer-spacer"></div>
+</footer>
+
+
+<script>
+(function(){
+  var btn = document.getElementById('nav-toggle');
+  var menu = document.getElementById('nav-menu');
+  if(btn && menu){
+    btn.addEventListener('click', function(){
+      var open = menu.classList.toggle('nav-open');
+      document.body.classList.toggle('menu-open', open);
+      btn.setAttribute('aria-expanded', open ? 'true' : 'false');
+      btn.innerHTML = open ? '&#x2715;' : '&#9776;';
+    });
+  }
+})();
+</script>
+</body>
+</html>
