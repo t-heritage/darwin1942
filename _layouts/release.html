@@ -5,16 +5,16 @@ layout: default
   <img class="page-hero-bg" src="/images/background.webp" alt="Darwin 1942">
   <div class="page-hero-overlay"></div>
   <div class="page-hero-content">
+    <a class="back-link" href="/media-releases/">&larr; ALL MEDIA RELEASES</a>
     <div class="hero-label">MEDIA RELEASE &middot; {{ page.date | date: "%-d %B %Y" }}</div>
     <h1>{{ page.title | upcase }}</h1>
   </div>
 </section>
 
-<section class="content-section dark">
-  <div class="content-wrap">
-    <a class="back-link" href="/media-releases/">&larr; ALL MEDIA RELEASES</a>
+<section class="content-section release-section">
+  <div class="content-wrap release-wrap">
     <article class="release-body">
-      <div class="release-dateline">FOR IMMEDIATE RELEASE: {{ page.date | date: "%-d %B %Y" }}</div>
+      <div class="release-dateline">{{ page.date | date: "%-d %B %Y" }}</div>
       <h2 class="release-heading">{{ page.title }}</h2>
       {{ content }}
     </article>

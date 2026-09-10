@@ -16,12 +16,12 @@ GitHub Pages rebuilds this page automatically; nothing here needs editing to pub
   <div class="page-hero-content">
     <div class="hero-label">ABOUT</div>
     <h1>MEDIA RELEASES</h1>
-    <p class="hero-sub">Official announcements from the Darwin 1942 production team. Read each release in full or download it as a PDF for publication.</p>
+    <p class="hero-sub">Official announcements from the Darwin 1942 production team.</p>
   </div>
 </section>
 
 <section class="content-section dark">
-  <div class="content-wrap">
+  <div class="content-wrap release-wrap">
     <div class="section-label">For Media</div>
     <h2 class="section-heading">LATEST RELEASES</h2>
 
@@ -30,7 +30,7 @@ GitHub Pages rebuilds this page automatically; nothing here needs editing to pub
     {% endif %}
     {% for r in releases %}
     <article class="release" id="{{ r.url | split: '/' | last }}">
-      <div class="release-meta"><span>MEDIA RELEASE</span><span>{{ r.date | date: "%-d %B %Y" }}</span></div>
+      <div class="release-meta"><span>{{ r.date | date: "%-d %B %Y" }}</span></div>
       <h3 class="release-title"><a href="{{ r.url }}">{{ r.title | upcase }}</a></h3>
       {% if r.summary %}<p class="release-summary">{{ r.summary }}</p>{% else %}<p class="release-summary">{{ r.content | strip_html | truncatewords: 45 }}</p>{% endif %}
       <div class="release-actions">

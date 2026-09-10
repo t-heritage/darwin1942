@@ -359,20 +359,29 @@
     font-size:17px;
     line-height:1.6;
     color:#ffffff;
-    max-width:740px;
     margin-bottom:24px;
   }
   .release-body{
     font-size:19px;
     line-height:1.75;
     color:var(--white);
-    max-width:740px;
   }
-  /* Release page banner: smaller headline so it wraps over a couple of lines */
+  /* Media release pages: body text runs in the same container as the banner */
+  .content-wrap.release-wrap{max-width:none;}
+  .release-wrap .media-contact{max-width:none;}
+  /* Individual release page */
+  .content-section.release-section{background:#348EC4;}
+  .release-hero .page-hero-content .back-link{margin-bottom:20px;}
   .release-hero .page-hero-content h1{
-    font-size:clamp(30px, 3.6vw, 48px);
+    font-size:51px;
+    font-weight:400;
     line-height:1.1;
-    max-width:900px;
+  }
+  .release-body > p:first-of-type{
+    font-size:26px;
+    line-height:1.45;
+    font-weight:400;
+    margin-bottom:8px;
   }
   .release-dateline{
     font-size:15px;
@@ -387,7 +396,6 @@
     margin-bottom:22px;
     font-size:28px;
   }
-  .release-body > p:first-of-type{font-weight:700;}
   .release-body .release-interview{margin:30px 0;font-style:italic;}
   .release-body .release-interview + *{margin-top:30px;}
   .release-body p + p, .release-body ul, .release-body ol, .release-body blockquote, .release-body h2, .release-body h3{margin-top:18px;}
