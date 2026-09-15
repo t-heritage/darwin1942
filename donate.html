@@ -383,6 +383,46 @@
   }
   .btn-donate:hover{background:transparent;}
 
+  /* DONATE BY CARD — open amount (Pin "Pay Now") then the fixed amounts.
+     The amount buttons are supplied artwork in the same style as Pin's own Pay Now
+     button. They are drawn at 140px, the Pay Now button's width, so all five match;
+     the files are larger than that (172px) so they stay sharp on retina screens. */
+  .amount-block{
+    display:flex;
+    flex-direction:column;
+    gap:12px;
+  }
+  .amount-label{
+    font-size:16px;
+    font-weight:bold;
+    color:#ffffff;
+  }
+  /* Four across in one row, as in the approved design. Equal grid tracks rather
+     than a wrapping flex row, so every button is the same size whatever the column
+     width; they shrink to share the space and never grow past the Pay Now button's
+     140px. On a phone four across would be too small to read, so they go two by two. */
+  .amount-grid{
+    display:grid;
+    grid-template-columns:repeat(4, minmax(0, 140px));
+    justify-content:start;
+    gap:12px;
+  }
+  .amount-btn{
+    display:block;
+    line-height:0;
+    transition:opacity 0.2s;
+  }
+  .amount-btn img{
+    display:block;
+    width:100%;
+    height:auto;
+  }
+  .amount-btn:hover,
+  .amount-btn:focus-visible{opacity:0.85;}
+  @media (max-width:640px){
+    .amount-grid{grid-template-columns:repeat(2, minmax(0, 140px));}
+  }
+
   /* WHY DONATE LIST */
   .why-list{
     list-style:none;
@@ -692,6 +732,7 @@
           <li><a href="/the-story">THE STORY</a></li>
           <li><a href="/about-the-film">ABOUT THE FILM</a></li>
           <li><a href="/media-releases/">MEDIA RELEASES</a></li>
+          <li><a href="/news-and-media/">NEWS AND MEDIA</a></li>
         </ul>
       </li>
       <li><a href="/community-impact">COMMUNITY IMPACT</a></li>
@@ -738,9 +779,24 @@
       <div class="donate-card">
         <div class="donate-col card-col">
           <h3>DONATE BY CARD</h3>
-          <p>Every contribution – large or small – helps to commemorate our Veterans.</p>
-          <script src="https://cdn.pinpayments.com/pin.v2.js"></script>
-          <a class="pin-payment-button" href="https://pay.pinpayments.com/s2e9/sc?description=2026DB&amp;success_url=https%3A%2F%2Fmediaartsfoundation.com%2Fthankyou%2F" target="_blank" rel="noopener"><img src="https://pinpayments.com/pay-button.png" alt="Pay Now" width="140" height="62" style="display:block;margin:8px 0;"></a>
+          <p>Every contribution helps to commemorate our Veterans.</p>
+
+          <div class="amount-block">
+            <p class="amount-label">Choose your amount:</p>
+            <script src="https://cdn.pinpayments.com/pin.v2.js"></script>
+            <a class="pin-payment-button" href="https://pay.pinpayments.com/s2e9/sc?description=2026DB&amp;success_url=https%3A%2F%2Fmediaartsfoundation.com%2Fthankyou%2F" target="_blank" rel="noopener"><img src="https://pinpayments.com/pay-button.png" alt="Pay Now" width="140" height="62" style="display:block;"></a>
+          </div>
+
+          <div class="amount-block">
+            <p class="amount-label">or donate a fixed amount.</p>
+            <div class="amount-grid">
+              <a class="amount-btn" href="https://pay.pinpayments.com/s2e9?amount=50&amp;description=2026DB&amp;amount_editable=false&amp;success_url=https%3A%2F%2Fmediaartsfoundation.com%2Fthankyou%2F" target="_blank" rel="noopener"><img src="images/donate/donate-50.png" alt="Donate $50" width="140" height="62"></a>
+              <a class="amount-btn" href="https://pay.pinpayments.com/s2e9?amount=100&amp;description=2026DB&amp;amount_editable=false&amp;success_url=https%3A%2F%2Fmediaartsfoundation.com%2Fthankyou%2F" target="_blank" rel="noopener"><img src="images/donate/donate-100.png" alt="Donate $100" width="140" height="62"></a>
+              <a class="amount-btn" href="https://pay.pinpayments.com/s2e9?amount=250&amp;description=2026DB&amp;amount_editable=false&amp;success_url=https%3A%2F%2Fmediaartsfoundation.com%2Fthankyou%2F" target="_blank" rel="noopener"><img src="images/donate/donate-250.png" alt="Donate $250" width="140" height="62"></a>
+              <a class="amount-btn" href="https://pay.pinpayments.com/s2e9?amount=500&amp;description=2026DB&amp;amount_editable=false&amp;success_url=https%3A%2F%2Fmediaartsfoundation.com%2Fthankyou%2F" target="_blank" rel="noopener"><img src="images/donate/donate-500.png" alt="Donate $500" width="140" height="62"></a>
+            </div>
+          </div>
+
           <p class="tax-note">This project is supported by our auspicing partner Media Arts Foundation Ltd (ABN 75 150 136 815). Donations over $2 received via Media Arts Foundation Ltd are tax deductible.</p>
         </div>
 

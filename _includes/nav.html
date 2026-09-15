@@ -10,7 +10,10 @@
         <ul class="dropdown">
           <li><a href="/the-story">THE STORY</a></li>
           <li><a href="/about-the-film">ABOUT THE FILM</a></li>
-          <li class="active"><a href="/media-releases/">MEDIA RELEASES</a></li>
+          {% comment %} The shared nav is used by every Jekyll-built page, so the current
+             item is worked out from the URL rather than hard-coded. {% endcomment %}
+          <li{% if page.url contains "/media-releases/" %} class="active"{% endif %}><a href="/media-releases/">MEDIA RELEASES</a></li>
+          <li{% if page.url contains "/news-and-media/" %} class="active"{% endif %}><a href="/news-and-media/">NEWS AND MEDIA</a></li>
         </ul>
       </li>
       <li><a href="/community-impact">COMMUNITY IMPACT</a></li>

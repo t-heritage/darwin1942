@@ -460,6 +460,99 @@
   }
   .back-link:hover{text-decoration:underline;}
 
+  /* NEWS AND MEDIA — coverage of the film in other outlets.
+     Items are loaded at page load from the published Google Sheet named in
+     `news_csv_url` in /_config.yml. See /news-and-media/README.md. */
+  .news-list{
+    margin-top:8px;
+  }
+  .news-item{
+    display:grid;
+    grid-template-columns:220px 1fr;
+    gap:32px;
+    align-items:start;
+    padding:36px 0;
+    border-top:1px solid rgba(255,255,255,0.18);
+  }
+  .news-item:last-child{border-bottom:1px solid rgba(255,255,255,0.18);}
+  .news-item.no-image{grid-template-columns:1fr;}
+  /* Items carry whatever picture the outlet published — a wide press photo in one
+     row, square podcast artwork in the next. The box stays a constant shape so the
+     column lines up, and the picture is fitted inside it rather than cropped, so a
+     masthead or a face is never cut off. */
+  .news-thumb{
+    display:block;
+    width:100%;
+    aspect-ratio:1 / 1;
+    object-fit:contain;
+    object-position:center;
+    background:rgba(255,255,255,0.06);
+  }
+  .news-meta{
+    font-family:var(--heading-font);
+    font-size:16px;
+    letter-spacing:2px;
+    color:#ffffff;
+    margin-bottom:10px;
+  }
+  .news-meta span + span::before{content:"\00b7";margin:0 12px;color:rgba(255,255,255,0.5);}
+  .news-title{
+    font-family:var(--heading-font);
+    font-size:clamp(26px, 2.6vw, 34px);
+    font-weight:400;
+    letter-spacing:1px;
+    line-height:1.1;
+  }
+  .news-title a{color:inherit;text-decoration:none;}
+  .news-title a:hover{text-decoration:underline;}
+  /* The programme or masthead, under the headline. Left in the case it was typed in —
+     a programme name is a proper name, not a label. */
+  .news-source{
+    margin-top:10px;
+    font-size:18px;
+    font-weight:bold;
+    line-height:1.4;
+    color:var(--white);
+  }
+  .news-summary{
+    margin-top:12px;
+    font-size:17px;
+    line-height:1.7;
+    color:#d8eaf6;
+  }
+  .news-actions{
+    display:flex;
+    flex-wrap:wrap;
+    gap:14px;
+    margin-top:20px;
+  }
+  .news-actions .btn:hover{background:var(--white);color:var(--card-dark);}
+  .news-status{
+    padding:32px 0;
+    border-top:1px solid rgba(255,255,255,0.18);
+    border-bottom:1px solid rgba(255,255,255,0.18);
+    font-size:18px;
+    line-height:1.65;
+    color:#a8c4d8;
+  }
+  /* Buttons go full width below 768px sitewide, which suits a label like READ THE
+     FULL RELEASE but leaves a one-word button stranded in a wide bar. These keep
+     their own width, with enough of it left to stay an easy tap target. */
+  @media (max-width:768px){
+    .news-actions .btn{
+      display:inline-block;
+      width:auto;
+      min-width:150px;
+      text-align:center;
+    }
+  }
+  @media (max-width:720px){
+    .news-item{grid-template-columns:1fr;gap:18px;padding:28px 0;}
+    /* Full width, a square picture would take most of a phone screen before the
+       headline is even reached, so it is held to a size the text can sit under. */
+    .news-thumb{max-width:280px;}
+  }
+
   /* MEDIA CONTACT */
   .media-contact{
     margin-top:56px;
