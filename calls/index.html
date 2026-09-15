@@ -95,10 +95,9 @@
       .rank-row .token-img { width: 24px; height: 24px; }
       .sp .you .token-img { width: 78%; height: 78%; }
       .token-btn:hover { background: var(--pollen); }
-      .counters { display: flex; align-items: center; gap: 0; flex-wrap: wrap; color: var(--muted); font-size: 12px; }
-      .counters span { display: flex; align-items: center; white-space: nowrap; }
-      .counters span:not(:first-child) { margin-left: 9px; padding-left: 9px; border-left: 1px solid var(--line); }
-      .counters b { color: var(--ink); font-family: var(--heading-font); font-weight: 700; font-size: 13px; display: inline; line-height: 1; margin-right: 3px; }
+      .counters { display: flex; align-items: center; gap: 18px; color: var(--muted); font-size: 12px; }
+      .counters span { display: flex; flex-direction: column; align-items: center; white-space: nowrap; line-height: 1; }
+      .counters b { color: var(--ink); font-family: var(--heading-font); font-weight: 700; font-size: 18px; display: block; line-height: 1; margin-bottom: 3px; }
       .linkbtn { background: none; color: var(--muted); text-decoration: underline; font-size: 13px; font-family: inherit; letter-spacing: 0; padding: 0; font-weight: 400; }
 
       /* ------------------------------------------------------------ auth card */
@@ -805,10 +804,11 @@
           </div>
           <div class="nav-secondary">
             <div class="counters">
-              <span id="c-mine-wrap"><b id="c-mine">0</b> my calls</span>
+              <!-- My calls and do not call stay in the DOM for the counters JS but are not shown. -->
+              <span id="c-mine-wrap" style="display:none"><b id="c-mine">0</b> my calls</span>
               <span><b id="c-remaining">0</b> left</span>
               <span><b id="c-done">0</b> done</span>
-              <span id="c-dnc-wrap"><b id="c-dnc">0</b> do not call</span>
+              <span id="c-dnc-wrap" style="display:none"><b id="c-dnc">0</b> do not call</span>
             </div>
             <button type="button" class="btn-primary small" id="add-lead-btn">+ Add a lead</button>
           </div>
