@@ -464,8 +464,11 @@
       .drawer .field { margin-bottom: 14px; }
 
       /* ---------------------------------------------------- all clubs / bounces */
+      .clubs-tabs { margin: 0 0 12px; flex-wrap: wrap; }
+      .clubs-tabs .tab-count { font-weight: 400; opacity: 0.8; margin-left: 4px; }
       .clubs-toolbar { display: flex; flex-wrap: wrap; gap: 10px; margin: 0 0 10px; }
       .clubs-toolbar select { width: auto; padding: 6px 26px 6px 10px; font-size: 12px; max-width: 220px; }
+      .clubs-toolbar .pg-q { flex: 0 1 260px; }
       .clubs-count { color: var(--muted); font-size: 13px; margin: 0 0 10px; }
       .muted-line { color: var(--muted); font-size: 12px; }
 
@@ -1459,7 +1462,7 @@
           },
           {
             t: "Your lists",
-            tour: { tab: "admin", sel: "#list-r1" },
+            tour: { tab: "admin", subtab: "r1", sel: "#list-r1" },
             h:
               "<p><b>First round &mdash; to call</b> is every club in your list nobody has spoken to yet, biggest first. <b>Second round &mdash; call back</b> is the clubs you&rsquo;ve had a real conversation with, in priority order.</p>" +
               "<p>Click any club, anywhere it appears, to open its full record: every call, every note, and every email the campaign has sent it &mdash; including whether it was opened. You can also log a call from there.</p>",
@@ -1625,6 +1628,7 @@
           function spotlight() {
             // A later step may already be on screen by the time a slow load lands.
             if (!tourShown || seq !== tourSeq) return;
+            if (tour.subtab) switchClubsTab(tour.subtab);
             var el = tourTarget(tour.sel);
             if (!el) return;
             el.classList.add("tour-hi");
@@ -2059,7 +2063,7 @@
           // visible text of the row, so club, town, contact, outcome and notes
           // all count.
           var search =
-            rows.length > 5 || selects
+            (rows.length > 5 || selects) && !(opts && opts.noSearch)
               ? '<div class="pg-search">' +
                 (rows.length > 5
                   ? '<input type="search" class="pg-q" data-pg="' + key + '" placeholder="Search this list" autocomplete="off">'
@@ -2283,106 +2287,131 @@
         }
 
         // The two working lists. Every row opens the club's slide-out panel.
-        function listsHtml(lists) {
-          var r1 = (lists && lists.round1) || [];
-          var r2 = (lists && lists.round2) || [];
-
-          var round1 =
-            (canCall() ? '<div class="add-club-row"><button type="button" class="pg-btn add-club-open">+ Add a club that was recommended to you</button></div>' : "") +
-            '<h2 id="list-r1">First round &mdash; to call (' +
-            r1.length +
-            ")</h2>" +
-            '<p class="list-note">Clubs nobody has spoken to yet, biggest first. Click a club for its full record.</p>' +
-            pagedTable(
-              "r1",
-              "<th>Club</th><th>Where</th><th>Rank</th><th>Phone</th><th>Attempts</th><th></th>",
-              r1.map(function (t) {
-                return (
-                  '<tr class="rowlink" data-club="' +
-                  esc(t.id) +
-                  '"' + fAttrs({ state: stateOf(t.where), size: sizeBand(t.egm_count), tried: t.attempts ? "Tried before" : "Not yet tried", activity: activityBand(t.last_activity), referred: t.referred_by ? "Referred on a call" : "Original list" }) + ">" +
-                  "<td>" +
-                  esc(t.entity_name) +
-                  (t.referred_by ? ' <span class="pill referral-pill" title="' + esc(t.referred_by) + '">referred</span>' : "") +
-                  "</td>" +
-                  "<td>" +
-                  esc(t.where || "—") +
-                  "</td>" +
-                  "<td>" +
-                  esc(t.gaming_rank != null ? t.gaming_rank : "—") +
-                  "</td>" +
-                  '<td class="nowrap">' +
-                  esc(t.primary_phone || "—") +
-                  "</td>" +
-                  "<td>" +
-                  (t.attempts ? esc(t.attempts) + " tried" : "—") +
-                  "</td>" +
-                  '<td class="row-actions"><button type="button" class="handoff-btn" data-handoff="' +
-                  esc(t.id) +
-                  '" data-club-name="' +
-                  esc(t.entity_name) +
-                  '">Hand off</button></td></tr>'
-                );
-              }),
-              { empty: "Nothing left — every club has been spoken to." },
-            );
-
-          var round2 =
-            '<h2 id="list-r2">Second round &mdash; call back (' +
-            r2.length +
-            ")</h2>" +
-            '<p class="list-note">Already called, in priority order: clubs where the first call landed a direct ' +
-            "contact come first, then everyone else. Not-interested clubs are left off.</p>" +
-            pagedTable(
-              "r2",
-              "<th>Priority</th><th>Club</th><th>Where</th><th>Contact</th><th>Last outcome</th><th>Calls</th><th></th>",
-              r2.map(function (t) {
-                return (
-                  '<tr class="rowlink" data-club="' +
-                  esc(t.id) +
-                  '"' + fAttrs({ state: stateOf(t.where), contact: t.direct ? "Direct contact" : "Standard", outcome: outcomeLabel(t.last_outcome), activity: activityBand(t.last_call_at), again: t.called_again ? "Called again" : "Not yet" }) + ">" +
-                  "<td>" +
-                  (t.direct
-                    ? '<span class="pill hot">direct contact</span>'
-                    : '<span class="pill">standard</span>') +
-                  "</td>" +
-                  "<td>" +
-                  esc(t.entity_name) +
-                  "</td>" +
-                  "<td>" +
-                  esc(t.where || "—") +
-                  "</td>" +
-                  "<td>" +
-                  esc(t.decision_maker || "—") +
-                  (t.decision_maker_phone
-                    ? "<br><span style='color:var(--muted)'>" +
-                      esc(t.decision_maker_phone) +
-                      "</span>"
-                    : "") +
-                  "</td>" +
-                  "<td>" +
-                  esc(outcomeLabel(t.last_outcome)) +
-                  (t.called_again
-                    ? ' <span class="pill ok">called again</span>'
-                    : "") +
-                  "</td>" +
-                  "<td>" +
-                  esc(t.calls) +
-                  "</td>" +
-                  '<td class="row-actions"><button type="button" class="handoff-btn" data-handoff="' +
-                  esc(t.id) +
-                  '" data-club-name="' +
-                  esc(t.entity_name) +
-                  '">Hand off</button></td></tr>'
-                );
-              }),
-              {
-                empty:
-                  "No callbacks yet — they appear here after first calls are made.",
-              },
-            );
-
-          return round1 + round2;
+        // Row builders for the round lists. Every row opens the club's slide-out panel.
+        function r1RowHtml(t) {
+          return (
+            '<tr class="rowlink" data-club="' +
+            esc(t.id) +
+            '"' + fAttrs({ state: stateOf(t.where), size: sizeBand(t.egm_count), tried: t.attempts ? "Tried before" : "Not yet tried", activity: activityBand(t.last_activity), referred: t.referred_by ? "Referred on a call" : "Original list" }) + ">" +
+            "<td>" +
+            esc(t.entity_name) +
+            (t.referred_by ? ' <span class="pill referral-pill" title="' + esc(t.referred_by) + '">referred</span>' : "") +
+            "</td>" +
+            "<td>" +
+            esc(t.where || "—") +
+            "</td>" +
+            "<td>" +
+            esc(t.gaming_rank != null ? t.gaming_rank : "—") +
+            "</td>" +
+            '<td class="nowrap">' +
+            esc(t.primary_phone || "—") +
+            "</td>" +
+            "<td>" +
+            (t.attempts ? esc(t.attempts) + " tried" : "—") +
+            "</td>" +
+            '<td class="row-actions"><button type="button" class="handoff-btn" data-handoff="' +
+            esc(t.id) +
+            '" data-club-name="' +
+            esc(t.entity_name) +
+            '">Hand off</button></td></tr>'
+          );
+        }
+        function r2RowHtml(t) {
+          return (
+            '<tr class="rowlink" data-club="' +
+            esc(t.id) +
+            '"' + fAttrs({ state: stateOf(t.where), contact: t.direct ? "Direct contact" : "Standard", outcome: outcomeLabel(t.last_outcome), activity: activityBand(t.last_call_at), again: t.called_again ? "Called again" : "Not yet" }) + ">" +
+            "<td>" +
+            (t.direct
+              ? '<span class="pill hot">direct contact</span>'
+              : '<span class="pill">standard</span>') +
+            "</td>" +
+            "<td>" +
+            esc(t.entity_name) +
+            "</td>" +
+            "<td>" +
+            esc(t.where || "—") +
+            "</td>" +
+            "<td>" +
+            esc(t.decision_maker || "—") +
+            (t.decision_maker_phone
+              ? "<br><span style='color:var(--muted)'>" +
+                esc(t.decision_maker_phone) +
+                "</span>"
+              : "") +
+            "</td>" +
+            "<td>" +
+            esc(outcomeLabel(t.last_outcome)) +
+            (t.called_again
+              ? ' <span class="pill ok">called again</span>'
+              : "") +
+            "</td>" +
+            "<td>" +
+            esc(t.calls) +
+            "</td>" +
+            '<td class="row-actions"><button type="button" class="handoff-btn" data-handoff="' +
+            esc(t.id) +
+            '" data-club-name="' +
+            esc(t.entity_name) +
+            '">Hand off</button></td></tr>'
+          );
+        }
+        // One recent-call row. Admins also see who called and whether the
+        // sheet has it.
+        function recentRowHtml(r, admin) {
+          return (
+            '<tr class="rowlink" data-club="' +
+            esc(r.target_id || "") +
+            '"' + fAttrs({ activity: activityBand(r.created_at), caller: r.caller, outcome: outcomeLabel(r.outcome), round: "Call " + (r.round || 1) }) + ">" +
+            '<td class="nowrap">' +
+            esc(when(r.created_at)) +
+            "</td>" +
+            "<td>" +
+            esc(r.club) +
+            "<br><span style='color:var(--muted)'>" +
+            esc(r.where) +
+            "</span></td>" +
+            (admin ? "<td>" + esc(r.caller) + "</td>" : "") +
+            "<td>" +
+            esc(outcomeLabel(r.outcome)) +
+            (r.round > 1 ? " (call " + esc(r.round) + ")" : "") +
+            "</td>" +
+            "<td>" +
+            esc(r.decision_maker || "—") +
+            (r.decision_maker_role
+              ? "<br><span style='color:var(--muted)'>" +
+                esc(r.decision_maker_role) +
+                "</span>"
+              : "") +
+            (r.decision_maker_email
+              ? "<br><span style='color:var(--muted)'>" + esc(r.decision_maker_email) + "</span>"
+              : "") +
+            "</td>" +
+            "<td>" +
+            yesno(r.wants_info) +
+            "</td>" +
+            (admin
+              ? "<td>" +
+                (r.sheet_synced
+                  ? '<span class="pill ok">yes</span>'
+                  : '<span class="pill bad">pending</span>') +
+                "</td>"
+              : "") +
+            "<td>" +
+            esc(r.notes || "—") +
+            "</td></tr>"
+          );
+        }
+        function dncRowHtml(c) {
+          return (
+            '<tr class="rowlink" data-club="' + esc(c.id) + '"' + fAttrs({ state: c.state }) + "><td>" +
+            esc(c.entity_name) +
+            "</td><td>" +
+            esc(c.where || "") +
+            "</td><td>" +
+            esc(c.do_not_call_reason || "—") +
+            "</td></tr>"
+          );
         }
 
         // The caller's own overview: their numbers, their round lists, their calls.
@@ -2407,47 +2436,8 @@
             pieChart(d.by_outcome) +
             "</div>" +
             "</div>" +
-            listsHtml(d.lists) +
+            clubsSectionHtml(d, false) +
             referralsTableHtml(d.referrals) +
-            "<h2>Your recent calls</h2>" +
-            pagedTable(
-              "myrecent",
-              "<th>When</th><th>Club</th><th>Outcome</th><th>Decision maker</th><th>Wants info</th><th>Notes</th>",
-              (d.recent || []).map(function (r) {
-                return (
-                  '<tr class="rowlink" data-club="' +
-                  esc(r.target_id || "") +
-                  '"' + fAttrs({ activity: activityBand(r.created_at), outcome: outcomeLabel(r.outcome), round: "Call " + (r.round || 1) }) + ">" +
-                  '<td class="nowrap">' +
-                  esc(when(r.created_at)) +
-                  "</td>" +
-                  "<td>" +
-                  esc(r.club) +
-                  "<br><span style='color:var(--muted)'>" +
-                  esc(r.where) +
-                  "</span></td>" +
-                  "<td>" +
-                  esc(outcomeLabel(r.outcome)) +
-                  (r.round > 1 ? " (call " + esc(r.round) + ")" : "") +
-                  "</td>" +
-                  "<td>" +
-                  esc(r.decision_maker || "—") +
-                  (r.decision_maker_email
-                    ? "<br><span style='color:var(--muted)'>" +
-                      esc(r.decision_maker_email) +
-                      "</span>"
-                    : "") +
-                  "</td>" +
-                  "<td>" +
-                  yesno(r.wants_info) +
-                  "</td>" +
-                  "<td>" +
-                  esc(r.notes || "—") +
-                  "</td></tr>"
-                );
-              }),
-              { empty: "No calls recorded yet." },
-            ) +
             "</div>";
         }
 
@@ -2455,7 +2445,7 @@
         // Admin-only table over every club (d.clubs), filtered entirely client
         // side. Filter state lives here so it survives a table re-render; the
         // table itself is rebuilt (not the whole overview) on any change.
-        var CLUB_FILTER_STATE = { state: "", list: "", status: "", calls: "", outcome: "", rel: "", bounced: "" };
+        var CLUB_FILTER_STATE = { q: "", state: "", list: "", status: "", calls: "", outcome: "", rel: "", bounced: "" };
         var ALL_CLUBS_RAW = [];
         var CLUBS_HEAD =
           "<th>Club</th><th>List</th><th>Machines</th><th>Calls</th><th>Last outcome</th>" +
@@ -2507,7 +2497,7 @@
           });
           return Object.keys(seen).sort();
         }
-        function clubsToolbarHtml(clubs) {
+        function clubsToolbarHtml(clubs, admin) {
           var f = CLUB_FILTER_STATE;
           var states = clubFilterValues(clubs, function (c) { return c.state; });
           var outcomes = clubFilterValues(clubs, function (c) { return c.last_outcome; });
@@ -2527,8 +2517,9 @@
           }
           return (
             '<div class="clubs-toolbar">' +
+            '<input type="search" id="cf-q" class="pg-q" placeholder="Search clubs" autocomplete="off" value="' + esc(f.q || "") + '">' +
             sel("cf-state", "State", "state", states.map(function (s) { return { v: s, t: s }; })) +
-            sel("cf-list", "List", "list", [1, 2, 3, 4, 5, 6, 7].map(function (n) { return { v: String(n), t: "List " + n }; })) +
+            (admin ? sel("cf-list", "List", "list", [1, 2, 3, 4, 5, 6, 7].map(function (n) { return { v: String(n), t: "List " + n }; })) : "") +
             sel("cf-status", "Status", "status", [
               { v: "not_called", t: "Not called yet" },
               { v: "attempted", t: "Attempted, nobody reached" },
@@ -2543,11 +2534,13 @@
               { v: "3+", t: "3+" },
             ], "any") +
             sel("cf-outcome", "Outcome", "outcome", outcomes.map(function (o) { return { v: o, t: outcomeLabel(o) }; })) +
-            sel("cf-rel", "Relationship", "rel", [
-              { v: "parent", t: "Has sub-branches" },
-              { v: "child", t: "Is a sub-branch" },
-            ]) +
-            sel("cf-bounced", "Bounced", "bounced", [{ v: "yes", t: "Yes" }]) +
+            (admin
+              ? sel("cf-rel", "Relationship", "rel", [
+                  { v: "parent", t: "Has sub-branches" },
+                  { v: "child", t: "Is a sub-branch" },
+                ]) +
+                sel("cf-bounced", "Bounced", "bounced", [{ v: "yes", t: "Yes" }])
+              : "") +
             "</div>"
           );
         }
@@ -2600,16 +2593,132 @@
             "</td></tr>"
           );
         }
+        // ---- the tabbed clubs section -------------------------------------
+        // One tab strip (All / First round / Second round / Recent calls / Do
+        // not call) and ONE shared filter row, both on the page background; the
+        // chosen tab's table sits in the card below. Tabs are the base set,
+        // the filters narrow it, and both survive a re-render.
+        var CLUBS_TAB = "all";
+        var CLUBS_DATA = null;
+        var CLUBS_LAST = { shown: 0, total: 0 };
+
+        // Callers without the admin club table get one built from their round
+        // lists, so the same filters work for them.
+        function deriveClubsFromLists(lists) {
+          var out = [], seen = {};
+          ((lists && lists.round1) || []).forEach(function (t) {
+            if (seen[t.id]) return;
+            seen[t.id] = 1;
+            out.push({
+              id: t.id, entity_name: t.entity_name, where: t.where, state: stateOf(t.where), call_group: t.call_group,
+              egm_count: t.egm_count, gaming_rank: t.gaming_rank, calls: t.attempts || 0, spoken_to: 0,
+              last_outcome: null, last_call_at: t.last_activity || null, do_not_call: false,
+              referred_by: t.referred_by || null, pinned_to_name: t.pinned_to_name || null, status: t.status, children: [],
+            });
+          });
+          ((lists && lists.round2) || []).forEach(function (t) {
+            if (seen[t.id]) return;
+            seen[t.id] = 1;
+            out.push({
+              id: t.id, entity_name: t.entity_name, where: t.where, state: stateOf(t.where), call_group: t.call_group,
+              egm_count: t.egm_count, gaming_rank: t.gaming_rank, calls: t.calls || 0, spoken_to: t.called_again ? 2 : 1,
+              last_outcome: t.last_outcome, last_call_at: t.last_call_at, do_not_call: false,
+              pinned_to_name: t.pinned_to_name || null, status: "done", children: [],
+            });
+          });
+          return out;
+        }
+        function clubPasses(id) {
+          var c = CLUBS_DATA && CLUBS_DATA.byId[id];
+          return c ? clubMatchesFilters(c) : true;
+        }
+        function isRecentCall(iso) {
+          return !!iso && Date.now() - new Date(iso).getTime() < 7 * 86400000;
+        }
+        function clubsBucketCounts() {
+          var D = CLUBS_DATA;
+          return {
+            all: D.clubs.length,
+            r1: (D.lists.round1 || []).length,
+            r2: (D.lists.round2 || []).length,
+            recent: D.recent.length,
+            dnc: D.clubs.filter(function (c) { return c.do_not_call; }).length,
+          };
+        }
+        function clubsTabsHtml() {
+          var n = clubsBucketCounts();
+          var tabs = [
+            ["all", "All", n.all], ["r1", "First round", n.r1], ["r2", "Second round", n.r2],
+            ["recent", "Recent calls", n.recent], ["dnc", "Do not call", n.dnc],
+          ];
+          if (!CLUBS_DATA.admin) tabs = tabs.filter(function (t) { return t[0] !== "dnc"; });
+          return (
+            '<div class="tabs clubs-tabs" id="clubs-tabs">' +
+            tabs.map(function (t) {
+              var id = t[0] === "r1" ? ' id="list-r1"' : t[0] === "r2" ? ' id="list-r2"' : "";
+              return '<button type="button" class="tab' + (CLUBS_TAB === t[0] ? " on" : "") + '" data-clubs-tab="' + t[0] + '"' + id + ">" +
+                t[1] + '<span class="tab-count">(' + t[2] + ")</span></button>";
+            }).join("") +
+            "</div>"
+          );
+        }
+        function clubsTableHtml(tab) {
+          var D = CLUBS_DATA, admin = D.admin;
+          var head, rows, empty, total;
+          if (tab === "r1") {
+            var r1 = D.lists.round1 || [];
+            total = r1.length;
+            rows = r1.filter(function (t) { return clubPasses(t.id); }).map(r1RowHtml);
+            head = "<th>Club</th><th>Where</th><th>Rank</th><th>Phone</th><th>Attempts</th><th></th>";
+            empty = "Nothing left — every club has been spoken to.";
+          } else if (tab === "r2") {
+            var r2 = D.lists.round2 || [];
+            total = r2.length;
+            rows = r2.filter(function (t) { return clubPasses(t.id); }).map(r2RowHtml);
+            head = "<th>Priority</th><th>Club</th><th>Where</th><th>Contact</th><th>Last outcome</th><th>Calls</th><th></th>";
+            empty = "No callbacks yet — they appear here after first calls are made.";
+          } else if (tab === "recent") {
+            total = D.recent.length;
+            rows = D.recent.filter(function (r) { return clubPasses(r.target_id); }).map(function (r) { return recentRowHtml(r, admin); });
+            head = "<th>When</th><th>Club</th>" + (admin ? "<th>Caller</th>" : "") + "<th>Outcome</th><th>Decision maker</th><th>Wants info</th>" +
+              (admin ? "<th>In sheet</th>" : "") + "<th>Notes</th>";
+            empty = "No calls recorded yet.";
+          } else if (tab === "dnc") {
+            var dnc = D.clubs.filter(function (c) { return c.do_not_call; });
+            total = dnc.length;
+            rows = dnc.filter(clubMatchesFilters).map(dncRowHtml);
+            head = "<th>Club</th><th>Where</th><th>Why</th>";
+            empty = "Nothing flagged yet.";
+          } else {
+            total = D.clubs.length;
+            rows = D.clubs.filter(clubMatchesFilters).map(clubRowHtml);
+            head = CLUBS_HEAD;
+            empty = "No clubs match your filters.";
+          }
+          var q = String(CLUB_FILTER_STATE.q || "").trim().toLowerCase();
+          if (q) rows = rows.filter(function (r) { return rowText(r).indexOf(q) >= 0; });
+          CLUBS_LAST = { shown: rows.length, total: total };
+          return pagedTable("clubs-" + tab, head, rows, { filters: [], pageSize: 25, empty: empty, noSearch: true });
+        }
+        function clubsCountText() {
+          var what = CLUBS_TAB === "recent" ? "calls" : "clubs";
+          return "Showing " + CLUBS_LAST.shown + " of " + CLUBS_LAST.total + " " + what + ".";
+        }
         function rerenderClubsTable() {
           var wrap = document.getElementById("clubs-table-wrap");
-          if (!wrap) return;
-          var filtered = ALL_CLUBS_RAW.filter(clubMatchesFilters);
-          wrap.innerHTML = pagedTable("clubs", CLUBS_HEAD, filtered.map(clubRowHtml), {
-            pageSize: 25,
-            empty: "No clubs match your filters.",
-          });
+          if (!wrap || !CLUBS_DATA) return;
+          wrap.innerHTML = clubsTableHtml(CLUBS_TAB);
           var line = document.getElementById("clubs-count-line");
-          if (line) line.textContent = "Showing " + filtered.length + " of " + ALL_CLUBS_RAW.length + " clubs.";
+          if (line) line.textContent = clubsCountText();
+          document.querySelectorAll("#clubs-tabs [data-clubs-tab]").forEach(function (b) {
+            b.classList.toggle("on", b.getAttribute("data-clubs-tab") === CLUBS_TAB);
+          });
+        }
+        function switchClubsTab(tab) {
+          if (!CLUBS_DATA) return;
+          if (tab === "dnc" && !CLUBS_DATA.admin) tab = "all";
+          CLUBS_TAB = tab;
+          rerenderClubsTable();
         }
         document.addEventListener("change", function (e) {
           var sel = e.target.closest && e.target.closest(".cf-sel");
@@ -2617,20 +2726,31 @@
           CLUB_FILTER_STATE[sel.getAttribute("data-cf")] = sel.value;
           rerenderClubsTable();
         });
-        function allClubsSectionHtml(clubs) {
-          ALL_CLUBS_RAW = clubs || [];
-          var filtered = ALL_CLUBS_RAW.filter(clubMatchesFilters);
+        document.addEventListener("click", function (e) {
+          var b = e.target.closest && e.target.closest("[data-clubs-tab]");
+          if (b) switchClubsTab(b.getAttribute("data-clubs-tab"));
+        });
+        var cfQTimer = null;
+        document.addEventListener("input", function (e) {
+          if (!e.target || e.target.id !== "cf-q") return;
+          CLUB_FILTER_STATE.q = e.target.value;
+          clearTimeout(cfQTimer);
+          cfQTimer = setTimeout(rerenderClubsTable, 150);
+        });
+        function clubsSectionHtml(d, admin) {
+          var clubs = d.clubs || deriveClubsFromLists(d.lists);
+          ALL_CLUBS_RAW = clubs;
+          var byId = {};
+          clubs.forEach(function (c) { byId[c.id] = c; });
+          CLUBS_DATA = { clubs: clubs, byId: byId, lists: d.lists || {}, recent: d.recent || [], admin: !!admin };
+          if (!admin && CLUBS_TAB === "dnc") CLUBS_TAB = "all";
+          var table = clubsTableHtml(CLUBS_TAB);
           return (
-            "<h2>All clubs</h2>" +
-            clubsToolbarHtml(ALL_CLUBS_RAW) +
-            '<p class="clubs-count" id="clubs-count-line">Showing ' +
-            filtered.length +
-            " of " +
-            ALL_CLUBS_RAW.length +
-            " clubs.</p>" +
-            '<div id="clubs-table-wrap">' +
-            pagedTable("clubs", CLUBS_HEAD, filtered.map(clubRowHtml), { pageSize: 25, empty: "No clubs match your filters." }) +
-            "</div>"
+            "<h2>Clubs</h2>" +
+            clubsTabsHtml() +
+            clubsToolbarHtml(clubs, admin) +
+            '<p class="clubs-count" id="clubs-count-line">' + esc(clubsCountText()) + "</p>" +
+            '<div id="clubs-table-wrap">' + table + "</div>"
           );
         }
         function bouncesSectionHtml(bounces) {
@@ -2753,9 +2873,8 @@
             "</div>" +
             "</div>" +
             outcomeHtml +
-            listsHtml(d.lists) +
+            clubsSectionHtml(d, true) +
             referralsTableHtml(d.referrals) +
-            (d.clubs ? allClubsSectionHtml(d.clubs) : "") +
             (d.bounces ? bouncesSectionHtml(d.bounces) : "") +
             "<h2>Callers</h2><div class='scroll'><table><thead><tr>" +
             "<th>Name</th><th>Username</th><th>List</th><th>Calls</th><th>Left / all</th>" +
@@ -2810,57 +2929,6 @@
                   .join("")
               : '<tr><td colspan="9">No callers set up yet.</td></tr>') +
             "</tbody></table></div>" +
-            "<h2>Recent calls</h2>" +
-            pagedTable(
-              "recent",
-              "<th>When</th><th>Club</th><th>Caller</th><th>Outcome</th><th>Decision maker</th>" +
-                "<th>Wants info</th><th>In sheet</th><th>Notes</th>",
-              (d.recent || []).map(function (r) {
-                return (
-                  '<tr class="rowlink" data-club="' +
-                  esc(r.target_id || "") +
-                  '"' + fAttrs({ activity: activityBand(r.created_at), caller: r.caller, outcome: outcomeLabel(r.outcome), round: "Call " + (r.round || 1) }) + ">" +
-                  '<td class="nowrap">' +
-                  esc(when(r.created_at)) +
-                  "</td>" +
-                  "<td>" +
-                  esc(r.club) +
-                  "<br><span style='color:var(--muted)'>" +
-                  esc(r.where) +
-                  "</span></td>" +
-                  "<td>" +
-                  esc(r.caller) +
-                  "</td>" +
-                  "<td>" +
-                  esc((r.outcome || "").replace(/_/g, " ")) +
-                  (r.round > 1 ? " (call " + esc(r.round) + ")" : "") +
-                  "</td>" +
-                  "<td>" +
-                  esc(r.decision_maker || "—") +
-                  (r.decision_maker_role
-                    ? "<br><span style='color:var(--muted)'>" +
-                      esc(r.decision_maker_role) +
-                      "</span>"
-                    : "") +
-                  (r.decision_maker_email
-                    ? "<br>" + esc(r.decision_maker_email)
-                    : "") +
-                  "</td>" +
-                  "<td>" +
-                  yesno(r.wants_info) +
-                  "</td>" +
-                  "<td>" +
-                  (r.sheet_synced
-                    ? '<span class="pill ok">yes</span>'
-                    : '<span class="pill bad">pending</span>') +
-                  "</td>" +
-                  "<td>" +
-                  esc(r.notes || "—") +
-                  "</td></tr>"
-                );
-              }),
-              { empty: "No calls recorded yet." },
-            ) +
             failingHtml +
             "<h2>Scheduled call-backs</h2>" +
             pagedTable(
@@ -2871,23 +2939,6 @@
                   (c.where ? ' <span style="color:var(--muted)">' + esc(c.where) + "</span>" : "") + "</td><td>" + esc(c.caller || "") + "</td><td>" + esc(c.note || "") + "</td></tr>";
               }),
               { empty: "No call-backs booked." },
-            ) +
-            "<h2>Do not call &mdash; already came to us</h2>" +
-            pagedTable(
-              "dnc",
-              "<th>Club</th><th>Where</th><th>Why</th>",
-              (d.do_not_call || []).map(function (x) {
-                return (
-                  "<tr" + fAttrs({ state: x.state }) + "><td>" +
-                  esc(x.entity_name) +
-                  "</td><td>" +
-                  esc([x.suburb, x.state].filter(Boolean).join(" ")) +
-                  "</td><td>" +
-                  esc(x.do_not_call_reason || "—") +
-                  "</td></tr>"
-                );
-              }),
-              { empty: "Nothing flagged yet." },
             ) +
             "</div>";
         }
