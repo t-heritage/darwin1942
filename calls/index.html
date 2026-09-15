@@ -133,6 +133,9 @@
       .field.field-bad label { color: var(--red); }
       .field.field-bad input, .field.field-bad select, .field.field-bad textarea { border-color: var(--red) !important; box-shadow: 0 0 0 3px rgba(200,16,46,0.22); }
       .field.field-bad .path, .field.field-bad .spoke { outline: 2px solid var(--red); outline-offset: 2px; border-radius: 8px; }
+      /* A name/role pulled in from the "who did you speak to" picker: still a
+         normal editable field, just tinted so it reads as prefilled. */
+      .field.field-filled input { background: #eef7fb; }
       .msg.ok { display: block; background: #e1f4fd; border-left: 4px solid var(--sky); color: #064a66; }
 
       /* ------------------------------------------------------------ worksheet */
@@ -3565,7 +3568,7 @@
           [6, "other", false, "", "", "", 9],
           [7, "wants_info_only", true, "Jess Tan", "Operations", "jess@example.com", 10],
           [8, "no_answer", false, "", "", "", 1],
-          [10, "gatekeeper", false, "", "", "", 1],
+          [10, "gatekeeper", false, "Pam", "Reception", "", 1],
         ].map(function (c, i) {
           var t = DEMO_CLUBS[c[0]];
           return {
@@ -3608,6 +3611,31 @@
             };
           });
         }
+        // Mirrors the backend's knownContacts(): past decision makers (newest
+        // first) plus the club's primary person, deduped — feeds the "who did
+        // you speak to" picker in demo mode.
+        function demoContactsFor(t) {
+          var out = [];
+          var seen = {};
+          DEMO_CALLS.filter(function (c) { return c.target_id === t.id; })
+            .slice()
+            .sort(function (a, b) { return new Date(b.created_at) - new Date(a.created_at); })
+            .forEach(function (c) {
+              if (!c.decision_maker_name && !c.decision_maker_email) return;
+              var key = c.decision_maker_email || "n:" + c.decision_maker_name.toLowerCase();
+              if (seen[key]) return;
+              seen[key] = true;
+              out.push({ name: c.decision_maker_name || "", role: c.decision_maker_role || null, email: c.decision_maker_email || null, phone: null, source: "call" });
+            });
+          if (t.primary_person) {
+            var name = t.primary_person, role = null;
+            var m = name.match(/^(.*?)\s*\(([^()]+)\)\s*$/);
+            if (m) { name = m[1]; role = m[2]; }
+            var key2 = t.primary_email || "n:" + name.toLowerCase();
+            if (!seen[key2]) out.push({ name: name, role: role, email: t.primary_email || null, phone: t.primary_phone || null, source: "club" });
+          }
+          return out;
+        }
         function buildDemoBounces() {
           return [
             { email: DEMO_CLUBS[2].primary_email || "bounced2@example.com", target_id: DEMO_CLUBS[2].id, club: DEMO_CLUBS[2].entity_name, event_type: "bounced", subject: "Darwin 1942 partnership pack", campaign: "Partnership pack", at: new Date(Date.now() - 3 * 86400000).toISOString() },
@@ -3647,8 +3675,15 @@
             }
             case "next": {
               var r2 = Number(p.round) === 2;
-              var t = r2 ? DEMO_CLUBS[4] : round1[0];
-              return { target: t, round: r2 ? 2 : 1, stats: stats, history: r2 ? DEMO_CALLS.filter(function (c) { return c.target_id === t.id; }) : [] };
+              // Round 1 favours a club that already has a known contact (e.g. a
+              // gatekeeper call that captured a name), so the picker shows up
+              // in demo mode without relying on list order.
+              var t = r2 ? DEMO_CLUBS[4] : (round1.filter(function (x) { return demoContactsFor(x).length; })[0] || round1[0]);
+              return {
+                target: t, round: r2 ? 2 : 1, stats: stats,
+                history: r2 ? DEMO_CALLS.filter(function (c) { return c.target_id === t.id; }) : [],
+                contacts: demoContactsFor(t),
+              };
             }
             case "overview": {
               var byOut = DEMO_CALLS.reduce(function (a, c) { a[c.outcome] = (a[c.outcome] || 0) + 1; return a; }, {});
@@ -3693,6 +3728,7 @@
                   { id: "ib1", direction: "in", from_email: "secretary@rootyhillrsl.com.au", from_name: "Rebecca Ward", to_email: "hello@darwin1942.com", subject: "Re: Darwin 1942 partnership", snippet: "Thanks for calling through, happy to take a look at the partnership pack when it lands.", sent_at: new Date(Date.now() - 2 * 86400000).toISOString(), thread_id: "t1" },
                   { id: "ib2", direction: "out", from_email: "hello@darwin1942.com", from_name: "Darwin 1942", to_email: "secretary@rootyhillrsl.com.au", subject: "Darwin 1942 partnership pack", snippet: "Great speaking with you today, here is the partnership pack we discussed.", sent_at: new Date(Date.now() - 3 * 86400000).toISOString(), thread_id: "t1" },
                 ] : [],
+                known_contacts: demoContactsFor(tt),
               };
             }
             case "club_search": {
@@ -3749,7 +3785,7 @@
             case "cancel_callback": return { ok: true };
             case "claim_target": {
               var ct = DEMO_CLUBS.filter(function (x) { return x.id === p.target_id; })[0] || DEMO_CLUBS[0];
-              return { target: ct, round: 1, history: [], stats: stats };
+              return { target: ct, round: 1, history: [], stats: stats, contacts: demoContactsFor(ct) };
             }
             default: return { ok: true };
           }
@@ -3846,7 +3882,7 @@
                   '<p style="color:var(--muted);font-size:14px">Use the round switch in the top bar to work the other queue.</p></div>';
                 return;
               }
-              render(r.target, r.history || [], r.round || roundMode);
+              render(r.target, r.history || [], r.round || roundMode, r.contacts || []);
               if (r.callback) showCallbackBanner(r.callback);
             })
             .catch(function (e) {
@@ -3993,6 +4029,73 @@
             if (c.name || c.role || c.email || c.phone) out.push(c);
           });
           return out;
+        }
+        // ------------------------------------------------ "who did you speak to"
+        // On a second call (or any call to a club we already know people at), the
+        // caller shouldn't have to retype a name every time. This turns the known
+        // contacts for a club (from the API's `contacts` / `known_contacts`) into
+        // a select above the name field; picking one fills name/role (and email/
+        // phone, where the form has them) and "Someone new" clears everything.
+        function whoSelectHtml(prefix, contacts) {
+          contacts = contacts || [];
+          if (!contacts.length) return "";
+          var options = contacts
+            .map(function (c, i) {
+              var label = c.name
+                ? c.role
+                  ? c.name + ", " + c.role
+                  : c.name
+                : c.email || "Unknown contact";
+              return '<option value="' + i + '">' + esc(label) + "</option>";
+            })
+            .join("");
+          return (
+            '<div class="field"><label for="' + prefix + '-who">Who did you speak to?</label>' +
+            '<select id="' + prefix + '-who">' +
+            options +
+            '<option value="new">Someone new</option>' +
+            "</select></div>" +
+            '<input type="hidden" id="' + prefix + '-who-email">' +
+            '<input type="hidden" id="' + prefix + '-who-phone">'
+          );
+        }
+        function bindWhoSelect(prefix, contacts) {
+          contacts = contacts || [];
+          var sel = document.getElementById(prefix + "-who");
+          if (!sel) return;
+          var nameEl = document.getElementById(prefix + "-dm");
+          var roleEl = document.getElementById(prefix + "-role");
+          var emailEl = document.getElementById(prefix + "-email");
+          var phoneEl = document.getElementById(prefix + "-phone");
+          var hiddenEmail = document.getElementById(prefix + "-who-email");
+          var hiddenPhone = document.getElementById(prefix + "-who-phone");
+          var filledFields = [nameEl, roleEl]
+            .map(function (el) { return el && el.closest(".field"); })
+            .filter(Boolean);
+
+          function apply(idx) {
+            var c = idx !== "new" ? contacts[idx] : null;
+            if (nameEl) nameEl.value = c ? c.name || "" : "";
+            if (roleEl) roleEl.value = c ? c.role || "" : "";
+            if (emailEl) emailEl.value = c ? c.email || "" : "";
+            if (phoneEl) phoneEl.value = c ? c.phone || "" : "";
+            if (hiddenEmail) hiddenEmail.value = c ? c.email || "" : "";
+            if (hiddenPhone) hiddenPhone.value = c ? c.phone || "" : "";
+            filledFields.forEach(function (f) {
+              f.classList.toggle("field-filled", !!c);
+            });
+            if (!c && nameEl) nameEl.focus();
+          }
+
+          // Default: the most recent decision maker (the first call-sourced
+          // contact — the list arrives newest first), else "Someone new".
+          var defaultIdx = "new";
+          for (var i = 0; i < contacts.length; i++) {
+            if (contacts[i].source === "call") { defaultIdx = String(i); break; }
+          }
+          sel.value = defaultIdx;
+          apply(defaultIdx);
+          sel.addEventListener("change", function () { apply(this.value); });
         }
         // Add / remove contact rows, wherever the button lives (form or drawer).
         document.addEventListener("click", function (e) {
@@ -4418,7 +4521,7 @@
               try { localStorage.setItem("d1942_round", String(roundMode)); } catch (err) {}
               renderRoundSwitch();
               switchTab("work");
-              render(r.target, r.history || [], r.round);
+              render(r.target, r.history || [], r.round, r.contacts || []);
             })
             .catch(function (err) { alert(err.message); });
         }
@@ -4442,7 +4545,8 @@
           return v ? String(v) : "";
         }
 
-        function render(t, history, round) {
+        function render(t, history, round, contacts) {
+          contacts = contacts || [];
           var phone = (t.primary_phone || "").trim();
           var telHref = phone ? "tel:" + phone.replace(/[^0-9+]/g, "") : "";
           var websites = (t.websites || "").split(";")[0].trim();
@@ -4491,8 +4595,9 @@
           var outcomeHtml, fieldsHtml;
           if (round >= 2) {
             fieldsHtml =
+              whoSelectHtml("f", contacts) +
               '<div class="field-row">' +
-              '<div class="field"><label for="f-dm">Who did you speak to?</label>' +
+              '<div class="field"><label for="f-dm">' + (contacts.length ? "Name" : "Who did you speak to?") + "</label>" +
               '<input type="text" id="f-dm" autocomplete="off"></div>' +
               '<div class="field"><label for="f-role">What is their role?</label>' +
               '<input type="text" id="f-role" autocomplete="off"></div>' +
@@ -4573,6 +4678,7 @@
               '<input type="text" id="f-gk-name" autocomplete="off" placeholder="e.g. Sharon at reception"></div>' +
               '<p class="path-hint">Record whatever they told you about the right person below &mdash; a name, role or email from reception is a win. The call saves as &ldquo;could not get to the decision maker&rdquo; and the club comes back around in the queue to try again. If they gave you an email for the pack, tick the more-information box too.</p>' +
               "</div>" +
+              whoSelectHtml("f", contacts) +
               '<div class="field-row">' +
               '<div class="field"><label for="f-dm">Who is the appropriate decision maker?</label>' +
               '<input type="text" id="f-dm" autocomplete="off"></div>' +
@@ -4743,6 +4849,8 @@
               });
           }
 
+          bindWhoSelect("f", contacts);
+
           document
             .getElementById("call-form")
             .addEventListener("submit", onSave);
@@ -4801,8 +4909,12 @@
           };
           var wantsEl = document.getElementById("f-wants");
           var wants = !!(wantsEl && wantsEl.checked);
+          // A contact picked from "who did you speak to" carries its own email
+          // (hidden field, since round 2 has no visible email input); otherwise
+          // fall back to whatever earlier call captured one.
+          var whoEmail = val("f-who-email").trim();
           var email =
-            formRound >= 2 ? formCarryEmail : val("f-email").trim();
+            formRound >= 2 ? whoEmail || formCarryEmail : val("f-email").trim();
           if (wants && !email) {
             flagField("save-msg", "f-email", "To send more information you need their email address.");
             return;
@@ -5422,6 +5534,7 @@
             '<button type="button" class="handoff-btn" data-handoff="' + esc(t.id) + '" data-club-name="' + esc(t.entity_name) + '">Hand this club to someone else</button>' +
             "<h3>Record another call</h3>" +
             '<form id="d-call-form" novalidate>' +
+            whoSelectHtml("d", d.known_contacts || []) +
             '<div class="field-row">' +
             '<div class="field"><label for="d-dm">Decision maker</label><input type="text" id="d-dm" autocomplete="off"></div>' +
             '<div class="field"><label for="d-role">Their role</label><input type="text" id="d-role" autocomplete="off"></div>' +
@@ -5473,6 +5586,7 @@
 
           wireRelationshipBlock(t);
           wireDeleteZone(t);
+          bindWhoSelect("d", d.known_contacts || []);
 
           document
             .getElementById("d-outcome")
