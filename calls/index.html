@@ -443,6 +443,39 @@
       .drawer .btn-primary { width: auto; padding: 10px 20px; }
       .drawer .field { margin-bottom: 14px; }
 
+      /* ---------------------------------------------------- all clubs / bounces */
+      .clubs-toolbar { display: flex; flex-wrap: wrap; gap: 10px; margin: 0 0 10px; }
+      .clubs-toolbar select { width: auto; padding: 6px 26px 6px 10px; font-size: 12px; max-width: 220px; }
+      .clubs-count { color: var(--muted); font-size: 13px; margin: 0 0 10px; }
+      .muted-line { color: var(--muted); font-size: 12px; }
+
+      /* ------------------------------------------------- drawer relationship */
+      .drawer-top-actions { display: flex; align-items: center; gap: 10px; flex: 0 0 auto; }
+      .drawer-top-actions .btn-primary { padding: 7px 14px; font-size: 13px; }
+      .rel-block { font-size: 14px; margin: 0 0 16px; }
+      .rel-block > div { margin-bottom: 4px; }
+      .rel-link { color: var(--sky-deep); text-decoration: underline; cursor: pointer; }
+      .parent-picker { margin-top: 8px; }
+      .parent-picker label { font-size: 12px; }
+      .parent-picker input { font-size: 13px; padding: 7px 10px; }
+      .parent-results { border: 2px solid var(--ink); border-radius: 8px; background: var(--paper); margin-top: 4px; max-height: 220px; overflow-y: auto; }
+      .parent-results .parent-pick { display: block; width: 100%; text-align: left; background: none; padding: 8px 12px; font-size: 13px; font-weight: 400; font-family: inherit; border-bottom: 1px solid var(--line); border-radius: 0; }
+      .parent-results .parent-pick:last-child { border-bottom: 0; }
+      .parent-results .parent-pick:hover { background: var(--paper-2); }
+
+      .danger-zone { margin-top: 28px; padding-top: 16px; border-top: 2px dashed var(--line); }
+      .btn-ghost.danger { color: var(--red); border-color: var(--red); }
+      .btn-ghost.danger:hover:not(:disabled) { background: #fde7ea; }
+      .danger-confirm { margin-top: 10px; padding: 12px 14px; background: #fde7ea; border-radius: 8px; }
+      .danger-confirm p { margin: 0 0 8px; font-size: 13px; color: #7a0b1c; }
+      .danger-confirm input { margin-bottom: 10px; }
+      .danger-confirm .actions { display: flex; gap: 10px; }
+
+      .inbox-item { border: 1px solid var(--line); border-radius: 8px; padding: 10px 14px; margin-bottom: 8px; font-size: 13px; }
+      .inbox-item .ib-head { display: flex; justify-content: space-between; gap: 10px; font-weight: 700; }
+      .inbox-item .ib-meta { color: var(--muted); font-size: 12px; margin: 3px 0 4px; }
+      .inbox-item .ib-snip { color: var(--muted); overflow: hidden; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; }
+
       /* ------------------------------------------------------------- tokens */
       #token-modal { position: fixed; inset: 0; z-index: 70; background: rgba(34,34,34,0.5); display: flex; align-items: center; justify-content: center; padding: 20px; }
       .token-card { background: var(--paper); border: 3px solid var(--ink); border-radius: var(--radius); box-shadow: 10px 10px 0 rgba(34,34,34,0.25); width: 100%; max-width: 520px; overflow: hidden; }
@@ -2394,6 +2427,216 @@
             "</div>";
         }
 
+        // ---------------------------------------------------------- all clubs
+        // Admin-only table over every club (d.clubs), filtered entirely client
+        // side. Filter state lives here so it survives a table re-render; the
+        // table itself is rebuilt (not the whole overview) on any change.
+        var CLUB_FILTER_STATE = { state: "", list: "", status: "", calls: "", outcome: "", rel: "", bounced: "" };
+        var ALL_CLUBS_RAW = [];
+        var CLUBS_HEAD =
+          "<th>Club</th><th>List</th><th>Machines</th><th>Calls</th><th>Last outcome</th>" +
+          "<th>Caller</th><th>Next step</th><th>Flags</th>";
+        var EMAIL_PREF_LABEL = { all: "all emails", essential: "only essential", none: "no emails" };
+
+        function nsKindLabel(ns) {
+          if (!ns) return "";
+          if (ns.kind === "other") return ns.title || "Something else";
+          return (
+            { call: "Call back", email: "Email", check_in: "Check in", meeting: "Meeting" }[
+              ns.kind
+            ] || ns.kind
+          );
+        }
+
+        function clubStatusBucket(c) {
+          if (c.do_not_call) return "do_not_call";
+          if (!c.calls) return "not_called";
+          if (c.status === "done") return "done";
+          if (c.spoken_to > 0) return "spoken";
+          return "attempted";
+        }
+        function clubCallsMatch(c, val) {
+          var n = Number(c.calls || 0);
+          if (val === "0") return n === 0;
+          if (val === "1") return n === 1;
+          if (val === "2+") return n >= 2;
+          if (val === "3+") return n >= 3;
+          return true;
+        }
+        function clubMatchesFilters(c) {
+          var f = CLUB_FILTER_STATE;
+          if (f.state && c.state !== f.state) return false;
+          if (f.list && String(c.call_group || "") !== f.list) return false;
+          if (f.status && clubStatusBucket(c) !== f.status) return false;
+          if (f.calls && !clubCallsMatch(c, f.calls)) return false;
+          if (f.outcome && (c.last_outcome || "") !== f.outcome) return false;
+          if (f.rel === "parent" && !(c.children && c.children.length)) return false;
+          if (f.rel === "child" && !c.parent_id) return false;
+          if (f.bounced === "yes" && !c.bounced) return false;
+          return true;
+        }
+        function clubFilterValues(clubs, fn) {
+          var seen = {};
+          clubs.forEach(function (c) {
+            var v = fn(c);
+            if (v) seen[v] = true;
+          });
+          return Object.keys(seen).sort();
+        }
+        function clubsToolbarHtml(clubs) {
+          var f = CLUB_FILTER_STATE;
+          var states = clubFilterValues(clubs, function (c) { return c.state; });
+          var outcomes = clubFilterValues(clubs, function (c) { return c.last_outcome; });
+          function sel(id, label, key, options, emptyWord) {
+            var f_current = f[key];
+            return (
+              '<select id="' + id + '" class="cf-sel" data-cf="' + key + '"><option value="">' + esc(label) + ": " + esc(emptyWord || "all") + "</option>" +
+              options
+                .map(function (o) {
+                  return (
+                    '<option value="' + esc(o.v) + '"' + (f_current === o.v ? " selected" : "") + ">" + esc(o.t) + "</option>"
+                  );
+                })
+                .join("") +
+              "</select>"
+            );
+          }
+          return (
+            '<div class="clubs-toolbar">' +
+            sel("cf-state", "State", "state", states.map(function (s) { return { v: s, t: s }; })) +
+            sel("cf-list", "List", "list", [1, 2, 3, 4, 5, 6, 7].map(function (n) { return { v: String(n), t: "List " + n }; })) +
+            sel("cf-status", "Status", "status", [
+              { v: "not_called", t: "Not called yet" },
+              { v: "attempted", t: "Attempted, nobody reached" },
+              { v: "spoken", t: "Spoken to" },
+              { v: "done", t: "Done" },
+              { v: "do_not_call", t: "Do not call" },
+            ]) +
+            sel("cf-calls", "Calls", "calls", [
+              { v: "0", t: "0" },
+              { v: "1", t: "1" },
+              { v: "2+", t: "2+" },
+              { v: "3+", t: "3+" },
+            ], "any") +
+            sel("cf-outcome", "Outcome", "outcome", outcomes.map(function (o) { return { v: o, t: outcomeLabel(o) }; })) +
+            sel("cf-rel", "Relationship", "rel", [
+              { v: "parent", t: "Has sub-branches" },
+              { v: "child", t: "Is a sub-branch" },
+            ]) +
+            sel("cf-bounced", "Bounced", "bounced", [{ v: "yes", t: "Yes" }]) +
+            "</div>"
+          );
+        }
+        function clubRowHtml(c) {
+          var relLine = "";
+          if (c.parent_id) {
+            relLine = '<br><span class="muted-line">&#8618; sub-branch of ' + esc(c.parent_name || "") + "</span>";
+          } else if (c.children && c.children.length) {
+            relLine =
+              '<br><span class="muted-line">' +
+              c.children.length +
+              " sub-branch" +
+              (c.children.length === 1 ? "" : "es") +
+              "</span>";
+          }
+          var hiddenSearch = [c.licence_name, c.primary_person].filter(Boolean).join(" ");
+          var callsCell = c.calls ? c.calls + (c.spoken_to ? " (" + c.spoken_to + " spoken)" : "") : "0";
+          var flags = [];
+          if (c.do_not_call) flags.push('<span class="pill bad">do not call</span>');
+          if (c.bounced) flags.push('<span class="pill bad">bounced</span>');
+          if (c.wants_info) flags.push('<span class="pill ok">wants info</span>');
+          if (c.pinned_to_name) flags.push('<span class="pill">pinned to ' + esc(c.pinned_to_name) + "</span>");
+          return (
+            '<tr class="rowlink" data-club="' +
+            esc(c.id) +
+            '"><td>' +
+            esc(c.entity_name) +
+            (hiddenSearch ? '<span style="display:none">' + esc(hiddenSearch) + "</span>" : "") +
+            '<br><span class="muted-line">' +
+            esc(c.where || "") +
+            "</span>" +
+            relLine +
+            "</td><td>" +
+            (c.call_group ? esc(c.call_group) : "—") +
+            "</td><td>" +
+            (c.egm_count != null && c.egm_count !== "" ? esc(c.egm_count) : "—") +
+            "</td><td>" +
+            callsCell +
+            "</td><td>" +
+            (c.last_outcome ? esc(outcomeLabel(c.last_outcome)) : "—") +
+            (c.last_call_at ? '<br><span class="muted-line">' + esc(fmtWhen(c.last_call_at)) + "</span>" : "") +
+            "</td><td>" +
+            esc(c.last_caller || c.first_caller_name || "—") +
+            "</td><td>" +
+            (c.next_step
+              ? esc(nsKindLabel(c.next_step)) + '<br><span class="muted-line">' + esc(fmtWhen(c.next_step.due_at)) + "</span>"
+              : "—") +
+            "</td><td>" +
+            (flags.length ? flags.join(" ") : "—") +
+            "</td></tr>"
+          );
+        }
+        function rerenderClubsTable() {
+          var wrap = document.getElementById("clubs-table-wrap");
+          if (!wrap) return;
+          var filtered = ALL_CLUBS_RAW.filter(clubMatchesFilters);
+          wrap.innerHTML = pagedTable("clubs", CLUBS_HEAD, filtered.map(clubRowHtml), {
+            pageSize: 25,
+            empty: "No clubs match your filters.",
+          });
+          var line = document.getElementById("clubs-count-line");
+          if (line) line.textContent = "Showing " + filtered.length + " of " + ALL_CLUBS_RAW.length + " clubs.";
+        }
+        document.addEventListener("change", function (e) {
+          var sel = e.target.closest && e.target.closest(".cf-sel");
+          if (!sel) return;
+          CLUB_FILTER_STATE[sel.getAttribute("data-cf")] = sel.value;
+          rerenderClubsTable();
+        });
+        function allClubsSectionHtml(clubs) {
+          ALL_CLUBS_RAW = clubs || [];
+          var filtered = ALL_CLUBS_RAW.filter(clubMatchesFilters);
+          return (
+            "<h2>All clubs</h2>" +
+            clubsToolbarHtml(ALL_CLUBS_RAW) +
+            '<p class="clubs-count" id="clubs-count-line">Showing ' +
+            filtered.length +
+            " of " +
+            ALL_CLUBS_RAW.length +
+            " clubs.</p>" +
+            '<div id="clubs-table-wrap">' +
+            pagedTable("clubs", CLUBS_HEAD, filtered.map(clubRowHtml), { pageSize: 25, empty: "No clubs match your filters." }) +
+            "</div>"
+          );
+        }
+        function bouncesSectionHtml(bounces) {
+          bounces = bounces || [];
+          return (
+            "<h2>Bounced emails</h2>" +
+            pagedTable(
+              "bounces",
+              "<th>Email</th><th>Club</th><th>What</th><th>Subject / campaign</th><th>When</th>",
+              bounces.map(function (b) {
+                return (
+                  (b.target_id ? '<tr class="rowlink" data-club="' + esc(b.target_id) + '">' : "<tr>") +
+                  "<td>" +
+                  esc(b.email) +
+                  "</td><td>" +
+                  esc(b.club || "—") +
+                  "</td><td>" +
+                  esc((b.event_type || "").replace(/_/g, " ")) +
+                  "</td><td>" +
+                  esc(b.subject || b.campaign || "—") +
+                  '</td><td class="nowrap">' +
+                  esc(when(b.at)) +
+                  "</td></tr>"
+                );
+              }),
+              { pageSize: 25, empty: "No bounced emails for any club address yet." },
+            )
+          );
+        }
+
         function renderOverview(el, d) {
           var c = d.counters,
             dl = d.delivery || {};
@@ -2488,6 +2731,8 @@
             outcomeHtml +
             listsHtml(d.lists) +
             referralsTableHtml(d.referrals) +
+            (d.clubs ? allClubsSectionHtml(d.clubs) : "") +
+            (d.bounces ? bouncesSectionHtml(d.bounces) : "") +
             "<h2>Callers</h2><div class='scroll'><table><thead><tr>" +
             "<th>Name</th><th>Username</th><th>List</th><th>Calls</th><th>Left / all</th>" +
             "<th>On a call</th><th>Trained</th><th>Password set</th><th>Last login</th>" +
@@ -3193,7 +3438,7 @@
         // ?demo=1 runs the whole page against fixtures so the design can be looked
         // at without a login. Nothing is sent anywhere.
         // Demo callers start with a piece so the picker never hides the board.
-        var DEMO_CALLER = { id: "demo", name: "Demo caller", username: "demo", is_admin: false, call_group: 2, onboarded_at: "2026-09-01T00:00:00Z", piece: "race-car" };
+        var DEMO_CALLER = { id: "demo", name: "Demo caller", username: "demo", is_admin: DEMO_ADMIN, call_group: 2, onboarded_at: "2026-09-01T00:00:00Z", piece: "race-car" };
         var DEMO_PIECES = [{ piece: "dog", name: "Danella", username: "danella" }, { piece: "top-hat", name: "Taylor", username: "taylor" }];
         var DEMO_CLUBS = [
           ["Rooty Hill RSL Club", "ROOTY HILL", "NSW", 699, 6, "$203,883,454", "(02) 9625 5500", "www.rootyhillrsl.com.au", "Reception", "info@rootyhillrsl.com.au", 43],
@@ -3241,6 +3486,23 @@
             distance_km: r[10], postcode: "", full_address: "", where: r[1] + " " + r[2],
           };
         });
+        // A couple of demo parent/child relationships and a licence number, so
+        // the relationship block, filters and search-by-licence all have
+        // something to show in ?demo= modes.
+        if (DEMO_CLUBS[0] && DEMO_CLUBS[5]) {
+          DEMO_CLUBS[5].parent_id = DEMO_CLUBS[0].id;
+          DEMO_CLUBS[5].parent_name = DEMO_CLUBS[0].entity_name;
+        }
+        if (DEMO_CLUBS[0] && DEMO_CLUBS[10]) {
+          DEMO_CLUBS[10].parent_id = DEMO_CLUBS[0].id;
+          DEMO_CLUBS[10].parent_name = DEMO_CLUBS[0].entity_name;
+        }
+        if (DEMO_CLUBS[0]) {
+          DEMO_CLUBS[0].children = [DEMO_CLUBS[5], DEMO_CLUBS[10]].filter(Boolean).map(function (c) {
+            return { id: c.id, entity_name: c.entity_name };
+          });
+        }
+        DEMO_CLUBS.forEach(function (c, i) { if (i % 7 === 0) c.licence_name = "RSL-" + (100 + i); });
         var DEMO_CALLS = [
           [0, "wants_info_only", true, "Rebecca Ward", "Community & grants manager", "rward@example.com", 3],
           [1, "committed", false, "Tony Marsh", "CEO", "tony@example.com", 2],
@@ -3261,6 +3523,46 @@
             created_at: new Date(Date.now() - c[6] * 3600e3 * 5).toISOString(), d1942_callers: { name: DEMO_CALLER.name },
           };
         });
+        // Fabricated clubs[] / bounces[] for the admin overview's "All clubs" and
+        // "Bounced emails" sections in ?demo=admin, built from the same
+        // DEMO_CLUBS / DEMO_CALLS fixtures the rest of demo mode uses.
+        function buildDemoClubs() {
+          var doneIds = {};
+          DEMO_CALLS.forEach(function (c) { if (NO_CONTACT.indexOf(c.outcome) < 0) doneIds[c.target_id] = true; });
+          return DEMO_CLUBS.map(function (t, i) {
+            var calls = DEMO_CALLS.filter(function (c) { return c.target_id === t.id; });
+            var spoken = calls.filter(function (c) { return NO_CONTACT.indexOf(c.outcome) < 0; });
+            var latest = calls.slice().sort(function (a, b) { return new Date(b.created_at) - new Date(a.created_at); })[0];
+            var dnc = i === 12 || i === 20;
+            return {
+              id: t.id, entity_name: t.entity_name, where: t.where, state: t.state, suburb: t.suburb,
+              call_group: (i % 4) + 1, status: doneIds[t.id] ? "done" : calls.length ? "in_progress" : "pending",
+              do_not_call: dnc, do_not_call_reason: dnc ? "Asked not to be contacted again" : "",
+              egm_count: t.egm_count, gaming_rank: t.gaming_rank, primary_phone: t.primary_phone, primary_email: t.primary_email,
+              primary_person: t.primary_person, licence_name: t.licence_name || null,
+              calls: calls.length, spoken_to: spoken.length,
+              last_outcome: latest ? latest.outcome : null, last_call_at: latest ? latest.created_at : null,
+              last_caller: latest ? DEMO_CALLER.name : null, first_caller_name: calls.length ? DEMO_CALLER.name : null,
+              pinned_to_name: calls.length && !doneIds[t.id] ? DEMO_CALLER.name : null,
+              assigned_to_name: i % 4 === 1 ? "Danella" : null,
+              wants_info: calls.some(function (c) { return c.wants_info; }),
+              referred_by: i === 8 ? "Rod Hopping" : null,
+              parent_id: t.parent_id || null, parent_name: t.parent_name || null, children: t.children || [],
+              next_step:
+                i === 3 ? { kind: "call", due_at: new Date(Date.now() + 26 * 3600000).toISOString(), title: null }
+                : i === 7 ? { kind: "email", due_at: new Date(Date.now() + 50 * 3600000).toISOString(), title: "Send partnership pack" }
+                : null,
+              bounced: i === 2 || i === 6,
+            };
+          });
+        }
+        function buildDemoBounces() {
+          return [
+            { email: DEMO_CLUBS[2].primary_email || "bounced2@example.com", target_id: DEMO_CLUBS[2].id, club: DEMO_CLUBS[2].entity_name, event_type: "bounced", subject: "Darwin 1942 partnership pack", campaign: "Partnership pack", at: new Date(Date.now() - 3 * 86400000).toISOString() },
+            { email: "old-contact@example.com", target_id: DEMO_CLUBS[6].id, club: DEMO_CLUBS[6].entity_name, event_type: "hard_bounce", subject: "Following up from our call", campaign: "Follow-up", at: new Date(Date.now() - 9 * 86400000).toISOString() },
+            { email: "unknown@example.com", target_id: null, club: null, event_type: "bounced", subject: "Darwin 1942 introduction", campaign: "Cold intro", at: new Date(Date.now() - 20 * 86400000).toISOString() },
+          ];
+        }
         function demoApi(action, payload) {
           return new Promise(function (resolve, reject) {
             setTimeout(function () {
@@ -3305,6 +3607,7 @@
                 counters: { total: 196, do_not_call: 9, pending: 150, in_progress: 3, done: 34, calls: 61, wants_info: 12 },
                 funnel: {}, delivery: { waiting: 0, failing: 0 }, failing: [], do_not_call: [],
                 by_outcome: byOut, lists: { round1: round1, round2: round2 }, recent: DEMO_CALLS.slice().reverse(),
+                clubs: buildDemoClubs(), bounces: buildDemoBounces(),
                 callers: [
                   { name: "Danella", username: "danella", active: true, is_admin: true, call_group: 1, piece: "dog", calls: 22, group_total: 40, group_dnc: 2, group_remaining: 24, round: 2, r2_waiting: 6, r2_done: 3, next_club: Object.assign(nx(4), { holding: false }) },
                   { name: DEMO_CALLER.name, username: DEMO_CALLER.username, active: true, is_admin: false, call_group: 2, piece: DEMO_CALLER.piece, calls: 10, group_total: 40, group_dnc: 2, group_remaining: 30, round: 1, r2_waiting: 4, r2_done: 0, next_club: nx(1) },
@@ -3317,7 +3620,65 @@
             }
             case "club_detail": {
               var tt = DEMO_CLUBS.filter(function (x) { return x.id === p.target_id; })[0] || DEMO_CLUBS[0];
-              return { caller: DEMO_CALLER, target: tt, calls: DEMO_CALLS.filter(function (c) { return c.target_id === tt.id; }).map(function (c, i) { return Object.assign({ id: "c" + i }, c); }), emails: { available: true, addresses: [], deliveries: [], events: [] } };
+              var parentObj = tt.parent_id
+                ? (function () {
+                    var pp = DEMO_CLUBS.filter(function (x) { return x.id === tt.parent_id; })[0];
+                    return pp ? { id: pp.id, entity_name: pp.entity_name, where: pp.where } : null;
+                  })()
+                : null;
+              var childrenObjs = (tt.children || []).map(function (kid) {
+                var cc = DEMO_CLUBS.filter(function (x) { return x.id === kid.id; })[0];
+                return cc ? { id: cc.id, entity_name: cc.entity_name, where: cc.where } : kid;
+              });
+              var target = Object.assign({}, tt, { parent: parentObj, children: childrenObjs });
+              return {
+                caller: DEMO_CALLER, target: target,
+                calls: DEMO_CALLS.filter(function (c) { return c.target_id === tt.id; }).map(function (c, i) {
+                  return Object.assign({ id: "c" + i, contacts: i === 0 ? [{ name: "Jamie Fox", role: "Volunteer coordinator", email: "jamie@example.com", phone: "", email_preference: "essential" }] : [] }, c);
+                }),
+                emails: { available: true, addresses: [], deliveries: [], events: [] },
+                inbox: tt.id === DEMO_CLUBS[0].id ? [
+                  { id: "ib1", direction: "in", from_email: "secretary@rootyhillrsl.com.au", from_name: "Rebecca Ward", to_email: "hello@darwin1942.com", subject: "Re: Darwin 1942 partnership", snippet: "Thanks for calling through, happy to take a look at the partnership pack when it lands.", sent_at: new Date(Date.now() - 2 * 86400000).toISOString(), thread_id: "t1" },
+                  { id: "ib2", direction: "out", from_email: "hello@darwin1942.com", from_name: "Darwin 1942", to_email: "secretary@rootyhillrsl.com.au", subject: "Darwin 1942 partnership pack", snippet: "Great speaking with you today, here is the partnership pack we discussed.", sent_at: new Date(Date.now() - 3 * 86400000).toISOString(), thread_id: "t1" },
+                ] : [],
+              };
+            }
+            case "club_search": {
+              var q = String(p.q || "").trim().toLowerCase();
+              if (!q) return { clubs: [] };
+              return {
+                clubs: DEMO_CLUBS.filter(function (c) {
+                  return c.entity_name.toLowerCase().indexOf(q) >= 0 || (c.suburb || "").toLowerCase().indexOf(q) >= 0;
+                }).slice(0, 20).map(function (c) {
+                  return { id: c.id, entity_name: c.entity_name, where: c.where, parent_name: c.parent_name || null };
+                }),
+              };
+            }
+            case "set_parent": {
+              var pTarget = DEMO_CLUBS.filter(function (x) { return x.id === p.target_id; })[0];
+              if (!pTarget) throw new Error("Club not found.");
+              if (p.parent_id === p.target_id) throw new Error("That would make the club its own ancestor.");
+              if (!p.parent_id) {
+                var oldParent = DEMO_CLUBS.filter(function (x) { return x.id === pTarget.parent_id; })[0];
+                if (oldParent && oldParent.children) oldParent.children = oldParent.children.filter(function (c) { return c.id !== pTarget.id; });
+                pTarget.parent_id = null;
+                pTarget.parent_name = null;
+                return { ok: true, parent: null };
+              }
+              var newParent = DEMO_CLUBS.filter(function (x) { return x.id === p.parent_id; })[0];
+              if (!newParent) throw new Error("Club not found.");
+              pTarget.parent_id = newParent.id;
+              pTarget.parent_name = newParent.entity_name;
+              newParent.children = (newParent.children || []).concat([{ id: pTarget.id, entity_name: pTarget.entity_name }]);
+              return { ok: true, parent: { id: newParent.id, entity_name: newParent.entity_name, where: newParent.where } };
+            }
+            case "delete_club": {
+              var dt = DEMO_CLUBS.filter(function (x) { return x.id === p.target_id; })[0];
+              if (!dt) throw new Error("Club not found.");
+              if (String(p.confirm_name || "").trim().toLowerCase() !== dt.entity_name.trim().toLowerCase())
+                throw new Error("Type the club's name exactly to confirm.");
+              DEMO_CLUBS = DEMO_CLUBS.filter(function (x) { return x.id !== dt.id; });
+              return { ok: true, deleted: dt.entity_name, sheet: "row_deleted" };
             }
             case "save": case "log_call": return { ok: true, saved: "Demo", callback_at: p.callback_at || null };
             case "callbacks": {
@@ -3551,7 +3912,14 @@
             '<div class="field-row">' +
             '<div class="field"><label>Their direct email</label><input type="email" class="cr-email" autocomplete="off"></div>' +
             '<div class="field"><label>Their direct phone</label><input type="tel" class="cr-phone" autocomplete="off"></div>' +
-            "</div></div>"
+            "</div>" +
+            '<div class="field"><label>Emails</label><select class="cr-email-pref">' +
+            '<option value="">Not set</option>' +
+            '<option value="all">All emails</option>' +
+            '<option value="essential">Only essential</option>' +
+            '<option value="none">No emails</option>' +
+            "</select></div>" +
+            "</div>"
           );
         }
         function readContacts(prefix) {
@@ -3560,7 +3928,14 @@
           var out = [];
           wrap.querySelectorAll(".contact-row").forEach(function (row) {
             var g = function (c) { var n = row.querySelector(c); return n ? n.value.trim() : ""; };
-            var c = { name: g(".cr-name"), role: g(".cr-role"), email: g(".cr-email"), phone: g(".cr-phone") };
+            var prefEl = row.querySelector(".cr-email-pref");
+            var c = {
+              name: g(".cr-name"),
+              role: g(".cr-role"),
+              email: g(".cr-email"),
+              phone: g(".cr-phone"),
+              email_preference: prefEl && prefEl.value ? prefEl.value : null,
+            };
             if (c.name || c.role || c.email || c.phone) out.push(c);
           });
           return out;
@@ -4457,6 +4832,194 @@
           );
         }
 
+        // Part of / sub-branches, plus a "link to a parent" control fed by
+        // club_search. The parent link and any children are plain spans with
+        // data-club so they reuse the page's existing drawer-opening handler.
+        function relationshipBlockHtml(t) {
+          var lines = "";
+          if (t.parent) {
+            lines +=
+              '<div>Part of <span class="rel-link" data-club="' +
+              esc(t.parent.id) +
+              '">' +
+              esc(t.parent.entity_name) +
+              "</span></div>";
+          }
+          if (t.children && t.children.length) {
+            lines +=
+              "<div>Sub-branches: " +
+              t.children
+                .map(function (c) {
+                  return '<span class="rel-link" data-club="' + esc(c.id) + '">' + esc(c.entity_name) + "</span>";
+                })
+                .join(", ") +
+              "</div>";
+          }
+          return (
+            '<div class="rel-block">' +
+            lines +
+            '<div class="parent-picker" id="d-parent-picker">' +
+            (t.parent
+              ? '<button type="button" class="btn-ghost" id="d-unlink-parent">Unlink from ' + esc(t.parent.entity_name) + "</button>"
+              : '<label for="d-parent-q">Link to a parent club</label>' +
+                '<input type="text" id="d-parent-q" autocomplete="off" placeholder="Search clubs by name or suburb...">' +
+                '<div class="parent-results" id="d-parent-results"></div>') +
+            "</div></div>"
+          );
+        }
+        function wireRelationshipBlock(t) {
+          var unlinkBtn = document.getElementById("d-unlink-parent");
+          if (unlinkBtn) {
+            unlinkBtn.addEventListener("click", function () {
+              unlinkBtn.disabled = true;
+              api("set_parent", { target_id: t.id, parent_id: null })
+                .then(function () {
+                  toast("Unlinked", (t.entity_name || "This club") + " is no longer a sub-branch.", "desk");
+                  openClub(t.id);
+                })
+                .catch(function (err) {
+                  unlinkBtn.disabled = false;
+                  alert(err.message);
+                });
+            });
+            return;
+          }
+          var input = document.getElementById("d-parent-q");
+          var results = document.getElementById("d-parent-results");
+          if (!input || !results) return;
+          var timer = null;
+          input.addEventListener("input", function () {
+            var q = input.value.trim();
+            clearTimeout(timer);
+            if (!q) { results.innerHTML = ""; return; }
+            timer = setTimeout(function () {
+              api("club_search", { q: q })
+                .then(function (r) {
+                  var clubs = (r.clubs || []).filter(function (c) { return c.id !== t.id; });
+                  results.innerHTML = clubs.length
+                    ? clubs
+                        .map(function (c) {
+                          return (
+                            '<button type="button" class="parent-pick" data-id="' +
+                            esc(c.id) +
+                            '" data-name="' +
+                            esc(c.entity_name) +
+                            '">' +
+                            esc(c.entity_name) +
+                            (c.where ? ' <span class="muted-line">' + esc(c.where) + "</span>" : "") +
+                            (c.parent_name ? '<br><span class="muted-line">already under ' + esc(c.parent_name) + "</span>" : "") +
+                            "</button>"
+                          );
+                        })
+                        .join("")
+                    : '<div class="muted-line" style="padding:8px 12px;">No clubs match.</div>';
+                })
+                .catch(function () { results.innerHTML = ""; });
+            }, 250);
+          });
+          results.addEventListener("click", function (e) {
+            var b = e.target.closest && e.target.closest(".parent-pick");
+            if (!b) return;
+            var pid = b.getAttribute("data-id");
+            var pname = b.getAttribute("data-name");
+            b.disabled = true;
+            api("set_parent", { target_id: t.id, parent_id: pid })
+              .then(function () {
+                toast("Linked", (t.entity_name || "This club") + " is now a sub-branch of " + pname + ".", "desk");
+                openClub(t.id);
+              })
+              .catch(function (err) {
+                b.disabled = false;
+                alert(err.message);
+              });
+          });
+        }
+
+        // Admin-only, bottom of the drawer: type the club name to confirm.
+        function deleteZoneHtml(t) {
+          if (!(meCaller && meCaller.is_admin)) return "";
+          return (
+            '<div class="danger-zone">' +
+            '<button type="button" class="btn-ghost danger" id="d-delete-open">Delete this club</button>' +
+            '<div class="danger-confirm hidden" id="d-delete-confirm">' +
+            "<p>Type the club name to delete it and all its calls. This cannot be undone.</p>" +
+            '<input type="text" id="d-delete-name" autocomplete="off" placeholder="' +
+            esc(t.entity_name) +
+            '">' +
+            '<div class="actions">' +
+            '<button type="button" class="btn-ghost danger" id="d-delete-confirm-btn">Delete</button>' +
+            '<button type="button" class="btn-ghost" id="d-delete-cancel">Cancel</button>' +
+            "</div>" +
+            '<div class="msg" id="d-delete-msg"></div>' +
+            "</div></div>"
+          );
+        }
+        function wireDeleteZone(t) {
+          var openBtn = document.getElementById("d-delete-open");
+          if (!openBtn) return;
+          var box = document.getElementById("d-delete-confirm");
+          openBtn.addEventListener("click", function () {
+            box.classList.remove("hidden");
+            openBtn.classList.add("hidden");
+            var input = document.getElementById("d-delete-name");
+            if (input) input.focus();
+          });
+          document.getElementById("d-delete-cancel").addEventListener("click", function () {
+            box.classList.add("hidden");
+            openBtn.classList.remove("hidden");
+            clearMsg("d-delete-msg");
+          });
+          document.getElementById("d-delete-confirm-btn").addEventListener("click", function () {
+            clearMsg("d-delete-msg");
+            var name = document.getElementById("d-delete-name").value;
+            var btn = document.getElementById("d-delete-confirm-btn");
+            btn.disabled = true;
+            btn.textContent = "Deleting...";
+            api("delete_club", { target_id: t.id, confirm_name: name })
+              .then(function () {
+                toast("Club deleted", (t.entity_name || "The club") + " has been removed.", "desk");
+                closeDrawer();
+                var ab = document.getElementById("admin-body");
+                if (ab && !ab.classList.contains("hidden")) loadOverview();
+              })
+              .catch(function (err) {
+                msg("d-delete-msg", err.message, "error");
+                btn.disabled = false;
+                btn.textContent = "Delete";
+              });
+          });
+        }
+
+        // Read emails to/from the club, when the Gmail sync has any on file.
+        function inboxHtml(inbox) {
+          if (!inbox || !inbox.length) return "";
+          return (
+            "<h3>Inbox correspondence</h3>" +
+            inbox
+              .map(function (m) {
+                var arrow = m.direction === "in" ? "&#8592;" : "&#8594;";
+                return (
+                  '<div class="inbox-item">' +
+                  '<div class="ib-head"><span>' +
+                  arrow +
+                  " " +
+                  esc(m.subject || "(no subject)") +
+                  '</span><span class="muted-line">' +
+                  esc(when(m.sent_at)) +
+                  "</span></div>" +
+                  '<div class="ib-meta">' +
+                  (m.direction === "in"
+                    ? esc(m.from_name || m.from_email || "")
+                    : "To " + esc(m.to_email || "")) +
+                  "</div>" +
+                  (m.snippet ? '<div class="ib-snip">' + esc(m.snippet) + "</div>" : "") +
+                  "</div>"
+                );
+              })
+              .join("")
+          );
+        }
+
         function renderDrawer(d) {
           var t = d.target;
           var phone = (t.primary_phone || "").trim();
@@ -4508,7 +5071,12 @@
                       ? '<div class="ci-contacts"><b>Other contacts:</b> ' +
                         c.contacts
                           .map(function (x) {
-                            return esc([x.name, x.role ? "(" + x.role + ")" : null, x.email, x.phone].filter(Boolean).join(" "));
+                            var pref = x.email_preference
+                              ? "emails: " + (EMAIL_PREF_LABEL[x.email_preference] || x.email_preference)
+                              : null;
+                            return esc(
+                              [x.name, x.role ? "(" + x.role + ")" : null, x.email, x.phone, pref].filter(Boolean).join(" "),
+                            );
                           })
                           .join("; ") +
                         "</div>"
@@ -4619,7 +5187,10 @@
             '<div class="drawer-top"><h2>' +
             esc(t.entity_name) +
             "</h2>" +
-            '<button class="drawer-close" id="drawer-close" aria-label="Close">&times;</button></div>' +
+            '<div class="drawer-top-actions">' +
+            (canCall() ? '<button type="button" class="btn-primary" id="d-open-worksheet">Open in worksheet</button>' : "") +
+            '<button class="drawer-close" id="drawer-close" aria-label="Close">&times;</button>' +
+            "</div></div>" +
             '<p class="drawer-sub">' +
             esc(place) +
             (t.distance_km
@@ -4659,6 +5230,7 @@
                 (t.do_not_call ? " · DO NOT CALL" : ""),
             ) +
             "</dl>" +
+            relationshipBlockHtml(t) +
             '<button type="button" class="handoff-btn" data-handoff="' + esc(t.id) + '" data-club-name="' + esc(t.entity_name) + '">Hand this club to someone else</button>' +
             "<h3>Record another call</h3>" +
             '<form id="d-call-form" novalidate>' +
@@ -4695,11 +5267,24 @@
             ")</h3>" +
             callsHtml +
             "<h3>Emails to this contact</h3>" +
-            emailsHtml;
+            emailsHtml +
+            inboxHtml(d.inbox) +
+            deleteZoneHtml(t);
 
           document
             .getElementById("drawer-close")
             .addEventListener("click", closeDrawer);
+
+          var openWorksheetBtn = document.getElementById("d-open-worksheet");
+          if (openWorksheetBtn) {
+            openWorksheetBtn.addEventListener("click", function () {
+              callNow(t.id);
+              closeDrawer();
+            });
+          }
+
+          wireRelationshipBlock(t);
+          wireDeleteZone(t);
 
           document
             .getElementById("d-outcome")
