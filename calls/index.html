@@ -75,8 +75,10 @@
       .topbar h1 { font-size: 19px; display: flex; align-items: center; gap: 10px; flex: 1 1 0; min-width: max-content; }
       .topbar h1 .logo { width: 34px; height: 34px; display: inline-grid; place-items: center; }
       .topbar h1 .logo svg { width: 100%; height: 100%; display: block; }
-      .topbar .nav { display: flex; align-items: center; justify-content: center; gap: 16px; flex-wrap: wrap; }
+      .topbar .nav { display: flex; align-items: center; justify-content: center; gap: 14px; flex-wrap: wrap; flex: 2 1 auto; min-width: 0; }
+      .topbar .nav-secondary { display: flex; align-items: center; gap: 14px; flex-wrap: wrap; }
       .topbar .who { color: var(--muted); font-size: 13px; display: flex; align-items: center; gap: 10px; flex: 1 1 0; justify-content: flex-end; }
+      .topbar .btn-primary.small { width: auto; padding: 7px 14px; font-size: 13px; box-shadow: 2px 2px 0 var(--ink); }
       .round-select { font-family: var(--heading-font); font-weight: 700; font-size: 13px; padding: 7px 12px; border: 2px solid var(--ink); border-radius: 999px; background: var(--paper-2); color: var(--ink); cursor: pointer; }
       .round-select:hover { background: var(--pollen); }
       .round-select:focus { outline: 3px solid var(--sky); outline-offset: 0; }
@@ -92,8 +94,10 @@
       .rank-row .token-img { width: 24px; height: 24px; }
       .sp .you .token-img { width: 78%; height: 78%; }
       .token-btn:hover { background: var(--pollen); }
-      .counters { display: flex; gap: 18px; flex-wrap: wrap; color: var(--muted); font-size: 12px; }
-      .counters b { color: var(--ink); font-family: var(--heading-font); font-weight: 700; font-size: 18px; display: block; line-height: 1; }
+      .counters { display: flex; align-items: center; gap: 0; flex-wrap: wrap; color: var(--muted); font-size: 12px; }
+      .counters span { display: flex; align-items: center; white-space: nowrap; }
+      .counters span:not(:first-child) { margin-left: 9px; padding-left: 9px; border-left: 1px solid var(--line); }
+      .counters b { color: var(--ink); font-family: var(--heading-font); font-weight: 700; font-size: 13px; display: inline; line-height: 1; margin-right: 3px; }
       .linkbtn { background: none; color: var(--muted); text-decoration: underline; font-size: 13px; font-family: inherit; letter-spacing: 0; padding: 0; font-weight: 400; }
 
       /* ------------------------------------------------------------ auth card */
@@ -148,6 +152,11 @@
         .work { grid-template-columns: 1fr; height: auto; }
         .pane { height: auto; overflow: visible; }
         .topbar { position: sticky; top: 0; }
+        /* Two rows inside the nav: tabs (with the round switch) on top, counters
+           + add-lead underneath — rather than everything wrapping wherever it
+           lands. */
+        .topbar .nav { justify-content: flex-start; }
+        .topbar .nav-secondary { flex: 1 1 100%; justify-content: space-between; }
       }
 
       /* ------------------------------------------------------------ title deed */
@@ -163,6 +172,8 @@
       .deed-band h2 { font-size: 24px; line-height: 1.12; text-transform: uppercase; letter-spacing: 0.02em; }
       .deed-body { padding: 14px 18px 16px; }
       .deed-sub { color: var(--muted); font-size: 13px; text-align: center; margin: 0 0 12px; }
+      .deed-rel { color: var(--muted); font-size: 13px; text-align: center; margin: 0 0 12px; }
+      .deed-rel-link { color: var(--sky-deep); text-decoration: underline; cursor: pointer; }
       .deed-call { display: flex; justify-content: center; margin: 0 0 14px; }
       .phone-cta {
         display: inline-block; background: var(--sky); color: #fff; text-decoration: none;
@@ -336,9 +347,14 @@
       .cal-row.past { opacity: 0.6; box-shadow: none; }
       .cal-row .cal-time { font-family: var(--heading-font); font-weight: 700; font-size: 17px; }
       .cal-row .cal-time small { display: block; font-size: 11px; color: var(--muted); font-weight: 400; }
+      .cal-row .cal-club-head { display: flex; align-items: center; gap: 6px; flex-wrap: wrap; }
       .cal-row .cal-club b { display: block; font-size: 15px; }
       .cal-row .cal-club span { color: var(--muted); font-size: 12px; }
       .cal-row .cal-note { margin-top: 4px; font-size: 13px; }
+      .pill.kind-email { background: #e1f4fd; color: #064a66; }
+      .pill.kind-meeting { background: var(--pollen); color: var(--ink); border-color: var(--ink); }
+      .pill.kind-check_in { background: var(--tea); border-color: var(--tea-deep); }
+      .cal-links a, .ns-banner a { margin-right: 10px; font-size: 12px; font-weight: 700; }
       .cal-row .cal-actions { display: flex; gap: 6px; flex-wrap: wrap; justify-content: flex-end; }
       .cal-row .cal-actions button { font-family: inherit; font-size: 12px; padding: 6px 12px; border-radius: 999px; border: 2px solid var(--ink); background: var(--paper); cursor: pointer; }
       .cal-row .cal-actions button.go { background: var(--sky); color: #fff; font-weight: 700; }
@@ -731,11 +747,14 @@
             <button class="tab" id="tab-calendar">Calendar<span class="tab-badge hidden" id="cal-badge"></span></button>
             <button class="tab" id="tab-training">Training</button>
           </div>
-          <div class="counters">
-            <div id="c-mine-wrap"><b id="c-mine">0</b> my calls</div>
-            <div><b id="c-remaining">0</b> left to call</div>
-            <div><b id="c-done">0</b> done</div>
-            <div id="c-dnc-wrap"><b id="c-dnc">0</b> do not call</div>
+          <div class="nav-secondary">
+            <div class="counters">
+              <span id="c-mine-wrap"><b id="c-mine">0</b> my calls</span>
+              <span><b id="c-remaining">0</b> left</span>
+              <span><b id="c-done">0</b> done</span>
+              <span id="c-dnc-wrap"><b id="c-dnc">0</b> do not call</span>
+            </div>
+            <button type="button" class="btn-primary small" id="add-lead-btn">+ Add a lead</button>
           </div>
         </div>
         <div class="who">
@@ -1411,8 +1430,8 @@
             t: "Call-backs",
             tour: { tab: "calendar", sel: "#calendar-body .cal-wrap" },
             h:
-              "<p>When the right person isn&rsquo;t available &mdash; on leave for three weeks, say &mdash; open <b>Schedule a call-back</b> on the call form and pick a date. The club is held for you until then and nobody else is offered it.</p>" +
-              "<p>Booked call-backs live here. When one is due, the Calendar tab shows a count and <b>Call now</b> puts that club straight onto your worksheet.</p>",
+              "<p>When the right person isn&rsquo;t available &mdash; on leave for three weeks, say &mdash; open <b>Schedule a next step</b> on the call form and pick a date. A call-back or check-in holds the club for you until then and nobody else is offered it; an email, meeting or other reminder just shows up in your calendar.</p>" +
+              "<p>Every next step you book lives here. When a call-back or check-in is due, the Calendar tab shows a count and <b>Call now</b> puts that club straight onto your worksheet.</p>",
           },
           {
             t: "The board",
@@ -2712,6 +2731,20 @@
             "<h2>" + esc(t.entity_name) + "</h2></div>" +
             '<div class="deed-body">' +
             '<p class="deed-sub">' + esc(place) + (distance ? " · " + esc(distance) : "") + "</p>" +
+            // Small, non-blocking: only shows when the backend has actually
+            // linked this club to a parent / children (next & claim_target).
+            (t.parent || (t.children && t.children.length)
+              ? '<p class="deed-rel">' +
+                (t.parent
+                  ? "Part of <span class=\"deed-rel-link\" data-club=\"" + esc(t.parent.id) + "\">" + esc(t.parent.entity_name) + "</span>"
+                  : "") +
+                (t.parent && t.children && t.children.length ? " &middot; " : "") +
+                (t.children && t.children.length
+                  ? t.children.length + " sub-branch" + (t.children.length > 1 ? "es" : "") + ": " +
+                    t.children.map(function (c) { return "<span class=\"deed-rel-link\" data-club=\"" + esc(c.id) + "\">" + esc(c.entity_name) + "</span>"; }).join(", ")
+                  : "") +
+                "</p>"
+              : "") +
             '<table class="rent">' +
             (phone
               ? row("Phone number", '<a class="phone-cta inline" href="' + esc(telHref) + '">' + esc(phone) + "</a>", true)
@@ -3241,6 +3274,22 @@
             distance_km: r[10], postcode: "", full_address: "", where: r[1] + " " + r[2],
           };
         });
+        // Parent/sub-branch pairs, so the deed's "Part of" / "sub-branches" line
+        // (item 7) has something to render without extra clicks: round 1's
+        // default landing club (index 8, see the "next" demo case below) is a
+        // sub-branch, and round 2's (index 4) has sub-branches of its own.
+        (function () {
+          var parent = DEMO_CLUBS[0], child = DEMO_CLUBS[8];
+          if (parent && child) {
+            parent.children = [{ id: child.id, entity_name: child.entity_name }];
+            child.parent = { id: parent.id, entity_name: parent.entity_name, where: parent.where };
+          }
+          var parent2 = DEMO_CLUBS[4], child2 = DEMO_CLUBS[9];
+          if (parent2 && child2) {
+            parent2.children = [{ id: child2.id, entity_name: child2.entity_name }];
+            child2.parent = { id: parent2.id, entity_name: parent2.entity_name, where: parent2.where };
+          }
+        })();
         var DEMO_CALLS = [
           [0, "wants_info_only", true, "Rebecca Ward", "Community & grants manager", "rward@example.com", 3],
           [1, "committed", false, "Tony Marsh", "CEO", "tony@example.com", 2],
@@ -3319,18 +3368,19 @@
               var tt = DEMO_CLUBS.filter(function (x) { return x.id === p.target_id; })[0] || DEMO_CLUBS[0];
               return { caller: DEMO_CALLER, target: tt, calls: DEMO_CALLS.filter(function (c) { return c.target_id === tt.id; }).map(function (c, i) { return Object.assign({ id: "c" + i }, c); }), emails: { available: true, addresses: [], deliveries: [], events: [] } };
             }
-            case "save": case "log_call": return { ok: true, saved: "Demo", callback_at: p.callback_at || null };
+            case "save": case "log_call":
+              return { ok: true, saved: "Demo", callback_at: p.callback_at || null, next_step: p.next_step || null };
             case "callbacks": {
-              var mk = function (i, hours, note, state, who) {
+              var mk = function (i, hours, note, state, who, kind, title) {
                 var t = DEMO_CLUBS[i];
-                return { id: "cb" + i, target_id: t.id, club: t.entity_name, where: t.where, phone: t.primary_phone, due_at: new Date(Date.now() + hours * 3600000).toISOString(), note: note, state: state, mine: !who, caller: who || DEMO_CALLER.name, held_by_other: false, do_not_call: false };
+                return { id: "cb" + i, target_id: t.id, club: t.entity_name, where: t.where, phone: t.primary_phone, due_at: new Date(Date.now() + hours * 3600000).toISOString(), note: note, state: state, mine: !who, caller: who || DEMO_CALLER.name, held_by_other: false, do_not_call: false, kind: kind || "call", title: title || null };
               };
               return { scope: p.scope === "all" ? "all" : "mine", callbacks: [
-                mk(3, -2, "Decision maker back from leave today", "due"),
-                mk(5, 4, "GM asked for a call after lunch", "upcoming"),
-                mk(7, 26, "Board meets Tuesday night; call Wednesday", "upcoming"),
-                mk(9, 24 * 21, "Secretary on leave for three weeks", "upcoming"),
-              ].concat(p.scope === "all" ? [mk(11, 30, "Wants to see the pack first", "upcoming", "Danella")] : []) };
+                mk(3, -2, "Decision maker back from leave today", "due", null, "call"),
+                mk(5, 4, "GM asked for a call after lunch", "upcoming", null, "check_in"),
+                mk(7, 26, "Board meets Tuesday night; call Wednesday", "upcoming", null, "meeting"),
+                mk(9, 24 * 21, "Secretary on leave for three weeks", "upcoming", null, "email"),
+              ].concat(p.scope === "all" ? [mk(11, 30, "Wants to see the pack first", "upcoming", "Danella", "other", "Send partnership pack")] : []) };
             }
             case "cancel_callback": return { ok: true };
             case "claim_target": {
@@ -3365,8 +3415,9 @@
             "f-a-meeting",
             "f-a-level",
             "f-gk-name",
-            "f-cb-date",
-            "f-cb-note",
+            "f-ns-date",
+            "f-ns-note",
+            "f-ns-title",
           ].some(function (id) {
             var n = document.getElementById(id);
             return n && n.value.trim();
@@ -3407,11 +3458,11 @@
         });
 
         function loadNext() {
-          if (needsTraining()) return; // no clubs are claimed until training is done
-          if (!canCall()) return; // oversight-only accounts never claim a club
+          if (needsTraining()) return Promise.resolve(); // no clubs are claimed until training is done
+          if (!canCall()) return Promise.resolve(); // oversight-only accounts never claim a club
           document.getElementById("work-body").innerHTML =
             '<div class="empty"><p>Finding your next club...</p></div>';
-          api("next", { round: roundMode })
+          return api("next", { round: roundMode })
             .then(function (r) {
               setStats(r.stats);
               setCalBadge(r.due_callbacks);
@@ -3453,7 +3504,7 @@
           var referred = fromClub ? (dm ? dm + " at " + fromClub : fromClub) : "";
           var m = document.getElementById("add-club-modal");
           m.innerHTML =
-            '<div class="add-card"><div class="band"><div><h2>Add a club</h2><p>It gets a row on the campaign sheet and goes into your round 1 list, ahead of the cold clubs.</p></div>' +
+            '<div class="add-card"><div class="band"><div><h2>Add a lead</h2><p>It gets a row on the campaign sheet and goes into your round 1 list, ahead of the cold clubs.</p></div>' +
             '<button type="button" id="add-club-close" aria-label="Close">&times;</button></div>' +
             '<form id="add-club-form">' +
             '<div class="field"><label for="ac-name">Club name <span class="req">*</span></label><input type="text" id="ac-name" required autocomplete="off" placeholder="e.g. Bathurst RSL Club"></div>' +
@@ -3522,7 +3573,7 @@
           });
         }
         document.addEventListener("click", function (e) {
-          if (e.target.closest && (e.target.closest("#add-club-btn") || e.target.closest(".add-club-open"))) openAddClub();
+          if (e.target.closest && (e.target.closest("#add-club-btn") || e.target.closest("#add-lead-btn") || e.target.closest(".add-club-open"))) openAddClub();
           if (e.target.id === "add-club-modal") { e.target.classList.add("hidden"); e.target.innerHTML = ""; }
         });
 
@@ -3701,43 +3752,157 @@
           );
         }
 
-        // ------------------------------------------------------------ call-backs
-        // A club can be booked for a later call from any call form: it waits
-        // until the chosen time, comes back only to the caller who booked it,
-        // and shows in their calendar meanwhile.
-        function callbackBlockHtml(prefix) {
+        // ------------------------------------------------------------ next step
+        // A club can be booked for a later call, email, check-in or meeting from
+        // any call form: call/check_in hold the club for the caller until the
+        // chosen time (they're phone work served by this worksheet); email,
+        // meeting and other just leave a reminder in the Calendar tab.
+        var NS_KINDS = [
+          ["call", "Call them back"],
+          ["email", "Send an email"],
+          ["check_in", "Check in"],
+          ["meeting", "Meeting"],
+          ["other", "Something else"],
+        ];
+        // The word(s) used in pills, event titles and toasts. "other" folds in
+        // the free-text title when there is one, e.g. "Other: Send partnership pack".
+        function nsKindLabel(kind, title) {
+          for (var i = 0; i < NS_KINDS.length; i++) {
+            if (NS_KINDS[i][0] === kind) {
+              if (kind === "other") return title ? "Other: " + title : "Other";
+              return kind === "call" ? "Call back" : NS_KINDS[i][1];
+            }
+          }
+          return "Call back";
+        }
+        function nextStepBlockHtml(prefix) {
           return (
-            '<details class="cb-block" id="' + prefix + '-cb-block"><summary>Schedule a call-back</summary>' +
+            '<details class="cb-block" id="' + prefix + '-ns-block"><summary>Schedule a next step</summary>' +
+            '<div class="field"><label for="' + prefix + '-ns-kind">What kind?</label>' +
+            '<select id="' + prefix + '-ns-kind">' +
+            NS_KINDS.map(function (k) { return '<option value="' + k[0] + '">' + esc(k[1]) + "</option>"; }).join("") +
+            "</select></div>" +
+            '<div class="field hidden" id="' + prefix + '-ns-title-wrap"><label for="' + prefix + '-ns-title">What</label>' +
+            '<input type="text" id="' + prefix + '-ns-title" autocomplete="off" placeholder="e.g. Send partnership pack"></div>' +
             '<div class="field-row">' +
-            '<div class="field"><label for="' + prefix + '-cb-date">Date</label><input type="date" id="' + prefix + '-cb-date"></div>' +
-            '<div class="field"><label for="' + prefix + '-cb-time">Time</label><input type="time" id="' + prefix + '-cb-time" value="10:00"></div>' +
+            '<div class="field"><label for="' + prefix + '-ns-date">Date</label><input type="date" id="' + prefix + '-ns-date"></div>' +
+            '<div class="field"><label for="' + prefix + '-ns-time">Time</label><input type="time" id="' + prefix + '-ns-time" value="10:00"></div>' +
             "</div>" +
-            '<div class="field"><label for="' + prefix + '-cb-note">Why</label><input type="text" id="' + prefix + '-cb-note" placeholder="e.g. decision maker on leave until the 29th" autocomplete="off">' +
-            "<small>The club is held for you until then and appears in your Calendar tab. Leave the date blank for no call-back.</small></div>" +
+            '<div class="field"><label for="' + prefix + '-ns-note">Why</label><input type="text" id="' + prefix + '-ns-note" placeholder="e.g. decision maker on leave until the 29th" autocomplete="off"></div>' +
+            "<small>Call-backs and check-ins hold the club for you and come back in the worksheet when due. Every kind shows in your Calendar tab.</small>" +
             "</details>"
           );
         }
-        function readCallback(prefix) {
-          var dEl = document.getElementById(prefix + "-cb-date");
-          if (!dEl) return { at: null, note: null };
+        // Toggle the free-text "What" field on for kind "other", wherever the
+        // block lives (worksheet form or drawer form).
+        document.addEventListener("change", function (e) {
+          var t = e.target;
+          if (!t || !t.id || t.id.slice(-8) !== "-ns-kind") return;
+          var prefix = t.id.slice(0, -8);
+          var wrap = document.getElementById(prefix + "-ns-title-wrap");
+          if (wrap) wrap.classList.toggle("hidden", t.value !== "other");
+        });
+        function readNextStep(prefix) {
+          var dEl = document.getElementById(prefix + "-ns-date");
+          if (!dEl) return {};
           var date = dEl.value;
-          if (!date) return { at: null, note: null };
-          var time = (document.getElementById(prefix + "-cb-time") || {}).value || "10:00";
+          if (!date) return {};
+          var time = (document.getElementById(prefix + "-ns-time") || {}).value || "10:00";
           var when = new Date(date + "T" + time);
-          if (isNaN(when.getTime())) return { error: "That call-back date does not look right." };
-          if (when.getTime() < Date.now() - 60000) return { error: "The call-back time has already passed." };
-          return { at: when.toISOString(), note: (document.getElementById(prefix + "-cb-note") || {}).value || null };
+          if (isNaN(when.getTime())) return { error: "That date does not look right." };
+          if (when.getTime() < Date.now() - 60000) return { error: "That time has already passed." };
+          var kind = (document.getElementById(prefix + "-ns-kind") || {}).value || "call";
+          var title = (document.getElementById(prefix + "-ns-title") || {}).value || "";
+          return {
+            kind: kind,
+            at: when.toISOString(),
+            note: (document.getElementById(prefix + "-ns-note") || {}).value || null,
+            title: kind === "other" ? title || null : null,
+          };
         }
+        // ---- backward-compat wrappers -------------------------------------
+        // The drawer's log-call form (renderDrawer, owned elsewhere) still
+        // calls callbackBlockHtml("d") / readCallback("d") and builds its
+        // payload by hand as `callback_at: dcb.at, callback_note: dcb.note`.
+        // Keeping these two names as thin wrappers means the drawer renders
+        // the new next-step block (with kind/title) and gets its `.at`/`.note`
+        // for free, with zero changes to drawer code. The drawer's payload
+        // literal only pulls out `.at`/`.note`, so it can't forward `.kind`/
+        // `.title` as `next_step` without a drawer-side edit — the backend
+        // still accepts a bare callback_at/callback_note as kind:"call" per
+        // the spec, so that path keeps working, just without the other kinds.
+        function callbackBlockHtml(prefix) { return nextStepBlockHtml(prefix); }
+        function readCallback(prefix) { return readNextStep(prefix); }
         function fmtWhen(iso) {
           var d = new Date(iso);
           return d.toLocaleDateString("en-AU", { weekday: "short", day: "numeric", month: "short" }) +
             " " + d.toLocaleTimeString("en-AU", { hour: "numeric", minute: "2-digit" });
         }
+        // ------------------------------------------------------- add to calendar
+        // YYYYMMDDTHHMMSSZ, the format both Google's `dates=` param and .ics
+        // DTSTART/DTEND want, always in UTC.
+        function icsStamp(d) {
+          return d.toISOString().replace(/[-:]/g, "").replace(/\.\d{3}Z$/, "Z");
+        }
+        function slugify(s) {
+          return String(s || "").toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/^-+|-+$/g, "") || "club";
+        }
+        // opts: { kind, title, at, note, club, phone, dm_name }. Builds the three
+        // "add to calendar" links used on the Calendar tab and in the post-save
+        // success banner: Google and Outlook open in a new tab; Apple/other is a
+        // client-built .ics as a data: URL, downloaded rather than opened.
+        function calendarLinksHtml(opts) {
+          if (!opts || !opts.at) return "";
+          var start = new Date(opts.at);
+          if (isNaN(start.getTime())) return "";
+          var end = new Date(start.getTime() + 30 * 60000);
+          var summary = "Darwin 1942: " + nsKindLabel(opts.kind || "call", opts.title) + " " + (opts.club || "");
+          var descLines = [];
+          if (opts.note) descLines.push(opts.note);
+          if (opts.phone) descLines.push("Phone: " + opts.phone);
+          if (opts.dm_name) descLines.push("Decision maker: " + opts.dm_name);
+          var description = descLines.join("\n");
+          var gStamp = icsStamp(start) + "/" + icsStamp(end);
+          var gUrl = "https://calendar.google.com/calendar/render?action=TEMPLATE&text=" +
+            encodeURIComponent(summary) + "&dates=" + gStamp + "&details=" + encodeURIComponent(description);
+          var oUrl = "https://outlook.live.com/calendar/0/deeplink/compose?subject=" +
+            encodeURIComponent(summary) + "&startdt=" + encodeURIComponent(start.toISOString()) +
+            "&enddt=" + encodeURIComponent(end.toISOString()) + "&body=" + encodeURIComponent(description);
+          var ics = [
+            "BEGIN:VCALENDAR", "VERSION:2.0", "PRODID:-//Darwin 1942//Calls//EN", "BEGIN:VEVENT",
+            "UID:d1942-" + slugify(opts.club) + "-" + start.getTime() + "@darwin1942.com",
+            "DTSTAMP:" + icsStamp(new Date()),
+            "DTSTART:" + icsStamp(start),
+            "DTEND:" + icsStamp(end),
+            "SUMMARY:" + summary,
+          ]
+            .concat(description ? ["DESCRIPTION:" + description.replace(/\n/g, "\\n")] : [])
+            .concat(["URL:https://darwin1942.com/calls/", "END:VEVENT", "END:VCALENDAR"])
+            .join("\r\n");
+          var icsHref = "data:text/calendar;charset=utf-8," + encodeURIComponent(ics);
+          return (
+            '<span class="cal-links">Add to calendar: ' +
+            '<a href="' + esc(gUrl) + '" target="_blank" rel="noopener">Google</a>' +
+            '<a href="' + esc(oUrl) + '" target="_blank" rel="noopener">Outlook</a>' +
+            '<a href="' + esc(icsHref) + '" download="darwin1942-' + esc(slugify(opts.club)) + '.ics">Apple / other</a>' +
+            "</span>"
+          );
+        }
         function showCallbackBanner(cb) {
           document.getElementById("work-body").insertAdjacentHTML(
             "afterbegin",
-            '<div class="cb-banner"><b>Call-back you booked</b> for ' + esc(fmtWhen(cb.due_at)) +
+            '<div class="cb-banner"><b>' + esc(nsKindLabel(cb.kind || "call", cb.title)) + " you booked</b> for " + esc(fmtWhen(cb.due_at)) +
               (cb.note ? " &mdash; " + esc(cb.note) : "") + "</div>",
+          );
+        }
+        // Shown once, on top of whatever the worksheet loads next, right after a
+        // save that booked a next step — with the same three add-to-calendar
+        // links as the Calendar tab so the caller can add it straight away.
+        function showNextStepSavedBanner(ns) {
+          document.getElementById("work-body").insertAdjacentHTML(
+            "afterbegin",
+            '<div class="cb-banner ns-banner"><b>' + esc(nsKindLabel(ns.kind || "call", ns.title)) + " booked</b> for " + esc(fmtWhen(ns.at)) +
+              (ns.note ? ": " + esc(ns.note) : "") + "<br>" + calendarLinksHtml(ns) + "</div>",
           );
         }
         function setCalBadge(n) {
@@ -3787,17 +3952,21 @@
           function row(c) {
             var t = new Date(c.due_at);
             var canGo = canCall() && c.mine && (c.state === "due" || c.state === "upcoming") && !c.held_by_other && !c.do_not_call;
+            var isOpen = c.state === "due" || c.state === "upcoming";
             return (
               '<div class="cal-row' + (c.state === "done" || c.state === "cancelled" ? " past" : "") + '" data-club="' + esc(c.target_id) + '">' +
               '<div class="cal-time">' + esc(t.toLocaleTimeString("en-AU", { hour: "numeric", minute: "2-digit" })) +
               (d.scope === "all" && c.caller ? "<small>" + esc(c.caller) + "</small>" : "") + "</div>" +
-              '<div class="cal-club"><b class="rowlink" data-club="' + esc(c.target_id) + '">' + esc(c.club || "") + "</b>" +
+              '<div class="cal-club">' +
+              '<div class="cal-club-head"><span class="pill kind-' + esc(c.kind || "call") + '">' + esc(nsKindLabel(c.kind || "call", c.title)) + "</span>" +
+              '<b class="rowlink" data-club="' + esc(c.target_id) + '">' + esc(c.club || "") + "</b></div>" +
               "<span>" + esc(c.where || "") + (c.phone ? " &middot; " + esc(c.phone) : "") + "</span>" +
               (c.note ? '<div class="cal-note">' + esc(c.note) + "</div>" : "") +
               (c.state === "done" ? '<div class="cal-note"><span class="pill ok">called</span></div>' : "") +
               (c.state === "cancelled" ? '<div class="cal-note"><span class="pill">cancelled</span></div>' : "") +
               (c.held_by_other ? '<div class="cal-note"><span class="pill bad">on a call with someone else right now</span></div>' : "") +
               (c.do_not_call ? '<div class="cal-note"><span class="pill bad">now on the do-not-call list</span></div>' : "") +
+              (isOpen ? '<div class="cal-note">' + calendarLinksHtml({ kind: c.kind, title: c.title, at: c.due_at, note: c.note, club: c.club, phone: c.phone }) + "</div>" : "") +
               "</div>" +
               '<div class="cal-actions">' +
               (canGo ? '<button type="button" class="go cal-go" data-id="' + esc(c.target_id) + '">Call now</button>' : "") +
@@ -4130,7 +4299,7 @@
             '<form id="call-form" novalidate>' +
             fieldsHtml +
             outcomeHtml +
-            callbackBlockHtml("f") +
+            nextStepBlockHtml("f") +
             '<div class="field"><label for="f-notes">Any other notes on how the call went</label>' +
             '<textarea id="f-notes" rows="4"></textarea></div>' +
             '<div class="msg" id="save-msg"></div>' +
@@ -4142,7 +4311,7 @@
             '<button type="submit" form="call-form" class="btn-primary" id="save-btn">Done</button>' +
             '<button type="button" class="btn-ghost" id="skip-btn">Skip</button>' +
             '<button type="button" class="btn-ghost" data-handoff="' + esc(t.id) + '" data-club-name="' + esc(t.entity_name) + '" title="Hand this club to another caller’s list.">Reallocate</button>' +
-            '<button type="button" class="btn-ghost" id="add-club-btn" title="Were you told about another club worth calling? Add it to your list.">Referral? Add a club</button>' +
+            '<button type="button" class="btn-ghost" id="add-club-btn" title="Were you told about another club worth calling? Add it to your list.">Add a lead</button>' +
             "</div>" +
             "</div>" +
             "</div>";
@@ -4224,6 +4393,10 @@
           var field = el.closest(".field") || el;
           document.querySelectorAll(".field-bad").forEach(function (n) { n.classList.remove("field-bad"); });
           field.classList.add("field-bad");
+          // The field might be inside a collapsed <details> (the next-step block) —
+          // open it, or scrolling/focusing it below would do nothing visible.
+          var details = field.closest("details");
+          if (details) details.open = true;
           // The form lives in its own scrolling pane (or the drawer), so scroll
           // that container itself rather than trusting scrollIntoView.
           var scroller = field.closest(".pane, .drawer-inner, #drawer") || document.scrollingElement;
@@ -4328,16 +4501,19 @@
             return;
           }
 
-          var cb = readCallback("f");
-          if (cb.error) {
-            flagField("save-msg", "f-cb-date", cb.error);
+          var ns = readNextStep("f");
+          if (ns.error) {
+            flagField("save-msg", "f-ns-date", ns.error);
             return;
           }
-          var cbAt = cb.at, cbNote = cb.note;
 
           var btn = document.getElementById("save-btn");
           btn.disabled = true;
           btn.textContent = "Saving...";
+
+          // Captured now, before loadNext() replaces `current` with whatever's
+          // called next — the success banner still needs to describe this club.
+          var savedClub = { name: current.entity_name, phone: current.primary_phone, dm_name: val("f-dm") };
 
           api("save", {
             target_id: current.id,
@@ -4351,13 +4527,15 @@
             wants_info: wants,
             notes: notes,
             outcome: outcome,
-            callback_at: cbAt,
-            callback_note: cbNote,
+            next_step: ns.at ? ns : undefined,
+            callback_at: ns.at || null,
+            callback_note: ns.note || null,
             contacts: readContacts("f"),
           })
             .then(function (r) {
               passGo();
-              if (r && r.callback_at) toast("Call-back booked", "Back in your calendar for " + fmtWhen(r.callback_at) + ".", "desk");
+              var nx = (r && r.next_step) || (r && r.callback_at ? { kind: "call", at: r.callback_at } : null);
+              if (nx && nx.at) toast(nsKindLabel(nx.kind || "call", nx.title) + " booked", "Back in your calendar for " + fmtWhen(nx.at) + ".", "desk");
               // Rare: the claim expired mid-call and the club went to someone else. The
               // call is still saved, but say so rather than moving on silently.
               if (r && r.warning) {
@@ -4365,12 +4543,19 @@
                 setTimeout(loadNext, 3000);
                 return;
               }
-              loadNext();
+              loadNext().then(function () {
+                if (nx && nx.at) {
+                  showNextStepSavedBanner({
+                    kind: nx.kind || ns.kind, title: nx.title || ns.title, at: nx.at, note: ns.note,
+                    club: savedClub.name, phone: savedClub.phone, dm_name: savedClub.dm_name,
+                  });
+                }
+              });
             })
             .catch(function (err) {
               if (/outcome/i.test(err.message)) flagField("save-msg", "f-outcome", err.message);
               else if (/email/i.test(err.message)) flagField("save-msg", "f-email", err.message);
-              else if (/call-back/i.test(err.message)) flagField("save-msg", "f-cb-date", err.message);
+              else if (/call-back|next step|date/i.test(err.message)) flagField("save-msg", "f-ns-date", err.message);
               else msg("save-msg", err.message, "error");
               btn.disabled = false;
               btn.textContent = "Done";
