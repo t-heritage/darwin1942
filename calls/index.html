@@ -2464,7 +2464,7 @@
         var CLUB_FILTER_STATE = { q: "", state: "", list: "", status: "", calls: "", outcome: "", rel: "", bounced: "" };
         var ALL_CLUBS_RAW = [];
         var CLUBS_HEAD =
-          "<th>Club</th><th>List</th><th>Machines</th><th>Calls</th><th>Last outcome</th>" +
+          "<th>Club</th><th>Caller</th><th>Machines</th><th>Calls</th><th>Last outcome</th>" +
           "<th>Caller</th><th>Next step</th><th>Flags</th>";
         var EMAIL_PREF_LABEL = { all: "all emails", essential: "only essential", none: "no emails" };
 
@@ -2513,6 +2513,28 @@
           });
           return Object.keys(seen).sort();
         }
+        // Which caller works each list, from the overview's callers[]. A list
+        // with nobody on it is still offered, marked as such.
+        function listOwnerOptions() {
+          var callers = (CLUBS_DATA && CLUBS_DATA.callers) || [];
+          var byGroup = {};
+          callers.forEach(function (c) {
+            if (c.call_group == null || c.active === false) return;
+            (byGroup[c.call_group] = byGroup[c.call_group] || []).push(c.username || c.name);
+          });
+          var groups = {};
+          (CLUBS_DATA ? CLUBS_DATA.clubs : []).forEach(function (c) { if (c.call_group) groups[c.call_group] = true; });
+          Object.keys(byGroup).forEach(function (g) { groups[g] = true; });
+          return Object.keys(groups).map(Number).sort(function (a, b) { return a - b; }).map(function (g) {
+            var who = byGroup[g];
+            return { v: String(g), t: who && who.length ? who.join(", ") : "nobody (list " + g + ")" };
+          });
+        }
+        function listOwnerLabel(group) {
+          if (!group) return "—";
+          var opt = listOwnerOptions().filter(function (o) { return o.v === String(group); })[0];
+          return opt ? opt.t : String(group);
+        }
         function clubsToolbarHtml(clubs, admin) {
           var f = CLUB_FILTER_STATE;
           var states = clubFilterValues(clubs, function (c) { return c.state; });
@@ -2534,7 +2556,7 @@
           return (
             '<div class="clubs-toolbar">' +
             sel("cf-state", "State", "state", states.map(function (s) { return { v: s, t: s }; })) +
-            (admin ? sel("cf-list", "List", "list", [1, 2, 3, 4, 5, 6, 7].map(function (n) { return { v: String(n), t: "List " + n }; })) : "") +
+            (admin ? sel("cf-list", "Caller", "list", listOwnerOptions()) : "") +
             sel("cf-status", "Status", "status", [
               { v: "not_called", t: "Not called yet" },
               { v: "attempted", t: "Attempted, nobody reached" },
@@ -2589,7 +2611,7 @@
             "</span>" +
             relLine +
             "</td><td>" +
-            (c.call_group ? esc(c.call_group) : "—") +
+            esc(listOwnerLabel(c.call_group)) +
             "</td><td>" +
             (c.egm_count != null && c.egm_count !== "" ? esc(c.egm_count) : "—") +
             "</td><td>" +
@@ -2757,7 +2779,7 @@
           ALL_CLUBS_RAW = clubs;
           var byId = {};
           clubs.forEach(function (c) { byId[c.id] = c; });
-          CLUBS_DATA = { clubs: clubs, byId: byId, lists: d.lists || {}, recent: d.recent || [], admin: !!admin };
+          CLUBS_DATA = { clubs: clubs, byId: byId, lists: d.lists || {}, recent: d.recent || [], admin: !!admin, callers: d.callers || [] };
           if (!admin && CLUBS_TAB === "dnc") CLUBS_TAB = "all";
           var table = clubsTableHtml(CLUBS_TAB);
           return (
