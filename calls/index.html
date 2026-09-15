@@ -464,11 +464,14 @@
       .drawer .field { margin-bottom: 14px; }
 
       /* ---------------------------------------------------- all clubs / bounces */
-      .clubs-tabs { margin: 0 0 12px; flex-wrap: wrap; }
+      .clubs-head { display: flex; align-items: center; justify-content: space-between; gap: 12px 18px; flex-wrap: wrap; margin: 0 0 12px; }
+      .clubs-search { display: flex; align-items: center; gap: 12px; flex: 1 1 320px; justify-content: flex-end; }
+      .clubs-search .pg-q { flex: 0 1 260px; width: auto; padding: 7px 12px; font-size: 13px; -webkit-appearance: none; appearance: none; }
+      .clubs-search .clubs-count { margin: 0; white-space: nowrap; }
+      .clubs-tabs { margin: 0; flex-wrap: wrap; }
       .clubs-tabs .tab-count { font-weight: 400; opacity: 0.8; margin-left: 4px; }
-      .clubs-toolbar { display: flex; flex-wrap: wrap; gap: 10px; margin: 0 0 10px; }
+      .clubs-toolbar { display: flex; flex-wrap: wrap; gap: 10px; margin: 0 0 12px; }
       .clubs-toolbar select { width: auto; padding: 6px 26px 6px 10px; font-size: 12px; max-width: 220px; }
-      .clubs-toolbar .pg-q { flex: 0 1 260px; }
       .clubs-count { color: var(--muted); font-size: 13px; margin: 0 0 10px; }
       .muted-line { color: var(--muted); font-size: 12px; }
 
@@ -2517,7 +2520,6 @@
           }
           return (
             '<div class="clubs-toolbar">' +
-            '<input type="search" id="cf-q" class="pg-q" placeholder="Search clubs" autocomplete="off" value="' + esc(f.q || "") + '">' +
             sel("cf-state", "State", "state", states.map(function (s) { return { v: s, t: s }; })) +
             (admin ? sel("cf-list", "List", "list", [1, 2, 3, 4, 5, 6, 7].map(function (n) { return { v: String(n), t: "List " + n }; })) : "") +
             sel("cf-status", "Status", "status", [
@@ -2747,9 +2749,13 @@
           var table = clubsTableHtml(CLUBS_TAB);
           return (
             "<h2>Clubs</h2>" +
+            '<div class="clubs-head">' +
             clubsTabsHtml() +
+            '<div class="clubs-search">' +
+            '<input type="search" id="cf-q" class="pg-q" placeholder="Search clubs" autocomplete="off" value="' + esc(CLUB_FILTER_STATE.q || "") + '">' +
+            '<span class="clubs-count" id="clubs-count-line">' + esc(clubsCountText()) + "</span>" +
+            "</div></div>" +
             clubsToolbarHtml(clubs, admin) +
-            '<p class="clubs-count" id="clubs-count-line">' + esc(clubsCountText()) + "</p>" +
             '<div id="clubs-table-wrap">' + table + "</div>"
           );
         }
