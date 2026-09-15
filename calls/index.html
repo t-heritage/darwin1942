@@ -3093,6 +3093,8 @@
             }).join("") +
             "</div>" +
             (note ? '<p class="token-note' + (bad ? " bad" : "") + '">' + esc(note) + "</p>" : "") +
+            '<p class="token-note"><button type="button" class="linkbtn" id="token-skip">' +
+            (cur ? "Keep my current token" : "Skip for now, I can pick one later from my name in the top bar") + "</button></p>" +
             "</div>";
           m.classList.remove("hidden");
         }
@@ -3117,6 +3119,7 @@
               .catch(function (err) { renderTokenPicker(err.message, true); });
             return;
           }
+          if (e.target.id === "token-skip") { document.getElementById("token-modal").classList.add("hidden"); return; }
           if (e.target.id === "token-modal" && myToken()) e.target.classList.add("hidden");
           if (e.target.closest && e.target.closest("#token-btn")) openTokenPicker(false);
         });
