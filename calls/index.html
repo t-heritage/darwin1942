@@ -4057,7 +4057,16 @@
             '<option value="new">Someone new</option>' +
             "</select></div>" +
             '<input type="hidden" id="' + prefix + '-who-email">' +
-            '<input type="hidden" id="' + prefix + '-who-phone">'
+            '<input type="hidden" id="' + prefix + '-who-phone">' +
+            // Shown only for "Someone new" on forms that have no email / phone
+            // inputs of their own (the lean second-call form), so a new person's
+            // direct details are still captured.
+            '<div class="field-row hidden" id="' + prefix + '-who-new">' +
+            '<div class="field"><label for="' + prefix + '-who-new-email">Their direct email</label>' +
+            '<input type="email" id="' + prefix + '-who-new-email" autocomplete="off"></div>' +
+            '<div class="field"><label for="' + prefix + '-who-new-phone">Their direct phone</label>' +
+            '<input type="tel" id="' + prefix + '-who-new-phone" autocomplete="off"></div>' +
+            "</div>"
           );
         }
         function bindWhoSelect(prefix, contacts) {
@@ -4073,6 +4082,11 @@
           var filledFields = [nameEl, roleEl]
             .map(function (el) { return el && el.closest(".field"); })
             .filter(Boolean);
+          // The "someone new" email / phone block reads better under the name
+          // and role, so move it below the role field.
+          var newBlockEl = document.getElementById(prefix + "-who-new");
+          var roleField = roleEl && roleEl.closest(".field");
+          if (newBlockEl && roleField && roleField.parentNode) roleField.parentNode.insertBefore(newBlockEl, roleField.nextSibling);
 
           function apply(idx) {
             var c = idx !== "new" ? contacts[idx] : null;
@@ -4082,6 +4096,12 @@
             if (phoneEl) phoneEl.value = c ? c.phone || "" : "";
             if (hiddenEmail) hiddenEmail.value = c ? c.email || "" : "";
             if (hiddenPhone) hiddenPhone.value = c ? c.phone || "" : "";
+            var newBlock = document.getElementById(prefix + "-who-new");
+            if (newBlock) {
+              var show = !c && !emailEl && !phoneEl;
+              newBlock.classList.toggle("hidden", !show);
+              if (!show) newBlock.querySelectorAll("input").forEach(function (i) { i.value = ""; });
+            }
             filledFields.forEach(function (f) {
               f.classList.toggle("field-filled", !!c);
             });
@@ -4914,7 +4934,7 @@
           // A contact picked from "who did you speak to" carries its own email
           // (hidden field, since round 2 has no visible email input); otherwise
           // fall back to whatever earlier call captured one.
-          var whoEmail = val("f-who-email").trim();
+          var whoEmail = val("f-who-email").trim() || val("f-who-new-email").trim();
           var email =
             formRound >= 2 ? whoEmail || formCarryEmail : val("f-email").trim();
           if (wants && !email) {
@@ -5012,7 +5032,7 @@
             decision_maker_name: val("f-dm"),
             decision_maker_role: val("f-role"),
             decision_maker_email: email,
-            decision_maker_phone: val("f-phone"),
+            decision_maker_phone: val("f-phone") || val("f-who-phone") || val("f-who-new-phone"),
             clubgrants: val("f-grants"),
             others_involved: val("f-others"),
             board_meeting: val("f-board"),
