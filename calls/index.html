@@ -4037,6 +4037,17 @@
         // contacts for a club (from the API's `contacts` / `known_contacts`) into
         // a select above the name field; picking one fills name/role (and email/
         // phone, where the form has them) and "Someone new" clears everything.
+        // Email preference for the person on the call (same options as extra contacts).
+        function emailPrefSelectHtml(id) {
+          return (
+            '<div class="field"><label for="' + id + '">Emails</label><select id="' + id + '">' +
+            '<option value="">Not set</option>' +
+            '<option value="all">All emails</option>' +
+            '<option value="essential">Only essential</option>' +
+            '<option value="none">No emails</option>' +
+            "</select></div>"
+          );
+        }
         function whoSelectHtml(prefix, contacts) {
           contacts = contacts || [];
           if (!contacts.length) return "";
@@ -4066,7 +4077,8 @@
             '<input type="email" id="' + prefix + '-who-new-email" autocomplete="off"></div>' +
             '<div class="field"><label for="' + prefix + '-who-new-phone">Their direct phone</label>' +
             '<input type="tel" id="' + prefix + '-who-new-phone" autocomplete="off"></div>' +
-            "</div>"
+            "</div>" +
+            '<div class="' + prefix + '-who-new-wrap hidden">' + emailPrefSelectHtml(prefix + "-who-new-pref") + "</div>"
           );
         }
         function bindWhoSelect(prefix, contacts) {
@@ -4086,7 +4098,11 @@
           // and role, so move it below the role field.
           var newBlockEl = document.getElementById(prefix + "-who-new");
           var roleField = roleEl && roleEl.closest(".field");
-          if (newBlockEl && roleField && roleField.parentNode) roleField.parentNode.insertBefore(newBlockEl, roleField.nextSibling);
+          if (newBlockEl && roleField && roleField.parentNode) {
+            roleField.parentNode.insertBefore(newBlockEl, roleField.nextSibling);
+            var prefWrapEl = document.querySelector("." + prefix + "-who-new-wrap");
+            if (prefWrapEl) newBlockEl.parentNode.insertBefore(prefWrapEl, newBlockEl.nextSibling);
+          }
 
           function apply(idx) {
             var c = idx !== "new" ? contacts[idx] : null;
@@ -4101,7 +4117,14 @@
               var show = !c && !emailEl && !phoneEl;
               newBlock.classList.toggle("hidden", !show);
               if (!show) newBlock.querySelectorAll("input").forEach(function (i) { i.value = ""; });
+              var prefWrap = document.querySelector("." + prefix + "-who-new-wrap");
+              if (prefWrap) {
+                prefWrap.classList.toggle("hidden", !show);
+                if (!show) prefWrap.querySelector("select").value = "";
+              }
             }
+            var prefSel = document.getElementById(prefix + "-email-pref");
+            if (prefSel) prefSel.value = (c && c.email_preference) || "";
             filledFields.forEach(function (f) {
               f.classList.toggle("field-filled", !!c);
             });
@@ -4712,6 +4735,7 @@
               '<div class="field"><label for="f-phone">Their direct phone number</label>' +
               '<input type="tel" id="f-phone" autocomplete="off"></div>' +
               "</div>" +
+              emailPrefSelectHtml("f-email-pref") +
               contactsBlockHtml("f") +
               '<div class="field"><label for="f-grants">Does the club participate in ClubGRANTS / community funding?</label>' +
               '<input type="text" id="f-grants" autocomplete="off" placeholder="Yes / No / details"></div>' +
@@ -5033,6 +5057,7 @@
             decision_maker_role: val("f-role"),
             decision_maker_email: email,
             decision_maker_phone: val("f-phone") || val("f-who-phone") || val("f-who-new-phone"),
+            decision_maker_email_preference: val("f-email-pref") || val("f-who-new-pref") || null,
             clubgrants: val("f-grants"),
             others_involved: val("f-others"),
             board_meeting: val("f-board"),
@@ -5565,6 +5590,7 @@
             '<div class="field"><label for="d-email">Their direct email</label><input type="email" id="d-email" autocomplete="off"></div>' +
             '<div class="field"><label for="d-phone">Their direct phone</label><input type="tel" id="d-phone" autocomplete="off"></div>' +
             "</div>" +
+            emailPrefSelectHtml("d-email-pref") +
             contactsBlockHtml("d") +
             '<div class="field checkbox">' +
             '<input type="checkbox" id="d-wants">' +
@@ -5649,6 +5675,7 @@
                 decision_maker_role: document.getElementById("d-role").value,
                 decision_maker_email: email,
                 decision_maker_phone: document.getElementById("d-phone").value,
+                decision_maker_email_preference: (document.getElementById("d-email-pref") || {}).value || null,
                 wants_info: wants,
                 notes: document.getElementById("d-notes").value,
                 outcome: outcome,
