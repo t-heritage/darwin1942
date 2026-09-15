@@ -464,13 +464,23 @@
       .drawer .field { margin-bottom: 14px; }
 
       /* ---------------------------------------------------- all clubs / bounces */
-      .clubs-controls { display: grid; grid-template-columns: 1fr minmax(200px, 300px) auto; grid-template-areas: "tabs search count" "filters filters filters"; align-items: center; gap: 12px; margin: 0 0 12px; }
-      .clubs-controls .clubs-tabs { grid-area: tabs; justify-self: start; }
-      .clubs-controls .clubs-q { grid-area: search; width: 100%; padding: 7px 12px; font-size: 13px; -webkit-appearance: none; appearance: none; }
-      .clubs-controls .clubs-count { grid-area: count; margin: 0; white-space: nowrap; justify-self: end; }
-      .clubs-controls .clubs-toolbar { grid-area: filters; display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); margin: 0; gap: 12px; }
+      /* One 7-column grid: the filter selects take a column each on row 2, and
+         row 1 lines up with them (tabs over columns 1-4, search over Outcome,
+         count over the last two). */
+      .clubs-controls { display: grid; grid-template-columns: repeat(7, minmax(0, 1fr)); align-items: center; gap: 12px; margin: 0 0 12px; }
+      .clubs-controls .clubs-tabs { grid-column: 1 / 5; display: flex; width: 100%; box-sizing: border-box; }
+      .clubs-controls .clubs-tabs .tab { flex: 1 1 0; text-align: center; padding-left: 8px; padding-right: 8px; white-space: nowrap; }
+      .clubs-controls .clubs-q { grid-column: 5 / 6; width: 100%; box-sizing: border-box; padding: 7px 12px; font-size: 13px; -webkit-appearance: none; appearance: none; }
+      .clubs-controls .clubs-count { grid-column: 6 / 8; margin: 0; white-space: nowrap; justify-self: end; }
+      .clubs-controls .clubs-toolbar { grid-column: 1 / 8; display: grid; grid-template-columns: repeat(7, minmax(0, 1fr)); margin: 0; gap: 12px; }
       .clubs-controls .clubs-toolbar select { width: 100%; max-width: none; box-sizing: border-box; }
-      @media (max-width: 900px) { .clubs-controls { grid-template-columns: 1fr auto; grid-template-areas: "tabs tabs" "search count" "filters filters"; } }
+      @media (max-width: 1100px) {
+        .clubs-controls { grid-template-columns: 1fr 1fr; }
+        .clubs-controls .clubs-tabs { grid-column: 1 / 3; }
+        .clubs-controls .clubs-q { grid-column: 1 / 2; }
+        .clubs-controls .clubs-count { grid-column: 2 / 3; }
+        .clubs-controls .clubs-toolbar { grid-column: 1 / 3; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); }
+      }
       .clubs-tabs { margin: 0; flex-wrap: wrap; }
       .clubs-tabs .tab-count { font-weight: 400; opacity: 0.8; margin-left: 4px; }
       .clubs-toolbar { display: flex; flex-wrap: wrap; gap: 12px; margin: 0 0 12px; }
