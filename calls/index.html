@@ -76,8 +76,27 @@
       .topbar h1 { font-size: 19px; display: flex; align-items: center; gap: 10px; flex: 1 1 0; min-width: max-content; }
       .topbar h1 .logo { width: 34px; height: 34px; display: inline-grid; place-items: center; }
       .topbar h1 .logo svg { width: 100%; height: 100%; display: block; }
-      .topbar .nav { display: flex; align-items: center; justify-content: center; gap: 14px; flex-wrap: wrap; flex: 2 1 auto; min-width: 0; }
-      .topbar .nav-secondary { display: flex; align-items: center; gap: 14px; flex-wrap: wrap; }
+      /* The menu sits between the title and the token controls and takes every bit
+         of room they leave, up to the width of the Overview tab's content band (a
+         1200px page box inset by its own 24px of padding). Title and token controls
+         take equal shares of anything beyond that, so the menu stays centred on the
+         page. Its parts form two clusters held apart by the slack between them: the
+         tabs alone at the left of the band, and the counters, round switch and
+         add-lead button together at the right, each a normal gap apart rather than
+         drifting to the corners. nav-secondary is display:contents here so the
+         counters and the button take part in that directly; the auto margin on the
+         counters is what opens the gap in the middle. The running order is set with
+         order properties because the markup renders the round switch first. */
+      .topbar .nav {
+        display: flex; align-items: center; justify-content: flex-start;
+        gap: 12px 20px; flex-wrap: wrap;
+        flex: 20 1 auto; min-width: 0; max-width: 1152px; margin-inline: auto;
+      }
+      .topbar .nav-secondary { display: contents; }
+      .topbar .nav .tabs { order: 1; }
+      .topbar .nav .counters { order: 2; margin-inline-start: auto; }
+      .topbar .nav #round-wrap { order: 3; }
+      .topbar .nav #add-lead-btn { order: 4; }
       .topbar .who { color: var(--muted); font-size: 13px; display: flex; align-items: center; gap: 10px; flex: 1 1 0; justify-content: flex-end; }
       .topbar .btn-primary.small { width: auto; padding: 7px 14px; font-size: 13px; box-shadow: 2px 2px 0 var(--ink); }
       .round-select { font-family: var(--heading-font); font-weight: 700; font-size: 13px; padding: 7px 12px; border: 2px solid var(--ink); border-radius: 999px; background: var(--paper-2); color: var(--ink); cursor: pointer; }
@@ -158,8 +177,14 @@
         /* Two rows inside the nav: tabs (with the round switch) on top, counters
            + add-lead underneath — rather than everything wrapping wherever it
            lands. */
-        .topbar .nav { justify-content: flex-start; }
-        .topbar .nav-secondary { flex: 1 1 100%; justify-content: space-between; }
+        .topbar .nav { justify-content: flex-start; max-width: none; }
+        /* Stacked layout: the counters sit inside nav-secondary again, so the auto
+           margin that opens the desktop gap would only shove them to one side, and
+           nav-secondary is a box again rather than display:contents — which means it
+           needs an order of its own to stay below the tabs and the round switch. */
+        .topbar .nav .counters { margin-inline-start: 0; }
+        .topbar .nav #round-wrap { order: 2; }
+        .topbar .nav-secondary { display: flex; align-items: center; gap: 14px; flex-wrap: wrap; flex: 1 1 100%; order: 3; justify-content: space-between; }
       }
 
       /* ------------------------------------------------------------ title deed */
@@ -259,7 +284,11 @@
       .btn-ghost:hover:not(:disabled) { background: var(--paper-2); }
 
       /* ------------------------------------------------------------ training */
-      .train-wrap { max-width: 760px; margin: 0 auto; padding: 28px 20px 60px; }
+      .train-wrap { max-width: 1200px; margin: 0 auto; padding: 28px 24px 60px; }
+      /* The walkthrough is prose. The container sits on the band with everything
+         else, but the reading column inside it stays near 70 characters, which is
+         where text stops being scannable and starts being a wall. */
+      .train-wrap > * { max-width: 760px; margin-inline: auto; }
       .train-progress { display: flex; align-items: center; gap: 14px; margin-bottom: 18px; color: var(--muted); font-size: 13px; white-space: nowrap; }
       .train-bar { flex: 1 1 auto; height: 8px; border-radius: 4px; background: var(--paper); border: 1px solid var(--ink); overflow: hidden; }
       .train-bar span { display: block; height: 100%; background: var(--sky); transition: width 0.2s; }
@@ -339,7 +368,7 @@
       .cb-banner { background: var(--pollen); border-bottom: 3px solid var(--ink); padding: 10px 16px; font-size: 14px; text-align: center; }
       .cb-banner b { font-weight: 700; }
       /* The calendar tab. */
-      .cal-wrap { max-width: 980px; margin: 0 auto; padding: 22px 20px 60px; }
+      .cal-wrap { max-width: 1200px; margin: 0 auto; padding: 22px 24px 60px; }
       .cal-head { display: flex; align-items: center; justify-content: space-between; gap: 12px; flex-wrap: wrap; margin-bottom: 14px; }
       .cal-head h2 { margin: 0; }
       .cal-scope { display: inline-flex; gap: 4px; }
@@ -556,7 +585,7 @@
       @media (max-width: 520px) { .toast { grid-template-columns: 120px 1fr; } .toast .ch-img { width: 120px; height: 110px; } .toast .ch-text { font-size: 14px; } }
 
       /* --------------------------------------------------------------- board */
-      .board-wrap { --board-max: min(720px, calc(100vh - 130px)); padding: 20px 20px 72px; display: grid; grid-template-columns: minmax(0, var(--board-max)) minmax(240px, 1fr); gap: 20px; max-width: 1200px; margin: 0 auto; align-items: start; }
+      .board-wrap { --board-max: min(720px, calc(100vh - 130px)); padding: 20px 24px 72px; display: grid; grid-template-columns: minmax(0, var(--board-max)) minmax(240px, 1fr); gap: 20px; max-width: 1200px; margin: 0 auto; align-items: start; }
       @media (max-width: 900px) { .board-wrap { grid-template-columns: 1fr; } .board { margin: 0 auto; } }
       .board { display: grid; grid-template-columns: 1.6fr repeat(9, 1fr) 1.6fr; grid-template-rows: 1.6fr repeat(9, 1fr) 1.6fr; aspect-ratio: 1; background: var(--tea); border: 3px solid var(--ink); gap: 0; width: 100%; max-width: var(--board-max, 720px); }
       .sp { position: relative; border: 2px solid var(--ink); background: var(--paper); font-size: 7.5px; line-height: 1.1; overflow: hidden; display: flex; flex-direction: column; cursor: pointer; min-width: 0; }
