@@ -91,9 +91,22 @@ Two ways:
   but some mastheads block other sites from loading their images. If that happens the
   item simply renders without a picture, so nothing breaks.
 
-Each picture is fitted inside a square without cropping, so nothing gets cut off.
-Square pictures fill the box exactly; wide ones sit centred with space above and
-below. Square artwork therefore looks best.
+Pictures sit in a square, and the page works out how to fit each one:
+
+- **A photograph** fills the square. Square pictures fit exactly; a wide press photo is
+  cropped to the middle, so check the important part is central.
+- **A logo on a transparent background** is placed whole on a panel of its own, never
+  cropped — white behind a dark logo, Darwin 1942 blue behind a white one. That is
+  worked out from the logo itself.
+
+Reading a picture closely enough to tell those apart is something browsers only allow
+for pictures **hosted on this site**. For one linked from an outlet's own server, the
+page falls back to a sensible guess: a PNG or SVG, or anything much wider than it is
+tall, is treated as a logo and given a white panel.
+
+The practical upshot: **a white logo should be uploaded to the site** rather than linked
+from elsewhere, otherwise it may land on a white panel and disappear. Dark logos and
+photographs are fine either way.
 
 ## Notes
 

@@ -476,18 +476,27 @@
   }
   .news-item:last-child{border-bottom:1px solid rgba(255,255,255,0.18);}
   .news-item.no-image{grid-template-columns:1fr;}
-  /* Items carry whatever picture the outlet published — a wide press photo in one
-     row, square podcast artwork in the next. The box stays a constant shape so the
-     column lines up, and the picture is fitted inside it rather than cropped, so a
-     masthead or a face is never cut off. */
+  /* Items carry whatever picture the outlet published — a press photo in one row,
+     square podcast artwork in the next, a masthead logo in the third. The box stays
+     a constant square so the column lines up. A photograph fills it. A logo on a
+     transparent background is given a ground of its own and fitted inside, so it is
+     never cropped and never disappears into the dark card; the page picks the
+     ground from the artwork's own brightness (see groundFor in the page script). */
   .news-thumb{
     display:block;
     width:100%;
     aspect-ratio:1 / 1;
-    object-fit:contain;
+    object-fit:cover;
     object-position:center;
     background:rgba(255,255,255,0.06);
   }
+  .news-thumb.on-white,
+  .news-thumb.on-blue{
+    object-fit:contain;
+    padding:11%;
+  }
+  .news-thumb.on-white{background:var(--white);}
+  .news-thumb.on-blue{background:var(--sky-blue);}
   .news-meta{
     font-family:var(--heading-font);
     font-size:16px;

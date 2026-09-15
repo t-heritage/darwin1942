@@ -201,6 +201,64 @@ only thing that ever needs editing here. Column names and setup: README.md in th
     return '';
   }
 
+  /* How a picture sits in its square depends on what kind of picture it is.
+     A photograph fills the box. A logo supplied on a transparent background would
+     otherwise vanish into the dark card, so it is fitted on a ground of its own
+     instead: white behind dark artwork, the site blue behind white artwork.
+
+     Telling them apart properly means reading the picture's pixels, which a browser
+     only permits when the host allows a cross-origin read. Anything uploaded to this
+     site always does; an outlet's own server often does not. Where the read is
+     refused we fall back to the two things that can always be measured — the file
+     type and the shape — and where even those say nothing, the picture is treated
+     as a photograph. The probe is a separate image object throughout, so a refusal
+     never stops the picture the reader actually sees from loading. */
+  function groundFor(img, src) {
+    /* Pixels are off-limits: judge by file type and proportions instead. A masthead
+       is nearly always a PNG or SVG and much wider than it is tall. White is the
+       safer ground of the two, most mastheads being dark artwork. */
+    function fallback() {
+      var ratio = (img.naturalWidth && img.naturalHeight) ? img.naturalWidth / img.naturalHeight : 1;
+      var flat = /\.(png|svg)(\?|#|$)/i.test(src);
+      if (flat || ratio >= 2.5 || ratio <= 0.4) img.classList.add('on-white');
+    }
+    function fallbackWhenLoaded() {
+      if (img.complete && img.naturalWidth) fallback();
+      else img.addEventListener('load', fallback, { once: true });
+    }
+
+    var probe = new Image();
+    probe.crossOrigin = 'anonymous';
+    probe.onerror = fallbackWhenLoaded;
+    probe.onload = function () {
+      var size = 40, total = size * size;
+      var clear = 0, lit = 0, luma = 0, px, i, alpha;
+      try {
+        var canvas = document.createElement('canvas');
+        canvas.width = size;
+        canvas.height = size;
+        var ctx = canvas.getContext('2d');
+        ctx.drawImage(probe, 0, 0, size, size);
+        px = ctx.getImageData(0, 0, size, size).data;
+      } catch (e) {
+        fallbackWhenLoaded();
+        return;
+      }
+      for (i = 0; i < px.length; i += 4) {
+        alpha = px[i + 3];
+        if (alpha < 250) clear++;
+        if (alpha > 16) {
+          luma += (0.2126 * px[i] + 0.7152 * px[i + 1] + 0.0722 * px[i + 2]) / 255;
+          lit++;
+        }
+      }
+      /* A few soft edges are normal in a photograph; a logo is mostly open space. */
+      if (!lit || clear / total < 0.12) return;
+      img.classList.add(luma / lit > 0.6 ? 'on-blue' : 'on-white');
+    };
+    probe.src = src;
+  }
+
   function el(tag, className, text) {
     var n = document.createElement(tag);
     if (className) n.className = className;
@@ -224,6 +282,7 @@ only thing that ever needs editing here. Column names and setup: README.md in th
         img.src = it.image;
         img.alt = it.title || '';
         img.loading = 'lazy';
+        groundFor(img, it.image);
         /* A masthead that blocks hotlinking should not leave a broken frame. */
         img.addEventListener('error', function () {
           article.classList.add('no-image');
