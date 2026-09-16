@@ -511,6 +511,19 @@
       }
       .clubs-tabs { margin: 0; flex-wrap: wrap; }
       .clubs-tabs .tab-count { font-weight: 400; opacity: 0.8; margin-left: 4px; }
+      /* Correspondence tabs + bounce worksheet in the club drawer. */
+      .corr-tabs { margin: 10px 0 12px; flex-wrap: wrap; }
+      .corr-tabs .tab { padding: 6px 12px; }
+      .corr-tabs .tab-count { font-weight: 400; opacity: 0.8; margin-left: 4px; }
+      .tl-kind { display: inline-block; font-size: 11px; padding: 1px 8px; border-radius: 999px; background: var(--paper); border: 1px solid var(--line); color: var(--muted); margin-right: 6px; vertical-align: middle; }
+      .bounce-box { background: #fde7ea; border: 2px solid #7a0b1c; border-radius: var(--radius); padding: 14px 16px; margin: 14px 0; }
+      .bounce-box h3 { margin: 0 0 6px; color: #7a0b1c; }
+      .bounce-box p { margin: 0 0 10px; font-size: 14px; }
+      .bounce-box .actions { display: flex; gap: 8px; flex-wrap: wrap; margin-top: 4px; }
+      .bounce-box .btn-ghost { background: var(--paper); }
+      .lead-pill { background: var(--sky, #cfe6f5); border: 1px solid var(--ink); }
+      .resolution-line { font-size: 13px; color: var(--muted); padding: 4px 0; }
+      .bounce-rectify { white-space: nowrap; }
       .clubs-toolbar { display: flex; flex-wrap: wrap; gap: 12px; margin: 0 0 12px; }
       .clubs-toolbar select { width: auto; padding: 6px 26px 6px 10px; font-size: 12px; max-width: 220px; }
       .clubs-count { color: var(--muted); font-size: 13px; margin: 0 0 10px; }
@@ -895,10 +908,8 @@
         // Which queue the worksheet serves from: 1 = first calls, 2 = callbacks.
         var roundMode = 1;
         try {
-          roundMode =
-            parseInt(localStorage.getItem("d1942_round") || "1", 10) === 2
-              ? 2
-              : 1;
+          roundMode = parseInt(localStorage.getItem("d1942_round") || "1", 10);
+          if (roundMode !== 2 && roundMode !== 3) roundMode = 1;
         } catch (e) {}
 
         function api(action, payload) {
@@ -2372,7 +2383,7 @@
               : '<span class="pill">standard</span>') +
             "</td>" +
             "<td>" +
-            esc(t.entity_name) +
+            esc(t.entity_name) + leadPillHtml(t) +
             "</td>" +
             "<td>" +
             esc(t.where || "—") +
@@ -2394,6 +2405,28 @@
             "<td>" +
             esc(t.calls) +
             "</td>" +
+            '<td class="row-actions"><button type="button" class="handoff-btn" data-handoff="' +
+            esc(t.id) +
+            '" data-club-name="' +
+            esc(t.entity_name) +
+            '">Hand off</button></td></tr>'
+          );
+        }
+        // Round 3 (closing round): register-interest leads pinned to their owner.
+        function r3RowHtml(t) {
+          return (
+            '<tr class="rowlink" data-club="' +
+            esc(t.id) +
+            '"' + fAttrs({ state: stateOf(t.where), outcome: outcomeLabel(t.last_outcome), activity: activityBand(t.last_call_at), owner: t.pinned_to_name || "Unassigned" }) + ">" +
+            "<td>" + esc(t.entity_name) + leadPillHtml(t) + "</td>" +
+            "<td>" + esc(t.where || "—") + "</td>" +
+            "<td>" + esc(t.decision_maker || "—") +
+            (t.decision_maker_email ? "<br><span style='color:var(--muted)'>" + esc(t.decision_maker_email) + "</span>" : "") +
+            (t.decision_maker_phone ? "<br><span style='color:var(--muted)'>" + esc(t.decision_maker_phone) + "</span>" : "") +
+            "</td>" +
+            "<td>" + esc(t.interest_level || "—") + (t.package_option ? "<br><span style='color:var(--muted)'>" + esc(t.package_option) + "</span>" : "") + "</td>" +
+            "<td>" + esc(t.pinned_to_name || "—") + "</td>" +
+            "<td>" + (t.calls ? esc(t.calls) + (t.last_outcome ? " · " + esc(outcomeLabel(t.last_outcome)) : "") : "—") + "</td>" +
             '<td class="row-actions"><button type="button" class="handoff-btn" data-handoff="' +
             esc(t.id) +
             '" data-club-name="' +
@@ -2496,6 +2529,21 @@
           "<th>Club</th><th>Caller</th><th>Machines</th><th>Calls</th><th>Last outcome</th>" +
           "<th>Caller</th><th>Next step</th><th>Flags</th>";
         var EMAIL_PREF_LABEL = { all: "all emails", essential: "only essential", none: "no emails" };
+        // Website leads: where the club came from and who it is pinned to.
+        function leadSourceLabel(src) {
+          return src === "register_interest" ? "Registered interest" : src === "get_involved" ? "Website enquiry" : "Lead";
+        }
+        function leadSummary(t) {
+          var who = [t.lead_name, t.lead_role ? "(" + t.lead_role + ")" : ""].filter(Boolean).join(" ");
+          var parts = [who, t.lead_email, t.lead_phone].filter(Boolean);
+          if (t.lead_at) parts.push("submitted " + t.lead_at);
+          if (t.lead_assigned_name) parts.push("assigned to " + t.lead_assigned_name);
+          return parts.join(" \u00b7 ");
+        }
+        function leadPillHtml(t) {
+          if (!t || !t.lead_source) return "";
+          return ' <span class="pill lead-pill" title="' + esc(leadSummary(t)) + '">' + (t.lead_source === "register_interest" ? "registered interest" : "enquiry") + "</span>";
+        }
 
         function nsKindLabel(ns) {
           if (!ns) return "";
@@ -2682,14 +2730,15 @@
               referred_by: t.referred_by || null, pinned_to_name: t.pinned_to_name || null, status: t.status, children: [],
             });
           });
-          ((lists && lists.round2) || []).forEach(function (t) {
+          ((lists && lists.round2) || []).concat((lists && lists.round3) || []).forEach(function (t) {
             if (seen[t.id]) return;
             seen[t.id] = 1;
             out.push({
               id: t.id, entity_name: t.entity_name, where: t.where, state: stateOf(t.where), call_group: t.call_group,
-              egm_count: t.egm_count, gaming_rank: t.gaming_rank, calls: t.calls || 0, spoken_to: t.called_again ? 2 : 1,
+              egm_count: t.egm_count, gaming_rank: t.gaming_rank, calls: t.calls || 0, spoken_to: t.called_again ? 2 : (t.calls ? 1 : 0),
               last_outcome: t.last_outcome, last_call_at: t.last_call_at, do_not_call: false,
-              pinned_to_name: t.pinned_to_name || null, status: "done", children: [],
+              pinned_to_name: t.pinned_to_name || null, status: t.status || "done", children: [],
+              lead_source: t.lead_source || null, lead_name: t.lead_name || null, lead_assigned_name: t.lead_assigned_name || null,
             });
           });
           return out;
@@ -2707,6 +2756,7 @@
             all: D.clubs.length,
             r1: (D.lists.round1 || []).length,
             r2: (D.lists.round2 || []).length,
+            r3: (D.lists.round3 || []).length,
             recent: D.recent.length,
             dnc: D.clubs.filter(function (c) { return c.do_not_call; }).length,
           };
@@ -2714,14 +2764,14 @@
         function clubsTabsHtml() {
           var n = clubsBucketCounts();
           var tabs = [
-            ["all", "All", n.all], ["r1", "First round", n.r1], ["r2", "Second round", n.r2],
+            ["all", "All", n.all], ["r1", "First round", n.r1], ["r2", "Second round", n.r2], ["r3", "Third round", n.r3],
             ["recent", "Recent calls", n.recent], ["dnc", "Do not call", n.dnc],
           ];
           if (!CLUBS_DATA.admin) tabs = tabs.filter(function (t) { return t[0] !== "dnc"; });
           return (
             '<div class="tabs clubs-tabs" id="clubs-tabs">' +
             tabs.map(function (t) {
-              var id = t[0] === "r1" ? ' id="list-r1"' : t[0] === "r2" ? ' id="list-r2"' : "";
+              var id = t[0] === "r1" ? ' id="list-r1"' : t[0] === "r2" ? ' id="list-r2"' : t[0] === "r3" ? ' id="list-r3"' : "";
               return '<button type="button" class="tab' + (CLUBS_TAB === t[0] ? " on" : "") + '" data-clubs-tab="' + t[0] + '"' + id + ">" +
                 t[1] + '<span class="tab-count">(' + t[2] + ")</span></button>";
             }).join("") +
@@ -2743,6 +2793,12 @@
             rows = r2.filter(function (t) { return clubPasses(t.id); }).map(r2RowHtml);
             head = "<th>Priority</th><th>Club</th><th>Where</th><th>Contact</th><th>Last outcome</th><th>Calls</th><th></th>";
             empty = "No callbacks yet — they appear here after first calls are made.";
+          } else if (tab === "r3") {
+            var r3 = D.lists.round3 || [];
+            total = r3.length;
+            rows = r3.filter(function (t) { return clubPasses(t.id); }).map(r3RowHtml);
+            head = "<th>Club</th><th>Where</th><th>Contact</th><th>Interest</th><th>Owner</th><th>Calls</th><th></th>";
+            empty = "Nothing in the closing round yet — register-interest leads land here.";
           } else if (tab === "recent") {
             total = D.recent.length;
             rows = D.recent.filter(function (r) { return clubPasses(r.target_id); }).map(function (r) { return recentRowHtml(r, admin); });
@@ -2826,12 +2882,13 @@
           bounces = bounces || [];
           return (
             "<h2>Bounced emails</h2>" +
+            '<p class="list-note">A worksheet to clear: open a row to see everything sent to that address, fix the email and resend the sequence, or mark it rectified to take it off this list.</p>' +
             pagedTable(
               "bounces",
-              "<th>Email</th><th>Club</th><th>What</th><th>Subject / campaign</th><th>When</th>",
+              "<th>Email</th><th>Club</th><th>What</th><th>Subject / campaign</th><th>When</th><th></th>",
               bounces.map(function (b) {
                 return (
-                  (b.target_id ? '<tr class="rowlink" data-club="' + esc(b.target_id) + '">' : "<tr>") +
+                  (b.target_id ? '<tr class="rowlink" data-club="' + esc(b.target_id) + '" data-email="' + esc(b.email) + '">' : "<tr>") +
                   "<td>" +
                   esc(b.email) +
                   "</td><td>" +
@@ -2842,10 +2899,10 @@
                   esc(b.subject || b.campaign || "—") +
                   '</td><td class="nowrap">' +
                   esc(when(b.at)) +
-                  "</td></tr>"
+                  '</td><td class="row-actions"><button type="button" class="handoff-btn bounce-rectify" data-rectify-email="' + esc(b.email) + '" data-rectify-target="' + esc(b.target_id || "") + '">Rectified</button></td></tr>'
                 );
               }),
-              { pageSize: 25, empty: "No bounced emails for any club address yet." },
+              { pageSize: 25, empty: "No bounced emails waiting — everything has been rectified." },
             )
           );
         }
@@ -3097,7 +3154,7 @@
           return (
             '<div class="deed">' +
             '<div class="deed-band' + (tier.light ? " light" : "") + '" style="background:' + tier.colour + '">' +
-            "<small>Title deed" + (round >= 2 ? " · call back" : "") + "</small>" +
+            "<small>Title deed" + (round === 3 ? " · closing round" : round >= 2 ? (t.lead_source ? " · website lead" : " · call back") : "") + "</small>" +
             "<h2>" + esc(t.entity_name) + "</h2></div>" +
             '<div class="deed-body">' +
             '<p class="deed-sub">' + esc(place) + (distance ? " · " + esc(distance) : "") + "</p>" +
@@ -3128,6 +3185,9 @@
               : "") +
             row("Contact on file", t.primary_person) +
             row("Referred by", t.referred_by_name ? t.referred_by_name + (t.referral_note ? " \u2014 " + t.referral_note : "") : "") +
+            (t.lead_source ? row(leadSourceLabel(t.lead_source), leadSummary(t)) : "") +
+            (t.lead_details && t.lead_details.interest_level ? row("Interest level", t.lead_details.interest_level) : "") +
+            (t.lead_details && (t.lead_details.package_option || t.lead_details.package_interest) ? row("Package", t.lead_details.package_option || t.lead_details.package_interest) : "") +
             row("Email on file", t.primary_email) +
             (websites
               ? row("Website", '<a href="' + esc(websites) + '" target="_blank" rel="noopener">' + esc(webLabel) + "</a>", true)
@@ -3921,6 +3981,7 @@
             '<select class="round-select" id="round-select" title="Which round to call">' +
             '<option value="1"' + (roundMode === 1 ? " selected" : "") + ">Round 1</option>" +
             '<option value="2"' + (roundMode === 2 ? " selected" : "") + ">Round 2</option>" +
+            '<option value="3"' + (roundMode === 3 ? " selected" : "") + ">Round 3</option>" +
             "</select>";
         }
 
@@ -3949,7 +4010,7 @@
         // Switching rounds hands the current club straight back to the pool (no
         // penalty) and claims from the other queue.
         function switchRound(m) {
-          m = m === 2 ? 2 : 1;
+          m = m === 2 ? 2 : m === 3 ? 3 : 1;
           if (m === roundMode) return;
           if (
             current &&
@@ -3992,7 +4053,9 @@
               if (!r.target) {
                 document.getElementById("work-body").innerHTML =
                   '<div class="empty"><h2>' +
-                  (roundMode === 2
+                  (roundMode === 3
+                    ? "No closing-round clubs waiting"
+                    : roundMode === 2
                     ? "No callbacks waiting"
                     : "Nothing left to call") +
                   "</h2>" +
@@ -4682,7 +4745,7 @@
             .then(function (r) {
               setStats(r.stats);
               current = r.target;
-              roundMode = r.round === 2 ? 2 : 1;
+              roundMode = r.round === 3 ? 3 : r.round === 2 ? 2 : 1;
               try { localStorage.setItem("d1942_round", String(roundMode)); } catch (err) {}
               renderRoundSwitch();
               switchTab("work");
@@ -5246,20 +5309,44 @@
         });
 
         // Any element carrying data-club opens the panel — list rows, recent calls.
+        // A bounced-email row also carries the address, so the drawer opens on it.
         document.addEventListener("click", function (e) {
           if (e.target.closest && e.target.closest("a,button")) return;
           var row = e.target.closest && e.target.closest("[data-club]");
           if (row && row.getAttribute("data-club"))
-            openClub(row.getAttribute("data-club"));
+            openClub(row.getAttribute("data-club"), { email: row.getAttribute("data-email") || null });
+        });
+        // "Rectified" on the bounced emails table: the address leaves the list.
+        document.addEventListener("click", function (e) {
+          var b = e.target.closest && e.target.closest(".bounce-rectify");
+          if (!b) return;
+          e.preventDefault();
+          var email = b.getAttribute("data-rectify-email");
+          if (!confirm("Mark " + email + " as rectified? It will leave the bounced emails list.")) return;
+          b.disabled = true;
+          b.textContent = "Saving...";
+          api("rectify_bounce", { email: email, target_id: b.getAttribute("data-rectify-target") || null })
+            .then(function () {
+              var tr = b.closest("tr");
+              if (tr) tr.remove();
+              toast("Rectified", email + " is off the bounced list.", "desk");
+              if (!document.getElementById("admin-body").classList.contains("hidden")) loadOverview();
+            })
+            .catch(function (err) {
+              b.disabled = false;
+              b.textContent = "Rectified";
+              alert(err.message);
+            });
         });
 
-        function openClub(targetId) {
+        function openClub(targetId, opts) {
+          opts = opts || {};
           drawerClub = targetId;
           drawerEl.classList.add("open");
           backdropEl.classList.add("open");
           document.getElementById("drawer-inner").innerHTML =
             '<div class="empty"><p>Loading club...</p></div>';
-          api("club_detail", { target_id: targetId })
+          api("club_detail", { target_id: targetId, email: opts.email || null })
             .then(function (d) {
               if (drawerClub !== targetId) return; // another club was opened meanwhile
               renderDrawer(d);
@@ -5488,6 +5575,134 @@
           );
         }
 
+        // ---- correspondence tabs: All / Phone / Email (and, when the drawer was
+        // opened on a bounced address, Email split into that address vs the club)
+        var DRAWER_TL = null;
+        var DRAWER_TAB = "all";
+        function corrItems(tab) {
+          var T = DRAWER_TL;
+          if (!T) return [];
+          return T.items.filter(function (it) {
+            if (tab === "phone") return it.kind === "phone";
+            if (tab === "email") return it.kind === "email";
+            if (tab === "email-this") return it.kind === "email" && !!it.email && it.email.indexOf(T.focus) >= 0;
+            if (tab === "email-club") return it.kind === "email" && !(it.email && it.email.indexOf(T.focus) >= 0);
+            return true;
+          });
+        }
+        function corrTabsHtml() {
+          var T = DRAWER_TL;
+          var tabs = [["all", "All"], ["phone", "Phone"]];
+          if (T && T.focus) tabs.push(["email-this", "Email: this address"], ["email-club", "Email: whole club"]);
+          else tabs.push(["email", "Email"]);
+          return (
+            '<div class="tabs corr-tabs" id="corr-tabs">' +
+            tabs.map(function (t) {
+              return '<button type="button" class="tab' + (DRAWER_TAB === t[0] ? " on" : "") + '" data-corr="' + t[0] + '">' +
+                t[1] + '<span class="tab-count">(' + corrItems(t[0]).length + ")</span></button>";
+            }).join("") +
+            "</div>"
+          );
+        }
+        function corrBodyHtml() {
+          var T = DRAWER_TL;
+          if (!T) return "";
+          var items = corrItems(DRAWER_TAB);
+          var note = "";
+          if (DRAWER_TAB !== "phone") note = '<p class="list-note">' + esc(T.emailNote) + "</p>";
+          if (DRAWER_TAB === "email-this") note = '<p class="list-note">Only what was sent to ' + esc(T.focus) + ".</p>";
+          if (DRAWER_TAB === "email-club") note = '<p class="list-note">Emails to every other address we hold for this club.</p>';
+          var res = (T.resolutions || []).map(function (r) {
+            return '<div class="resolution-line">' + esc(when(r.resolved_at)) + " — " +
+              (r.action === "email_changed"
+                ? "email corrected from " + esc(r.email) + " to " + esc(r.new_email || "")
+                : esc(r.email) + " marked rectified") +
+              (r.by ? " by " + esc(r.by) : "") + "</div>";
+          }).join("");
+          var empty = DRAWER_TAB === "phone"
+            ? "No calls recorded for this club yet."
+            : DRAWER_TAB === "all"
+              ? "No calls or emails for this club yet."
+              : "Nothing sent here yet.";
+          return note + (DRAWER_TAB !== "phone" ? res : "") + (items.length ? items.map(function (it) { return it.html; }).join("") : '<p class="list-note">' + empty + "</p>");
+        }
+        function correspondenceHtml() {
+          return "<h3>Previous correspondence</h3>" + corrTabsHtml() + '<div id="corr-body">' + corrBodyHtml() + "</div>";
+        }
+        document.addEventListener("click", function (e) {
+          var b = e.target.closest && e.target.closest("[data-corr]");
+          if (!b) return;
+          DRAWER_TAB = b.getAttribute("data-corr");
+          var tabs = document.getElementById("corr-tabs");
+          var body = document.getElementById("corr-body");
+          if (tabs) tabs.outerHTML = corrTabsHtml();
+          if (body) body.innerHTML = corrBodyHtml();
+        });
+
+        // ---- bounced address worksheet inside the drawer
+        function bounceBoxHtml(d) {
+          var email = d.focus_email;
+          if (!email) return "";
+          return (
+            '<div class="bounce-box">' +
+            "<h3>Bounced address</h3>" +
+            "<p><b>" + esc(email) + "</b> bounced. Enter the working address to move this person over in Customer.io and resend the follow-up sequence, or mark it rectified if it is already handled.</p>" +
+            '<div class="field"><label for="d-fix-email">New email address</label><input type="email" id="d-fix-email" autocomplete="off" placeholder="name@club.com.au"></div>' +
+            '<div class="actions">' +
+            '<button type="button" class="btn-primary" id="d-fix-btn">Update email and resend the sequence</button>' +
+            '<button type="button" class="btn-ghost" id="d-rectified-btn">Rectified</button>' +
+            "</div>" +
+            '<div class="msg" id="d-fix-msg"></div>' +
+            "</div>"
+          );
+        }
+        function wireBounceBox(t, d) {
+          var fixBtn = document.getElementById("d-fix-btn");
+          if (!fixBtn) return;
+          var email = d.focus_email;
+          fixBtn.addEventListener("click", function () {
+            clearMsg("d-fix-msg");
+            var newEmail = (document.getElementById("d-fix-email").value || "").trim();
+            if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(newEmail)) {
+              msg("d-fix-msg", "Enter a valid email address.", "error");
+              return;
+            }
+            fixBtn.disabled = true;
+            fixBtn.textContent = "Updating...";
+            api("fix_email", { target_id: t.id, old_email: email, new_email: newEmail })
+              .then(function (r) {
+                var cio = (r && r.cio) || {};
+                var detail = cio.renamed
+                  ? "Customer.io person moved to " + newEmail + (cio.retriggered ? " and the sequence has been re-triggered." : ".")
+                  : cio.created
+                    ? newEmail + " was created in Customer.io" + (cio.retriggered ? " and the sequence has been triggered." : ".")
+                    : "Saved here; Customer.io: " + (cio.rename_error || cio.create_error || cio.skipped || "no change");
+                toast("Email updated", detail, "desk");
+                openClub(t.id);
+                if (!document.getElementById("admin-body").classList.contains("hidden")) loadOverview();
+              })
+              .catch(function (err) {
+                msg("d-fix-msg", err.message, "error");
+                fixBtn.disabled = false;
+                fixBtn.textContent = "Update email and resend the sequence";
+              });
+          });
+          document.getElementById("d-rectified-btn").addEventListener("click", function () {
+            var b = this;
+            b.disabled = true;
+            api("rectify_bounce", { target_id: t.id, email: email })
+              .then(function () {
+                toast("Rectified", email + " is off the bounced list.", "desk");
+                closeDrawer();
+                if (!document.getElementById("admin-body").classList.contains("hidden")) loadOverview();
+              })
+              .catch(function (err) {
+                b.disabled = false;
+                msg("d-fix-msg", err.message, "error");
+              });
+          });
+        }
+
         function renderDrawer(d) {
           var t = d.target;
           var phone = (t.primary_phone || "").trim();
@@ -5496,67 +5711,62 @@
             [t.suburb, t.state, t.postcode].filter(Boolean).join(" ");
           var websites = (t.websites || "").split(";")[0].trim();
 
-          var callsHtml = (d.calls || []).length
-            ? d.calls
-                .map(function (c, i) {
-                  var who = (c.d1942_callers && c.d1942_callers.name) || "";
-                  // Oldest call is call 1; d.calls arrives newest first.
-                  var n = d.calls.length - i;
-                  var noContact = ["no_answer", "gatekeeper", "wrong_number"].indexOf(c.outcome) >= 0;
-                  var spokeTo = c.decision_maker_name || (noContact ? "Nobody reached" : "");
-                  var extras = [];
-                  if (c.decision_maker_email) extras.push(c.decision_maker_email);
-                  if (c.decision_maker_phone) extras.push(c.decision_maker_phone);
-                  if (c.clubgrants) extras.push("ClubGRANTS: " + c.clubgrants);
-                  if (c.others_involved) extras.push("Also involved: " + c.others_involved);
-                  if (c.board_meeting) extras.push("Committee meets: " + c.board_meeting);
-                  function fact(label, value, raw) {
-                    if (!value) return "";
-                    return "<dt>" + label + "</dt><dd>" + (raw ? value : esc(value)) + "</dd>";
-                  }
-                  return (
-                    '<div class="call-item">' +
-                    '<div class="ci-head"><b>Call ' + n + "</b>" +
-                    '<span class="ci-when">' +
-                    esc(when(c.created_at)) +
-                    (who ? " · " + esc(who) : "") +
-                    "</span></div>" +
-                    '<dl class="ci-facts">' +
-                    fact("Spoke to", spokeTo) +
-                    fact("Their role", c.decision_maker_role) +
-                    fact(
-                      "Outcome",
-                      esc(outcomeLabel(c.outcome)) +
-                        (c.wants_info ? ' <span class="pill ok">wants more info</span>' : ""),
-                      true,
-                    ) +
-                    fact("Notes", c.notes) +
-                    "</dl>" +
-                    (extras.length
-                      ? '<div class="ci-extra">' + extras.map(esc).join(" · ") + "</div>"
-                      : "") +
-                    (c.contacts && c.contacts.length
-                      ? '<div class="ci-contacts"><b>Other contacts:</b> ' +
-                        c.contacts
-                          .map(function (x) {
-                            var pref = x.email_preference
-                              ? "emails: " + (EMAIL_PREF_LABEL[x.email_preference] || x.email_preference)
-                              : null;
-                            return esc(
-                              [x.name, x.role ? "(" + x.role + ")" : null, x.email, x.phone, pref].filter(Boolean).join(" "),
-                            );
-                          })
-                          .join("; ") +
-                        "</div>"
-                      : "") +
-                    "</div>"
-                  );
-                })
-                .join("")
-            : '<p class="list-note">No calls recorded for this club yet.</p>';
+          // One card per call (the oldest call is call 1; d.calls arrives newest first).
+          function callCardHtml(c, n) {
+            var who = (c.d1942_callers && c.d1942_callers.name) || "";
+            var noContact = ["no_answer", "gatekeeper", "wrong_number"].indexOf(c.outcome) >= 0;
+            var spokeTo = c.decision_maker_name || (noContact ? "Nobody reached" : "");
+            var extras = [];
+            if (c.decision_maker_email) extras.push(c.decision_maker_email);
+            if (c.decision_maker_phone) extras.push(c.decision_maker_phone);
+            if (c.clubgrants) extras.push("ClubGRANTS: " + c.clubgrants);
+            if (c.others_involved) extras.push("Also involved: " + c.others_involved);
+            if (c.board_meeting) extras.push("Committee meets: " + c.board_meeting);
+            function fact(label, value, raw) {
+              if (!value) return "";
+              return "<dt>" + label + "</dt><dd>" + (raw ? value : esc(value)) + "</dd>";
+            }
+            var kind = c.import_key ? "Imported" : c.channel === "email" ? "Email" : c.channel === "sms" ? "Text" : c.channel === "other" ? "Contact" : "Call";
+            return (
+              '<div class="call-item">' +
+              '<div class="ci-head"><b>' + esc(kind) + " " + n + "</b>" +
+              '<span class="ci-when">' +
+              esc(when(c.created_at)) +
+              (who ? " · " + esc(who) : "") +
+              "</span></div>" +
+              '<dl class="ci-facts">' +
+              fact("Spoke to", spokeTo) +
+              fact("Their role", c.decision_maker_role) +
+              fact(
+                "Outcome",
+                esc(outcomeLabel(c.outcome)) +
+                  (c.wants_info ? ' <span class="pill ok">wants more info</span>' : ""),
+                true,
+              ) +
+              fact("Notes", c.notes) +
+              "</dl>" +
+              (extras.length
+                ? '<div class="ci-extra">' + extras.map(esc).join(" · ") + "</div>"
+                : "") +
+              (c.contacts && c.contacts.length
+                ? '<div class="ci-contacts"><b>Other contacts:</b> ' +
+                  c.contacts
+                    .map(function (x) {
+                      var pref = x.email_preference
+                        ? "emails: " + (EMAIL_PREF_LABEL[x.email_preference] || x.email_preference)
+                        : null;
+                      return esc(
+                        [x.name, x.role ? "(" + x.role + ")" : null, x.email, x.phone, pref].filter(Boolean).join(" "),
+                      );
+                    })
+                    .join("; ") +
+                  "</div>"
+                : "") +
+              "</div>"
+            );
+          }
 
           var em = d.emails || {};
-          var emailsHtml;
           // Unix seconds -> short date; a chip only appears when its stage happened.
           function emChip(kind, label, ts) {
             if (!ts) return "";
@@ -5570,83 +5780,94 @@
               "</span>"
             );
           }
-          if (!em.available) {
-            emailsHtml =
-              '<p class="list-note">Email history could not be loaded: ' +
-              esc(em.reason || "unknown") +
-              "</p>";
-          } else if (!(em.addresses || []).length) {
-            emailsHtml =
-              '<p class="list-note">No email address has been captured for this club yet, so there is no email history to show.</p>';
-          } else if ((em.deliveries || []).length) {
-            // Preferred shape: one card per email, subject first, then what happened to it.
-            emailsHtml =
-              '<p class="list-note">Tracking ' +
-              esc(em.addresses.join(", ")) +
-              "</p>" +
-              em.deliveries
-                .map(function (m) {
-                  var chips =
-                    emChip("sent", "Sent", m.sent) +
-                    emChip("delivered", "Delivered", m.delivered) +
-                    emChip("opened", "Opened", m.opened) +
-                    emChip("clicked", "Clicked", m.clicked) +
-                    emChip("bounced", "Bounced", m.bounced) +
-                    emChip("spam", "Marked as spam", m.spammed) +
-                    emChip("unsubscribed", "Unsubscribed", m.unsubscribed) +
-                    (m.failure
-                      ? '<span class="ev-pill failed">Failed</span>'
-                      : "");
-                  return (
-                    '<div class="email-msg">' +
-                    '<div class="em-head"><b>' +
-                    esc(m.subject || m.campaign || "(no subject)") +
-                    "</b></div>" +
-                    '<div class="em-chips">' +
-                    chips +
-                    "</div>" +
-                    '<div class="ev-addr">' +
-                    esc(m.email) +
-                    "</div>" +
-                    "</div>"
-                  );
-                })
-                .join("");
-          } else if (!(em.events || []).length) {
-            emailsHtml =
-              '<p class="list-note">Nothing sent yet to ' +
-              esc(em.addresses.join(", ")) +
-              ".</p>";
-          } else {
-            emailsHtml =
-              '<p class="list-note">Tracking ' +
-              esc(em.addresses.join(", ")) +
-              "</p>" +
-              em.events
-                .map(function (ev) {
-                  return (
-                    '<div class="email-ev">' +
-                    '<span class="ev-pill ' +
-                    esc(ev.kind) +
-                    '">' +
-                    esc(evLabel(ev.kind)) +
-                    "</span>" +
-                    '<span class="ev-addr">' +
-                    esc(ev.email) +
-                    (ev.subject
-                      ? " — " + esc(ev.subject)
-                      : ev.campaign
-                        ? " — " + esc(ev.campaign)
-                        : "") +
-                    "</span>" +
-                    '<span class="ev-when" style="margin-left:auto">' +
-                    esc(when(ev.at)) +
-                    "</span>" +
-                    "</div>"
-                  );
-                })
-                .join("");
+          // Preferred shape: one card per email, subject first, then what happened to it.
+          function deliveryCardHtml(m) {
+            var chips =
+              emChip("sent", "Sent", m.sent) +
+              emChip("delivered", "Delivered", m.delivered) +
+              emChip("opened", "Opened", m.opened) +
+              emChip("clicked", "Clicked", m.clicked) +
+              emChip("bounced", "Bounced", m.bounced) +
+              emChip("spam", "Marked as spam", m.spammed) +
+              emChip("unsubscribed", "Unsubscribed", m.unsubscribed) +
+              (m.failure ? '<span class="ev-pill failed">Failed</span>' : "");
+            return (
+              '<div class="email-msg">' +
+              '<div class="em-head"><span class="tl-kind">Email sent</span><b>' +
+              esc(m.subject || m.campaign || "(no subject)") +
+              "</b></div>" +
+              '<div class="em-chips">' + chips + "</div>" +
+              '<div class="ev-addr">' + esc(m.email) + "</div>" +
+              "</div>"
+            );
           }
+          function eventRowHtml(ev) {
+            return (
+              '<div class="email-ev">' +
+              '<span class="ev-pill ' + esc(ev.kind) + '">' + esc(evLabel(ev.kind)) + "</span>" +
+              '<span class="ev-addr">' +
+              esc(ev.email) +
+              (ev.subject ? " — " + esc(ev.subject) : ev.campaign ? " — " + esc(ev.campaign) : "") +
+              "</span>" +
+              '<span class="ev-when" style="margin-left:auto">' + esc(when(ev.at)) + "</span>" +
+              "</div>"
+            );
+          }
+          function inboxCardHtml(m) {
+            var arrow = m.direction === "in" ? "&#8592;" : "&#8594;";
+            return (
+              '<div class="inbox-item">' +
+              '<div class="ib-head"><span><span class="tl-kind">' + (m.direction === "in" ? "Email received" : "Email sent") + "</span>" +
+              arrow + " " + esc(m.subject || "(no subject)") +
+              '</span><span class="muted-line">' + esc(when(m.sent_at)) + "</span></div>" +
+              '<div class="ib-meta">' +
+              (m.direction === "in" ? esc(m.from_name || m.from_email || "") : "To " + esc(m.to_email || "")) +
+              "</div>" +
+              (m.snippet ? '<div class="ib-snip">' + esc(m.snippet) + "</div>" : "") +
+              "</div>"
+            );
+          }
+
+          // Every piece of correspondence with the club in one list, newest
+          // first: calls (and imported contacts), emails we sent through
+          // Customer.io, and inbox mail either way.
+          var timeline = [];
+          var calls = d.calls || [];
+          calls.forEach(function (c, i) {
+            var phoneLike = !c.channel || c.channel === "phone" || c.channel === "sms" || c.channel === "other";
+            timeline.push({
+              kind: c.channel === "email" ? "email" : "phone",
+              email: c.channel === "email" ? (c.decision_maker_email || "").toLowerCase() : null,
+              at: c.created_at,
+              html: callCardHtml(c, calls.length - i),
+            });
+          });
+          (em.deliveries || []).forEach(function (m) {
+            timeline.push({ kind: "email", email: (m.email || "").toLowerCase(), at: m.created ? new Date(m.created * 1000).toISOString() : null, html: deliveryCardHtml(m) });
+          });
+          (em.events || []).forEach(function (ev) {
+            timeline.push({ kind: "email", email: (ev.email || "").toLowerCase(), at: ev.at, html: eventRowHtml(ev) });
+          });
+          (d.inbox || []).forEach(function (m) {
+            var addrs = [m.from_email, m.to_email].filter(Boolean).join(",").toLowerCase();
+            timeline.push({ kind: "email", email: addrs, at: m.sent_at, html: inboxCardHtml(m) });
+          });
+          timeline.sort(function (a, b) {
+            return (b.at ? new Date(b.at).getTime() : 0) - (a.at ? new Date(a.at).getTime() : 0);
+          });
+          var focusEmail = (d.focus_email || "").toLowerCase();
+          DRAWER_TL = {
+            items: timeline,
+            focus: focusEmail,
+            emailNote: !em.available
+              ? "Email history could not be loaded: " + (em.reason || "unknown")
+              : (em.addresses || []).length
+                ? "Tracking " + em.addresses.join(", ")
+                : "No email address has been captured for this club yet, so there is no email history to show.",
+            resolutions: d.resolutions || [],
+          };
+          if (!DRAWER_TAB || (DRAWER_TAB.indexOf("email") === 0 && !focusEmail && DRAWER_TAB !== "email")) DRAWER_TAB = "all";
+          if (focusEmail && DRAWER_TAB === "all") DRAWER_TAB = "email-this";
 
           document.getElementById("drawer-inner").innerHTML =
             '<span class="drawer-band" style="background:' +
@@ -5672,9 +5893,15 @@
                 esc(phone) +
                 "</a>"
               : "") +
+            bounceBoxHtml(d) +
             '<dl class="facts">' +
             drawerFact("Contact on file", t.primary_person) +
             drawerFact("Referred by", t.referred_by_name ? t.referred_by_name + (t.referral_note ? " \u2014 " + t.referral_note : "") : "") +
+            (t.lead_source ? drawerFact(leadSourceLabel(t.lead_source), leadSummary(t)) : "") +
+            (t.lead_details && t.lead_details.interest_level ? drawerFact("Interest level", t.lead_details.interest_level) : "") +
+            (t.lead_details && (t.lead_details.package_option || t.lead_details.package_interest) ? drawerFact("Package", t.lead_details.package_option || t.lead_details.package_interest) : "") +
+            (t.lead_details && t.lead_details.valued_aspects ? drawerFact("Values most", t.lead_details.valued_aspects) : "") +
+            (t.round_override ? drawerFact("Round", "Round " + t.round_override + (t.round_override === 3 ? " (closing)" : "") + (t.pinned_to_name ? " · " + t.pinned_to_name : "")) : "") +
             drawerFact("Email on file", t.primary_email) +
             (websites
               ? '<div class="fact"><dt>Website</dt><dd><a href="' +
@@ -5732,13 +5959,7 @@
             '<button type="submit" class="btn-primary" id="d-save-btn">Save this call</button>' +
             '<div class="msg" id="d-save-msg"></div>' +
             "</form>" +
-            "<h3>All calls to this club (" +
-            (d.calls || []).length +
-            ")</h3>" +
-            callsHtml +
-            "<h3>Emails to this contact</h3>" +
-            emailsHtml +
-            inboxHtml(d.inbox) +
+            correspondenceHtml() +
             deleteZoneHtml(t);
 
           document
@@ -5755,6 +5976,7 @@
 
           wireRelationshipBlock(t);
           wireDeleteZone(t);
+          wireBounceBox(t, d);
           bindWhoSelect("d", d.known_contacts || []);
 
           document
