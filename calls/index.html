@@ -2416,6 +2416,24 @@
             '">Hand off</button></td></tr>'
           );
         }
+        // Parked clubs (sub branches): not in any call queue, callable by hand.
+        function parkedRowHtml(t) {
+          return (
+            '<tr class="rowlink" data-club="' +
+            esc(t.id) +
+            '"' + fAttrs({ state: stateOf(t.where), outcome: outcomeLabel(t.last_outcome), activity: activityBand(t.last_call_at) }) + ">" +
+            "<td>" + esc(t.entity_name) + (t.pinned_to_name ? ' <span class="pill">' + esc(t.pinned_to_name) + "</span>" : "") + "</td>" +
+            "<td>" + esc(t.where || "—") + "</td>" +
+            '<td class="nowrap">' + esc(t.primary_phone || "—") + "</td>" +
+            "<td>" + esc(t.primary_person || "—") + (t.primary_email ? "<br><span style='color:var(--muted)'>" + esc(t.primary_email) + "</span>" : "") + "</td>" +
+            "<td>" + (t.calls ? esc(t.calls) + (t.last_outcome ? " · " + esc(outcomeLabel(t.last_outcome)) : "") : "—") + "</td>" +
+            '<td class="row-actions"><button type="button" class="handoff-btn" data-handoff="' +
+            esc(t.id) +
+            '" data-club-name="' +
+            esc(t.entity_name) +
+            '">Hand off</button></td></tr>'
+          );
+        }
         // Round 3 (closing round): register-interest leads pinned to their owner.
         function r3RowHtml(t) {
           return (
@@ -2734,7 +2752,7 @@
               referred_by: t.referred_by || null, pinned_to_name: t.pinned_to_name || null, status: t.status, children: [],
             });
           });
-          ((lists && lists.round2) || []).concat((lists && lists.round3) || []).forEach(function (t) {
+          ((lists && lists.round2) || []).concat((lists && lists.round3) || [], (lists && lists.parked) || []).forEach(function (t) {
             if (seen[t.id]) return;
             seen[t.id] = 1;
             out.push({
@@ -2762,6 +2780,7 @@
             r2: (D.lists.round2 || []).length,
             r3: (D.lists.round3 || []).length,
             recent: D.recent.length,
+            parked: (D.lists.parked || []).length,
             dnc: D.clubs.filter(function (c) { return c.do_not_call; }).length,
           };
         }
@@ -2769,7 +2788,7 @@
           var n = clubsBucketCounts();
           var tabs = [
             ["all", "All", n.all], ["r1", "First round", n.r1], ["r2", "Second round", n.r2], ["r3", "Third round", n.r3],
-            ["recent", "Recent calls", n.recent], ["dnc", "Do not call", n.dnc],
+            ["recent", "Recent calls", n.recent], ["parked", "Sub branches", n.parked], ["dnc", "Do not call", n.dnc],
           ];
           if (!CLUBS_DATA.admin) tabs = tabs.filter(function (t) { return t[0] !== "dnc"; });
           return (
@@ -2809,6 +2828,12 @@
             head = "<th>When</th><th>Club</th>" + (admin ? "<th>Caller</th>" : "") + "<th>Outcome</th><th>Decision maker</th><th>Wants info</th>" +
               (admin ? "<th>In sheet</th>" : "") + "<th>Notes</th>";
             empty = "No calls recorded yet.";
+          } else if (tab === "parked") {
+            var pk = D.lists.parked || [];
+            total = pk.length;
+            rows = pk.filter(function (t) { return clubPasses(t.id); }).map(parkedRowHtml);
+            head = "<th>Club</th><th>Where</th><th>Phone</th><th>Contact on file</th><th>Calls</th><th></th>";
+            empty = "No sub branches are parked.";
           } else if (tab === "dnc") {
             var dnc = D.clubs.filter(function (c) { return c.do_not_call; });
             total = dnc.length;
@@ -5991,7 +6016,8 @@
             drawerFact(
               "Status",
               (t.status || "").replace(/_/g, " ") +
-                (t.do_not_call ? " · DO NOT CALL" : ""),
+                (t.do_not_call ? " · DO NOT CALL" : "") +
+                (t.parked ? " · parked (" + (t.parked_reason || "not in the call queue") + ")" : ""),
             ) +
             "</dl>" +
             relationshipBlockHtml(t) +
