@@ -433,6 +433,109 @@
     padding:12px 22px;
   }
 
+  /* IN THE NEWS — a slim row under the three cards, in the same dark card colour,
+     holding the three most recent items of outside coverage. Nothing here is
+     hand-edited: the items are read at page load from the same Google Sheet that
+     fills /news-and-media/ (see /assets/news-feed.js and /news-and-media/README.md).
+     The row stays hidden until items arrive, so an empty or unreachable sheet
+     leaves the home page exactly as it was. */
+  .news-strip{
+    grid-column:1 / -1;
+    background:#081524;
+    padding:16px 36px;
+    display:flex;
+    align-items:center;
+    gap:clamp(20px, 3vw, 44px);
+  }
+  .news-strip h3{
+    font-family:var(--heading-font);
+    font-size:20px;
+    font-weight:400;
+    letter-spacing:1px;
+    color:var(--white);
+    white-space:nowrap;
+    flex:0 0 auto;
+  }
+  .news-strip-items{
+    flex:1 1 auto;
+    min-width:0;
+    display:flex;
+    gap:clamp(18px, 2.5vw, 36px);
+  }
+  .news-strip-item{
+    flex:1 1 0;
+    min-width:0;
+    display:flex;
+    align-items:center;
+    gap:14px;
+    color:var(--white);
+    text-decoration:none;
+  }
+  /* A press photo fills the small square; a logo on a transparent background is
+     fitted on a ground of its own so it does not vanish into the dark row (the feed
+     script picks white or blue from the artwork's own brightness). */
+  .news-strip-img{
+    flex:0 0 auto;
+    width:56px;
+    height:56px;
+    object-fit:cover;
+    object-position:center;
+    background:rgba(255,255,255,0.06);
+  }
+  .news-strip-img.on-white,
+  .news-strip-img.on-blue{object-fit:contain;padding:6px;}
+  .news-strip-img.on-white{background:var(--white);}
+  .news-strip-img.on-blue{background:var(--sky-blue);}
+  .news-strip-text{min-width:0;}
+  .news-strip-date{
+    font-family:var(--heading-font);
+    font-size:12px;
+    letter-spacing:2px;
+    color:#a8c4d8;
+    margin-bottom:3px;
+  }
+  .news-strip-title{
+    font-family:var(--heading-font);
+    font-size:18px;
+    font-weight:400;
+    letter-spacing:0.8px;
+    line-height:1.1;
+    display:-webkit-box;
+    -webkit-line-clamp:2;
+    -webkit-box-orient:vertical;
+    overflow:hidden;
+  }
+  .news-strip-item:hover .news-strip-title{text-decoration:underline;}
+  .news-strip-source{
+    font-size:13px;
+    font-weight:bold;
+    color:#e6eef5;
+    margin-top:3px;
+    white-space:nowrap;
+    overflow:hidden;
+    text-overflow:ellipsis;
+  }
+  .news-strip .btn{flex:0 0 auto;align-self:center;}
+  .news-strip .btn:hover{background:var(--white);color:#081524;}
+  @media (max-width:1100px){
+    .news-strip{padding:14px 28px;}
+  }
+  /* Where the cards stack, the row does too: label, then the items one under the
+     other, then the button. */
+  @media (max-width:900px){
+    .news-strip{flex-direction:column;align-items:stretch;gap:14px;padding:18px 22px;}
+    .news-strip h3{font-size:18px;}
+    .news-strip-items{flex-direction:column;gap:14px;}
+    .news-strip-title{font-size:17px;}
+    .news-strip .btn{
+      display:inline-block;
+      width:auto;
+      min-width:150px;
+      text-align:center;
+      align-self:flex-start;
+    }
+  }
+
   /* FOOTER */
   footer{
     background:var(--sky-blue);
@@ -832,7 +935,17 @@
         <p>Make a tax-deductible donation to support the production, distribution and education resources of Darwin 1942.</p>
         <a class="btn" href="/donate">DONATE NOW</a>
       </div>
+
+      <!-- IN THE NEWS — filled at page load from the client's Google Sheet (the same
+           one behind /news-and-media/). Hidden until there is something to show. -->
+      <section class="news-strip" id="news-strip" aria-label="In the news" hidden>
+        <h3>IN THE NEWS</h3>
+        <div class="news-strip-items" id="news-strip-items"></div>
+        <a class="btn" href="/news-and-media/">ALL COVERAGE</a>
+      </section>
     </div>
+  </section>
+
   </section>
 
   <footer>
@@ -857,6 +970,60 @@
       btn.innerHTML = open ? '&#x2715;' : '&#9776;';
     });
   }
+})();
+</script>
+<script src="assets/news-feed.js"></script>
+<script>
+/* In the news: the three most recent items from the shared feed, as one slim row. */
+(function(){
+  var strip = document.getElementById('news-strip');
+  var list = document.getElementById('news-strip-items');
+  if (!strip || !list || !window.DarwinNews || !DarwinNews.configured) return;
+
+  var MAX_ITEMS = 3;
+
+  function el(tag, className, text){
+    var n = document.createElement(tag);
+    if (className) n.className = className;
+    if (text !== undefined) n.textContent = text;
+    return n;
+  }
+
+  function item(it){
+    /* The whole item is the link when there is one. */
+    var a = el(it.url ? 'a' : 'div', 'news-strip-item');
+    if (it.url) { a.href = it.url; a.target = '_blank'; a.rel = 'noopener noreferrer'; }
+
+    if (it.image) {
+      var img = el('img', 'news-strip-img');
+      img.src = it.image;
+      img.alt = '';
+      img.loading = 'lazy';
+      DarwinNews.groundFor(img, it.image);
+      img.addEventListener('error', function(){ img.remove(); });
+      a.appendChild(img);
+    }
+
+    var text = el('div', 'news-strip-text');
+    if (it.dateLabel) text.appendChild(el('div', 'news-strip-date', it.dateLabel));
+    text.appendChild(el('div', 'news-strip-title', it.title));
+    if (it.publication) text.appendChild(el('div', 'news-strip-source', it.publication));
+    a.appendChild(text);
+    return a;
+  }
+
+  DarwinNews.load()
+    .then(function(items){
+      items = items.slice(0, MAX_ITEMS);
+      if (!items.length) return;
+      list.innerHTML = '';
+      items.forEach(function(it){ list.appendChild(item(it)); });
+      strip.removeAttribute('hidden');
+    })
+    .catch(function(err){
+      /* The row simply stays hidden; the home page never shows an error for it. */
+      if (window.console) console.error('In the news could not be loaded:', err);
+    });
 })();
 </script>
 </body>

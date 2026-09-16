@@ -4,6 +4,17 @@
 The list is **not** edited in this repository. It is read, every time the page loads,
 from a Google Sheet that the client maintains and publishes to the web as CSV.
 
+The home page shows the same coverage in a slim **IN THE NEWS** row under the three
+cards: the three most recent rows, each as a small picture, date, headline and
+publication, with an ALL COVERAGE button through to this page. It reads the same
+sheet, so adding a row to the sheet updates both pages at once and nothing on the home
+page ever needs editing. If the sheet is empty or cannot be reached, the row stays
+hidden and the home page looks as it did before.
+
+Both pages share one script, `/assets/news-feed.js`, which fetches the sheet, reads the
+columns, sorts newest first and picks the button word. The sheet address is written
+into that file by Jekyll from `news_csv_url`, so it is still the only setting to change.
+
 ## One-time setup
 
 1. Create a Google Sheet (call it something like *Darwin 1942 — News and Media*).
