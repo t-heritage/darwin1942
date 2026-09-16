@@ -342,6 +342,10 @@
       .add-card .actions { margin-top: 6px; }
       .referral-pill { background: var(--pollen); border: 1px solid var(--ink); }
       .add-club-row { margin: 0 0 12px; }
+      .add-card label .optional { font-weight: 400; color: var(--muted); }
+      .add-card details.ac-call { border: 1px solid var(--line); border-radius: var(--radius); padding: 10px 14px; margin: 4px 0 14px; background: var(--paper-2); }
+      .add-card details.ac-call summary { cursor: pointer; font-weight: 700; }
+      .add-card details.ac-call[open] summary { margin-bottom: 8px; }
       /* Extra people captured on a call, beyond the decision maker. */
       .contacts-block { margin: 0 0 16px; }
       .contact-row { border-left: 3px solid var(--sky); background: var(--paper-2); padding: 12px 14px 2px; margin: 0 0 12px; border-radius: 0 8px 8px 0; }
@@ -852,7 +856,7 @@
               <span><b id="c-done">0</b> done</span>
               <span id="c-dnc-wrap" style="display:none"><b id="c-dnc">0</b> do not call</span>
             </div>
-            <button type="button" class="btn-primary small" id="add-lead-btn">+ Add a lead</button>
+            <button type="button" class="btn-primary small" id="add-lead-btn">+ Add a club / lead</button>
           </div>
         </div>
         <div class="who">
@@ -4089,7 +4093,7 @@
           var referred = fromClub ? (dm ? dm + " at " + fromClub : fromClub) : "";
           var m = document.getElementById("add-club-modal");
           m.innerHTML =
-            '<div class="add-card"><div class="band"><div><h2>Add a lead</h2><p>It gets a row on the campaign sheet and goes into your round 1 list, ahead of the cold clubs.</p></div>' +
+            '<div class="add-card"><div class="band"><div><h2>Add a club / lead</h2><p>It gets a row on the campaign sheet and goes into your round 1 list, ahead of the cold clubs. If you have already spoken to them, record that call below and it moves straight to round 2.</p></div>' +
             '<button type="button" id="add-club-close" aria-label="Close">&times;</button></div>' +
             '<form id="add-club-form">' +
             '<div class="field"><label for="ac-name">Club name <span class="req">*</span></label><input type="text" id="ac-name" required autocomplete="off" placeholder="e.g. Bathurst RSL Club"></div>' +
@@ -4103,11 +4107,36 @@
             '<div class="field"><label for="ac-email">Email</label><input type="email" id="ac-email" autocomplete="off"></div>' +
             "</div>" +
             '<div class="field-row">' +
-            '<div class="field"><label for="ac-contact">Who to ask for</label><input type="text" id="ac-contact" autocomplete="off" placeholder="Name"></div>' +
+            '<div class="field"><label for="ac-contact">Who to ask for / who you spoke to</label><input type="text" id="ac-contact" autocomplete="off" placeholder="Name"></div>' +
             '<div class="field"><label for="ac-role">Their role</label><input type="text" id="ac-role" autocomplete="off"></div>' +
             "</div>" +
-            '<div class="field"><label for="ac-ref">Who referred them <span class="req">*</span></label><input type="text" id="ac-ref" required autocomplete="off" value="' + esc(referred) + '" placeholder="e.g. Jane Smith at Dee Why RSL"></div>' +
-            '<div class="field"><label for="ac-note">Anything they told you</label><input type="text" id="ac-note" autocomplete="off" placeholder="e.g. secretary is keen, runs ClubGRANTS"></div>' +
+            '<div class="field"><label for="ac-ref">Who referred them <span class="optional">(optional &mdash; leave blank if nobody did)</span></label><input type="text" id="ac-ref" autocomplete="off" value="' + esc(referred) + '" placeholder="e.g. Jane Smith at Dee Why RSL"></div>' +
+            '<div class="field"><label for="ac-note">Anything they told you <span class="optional">(optional)</span></label><input type="text" id="ac-note" autocomplete="off" placeholder="e.g. secretary is keen, runs ClubGRANTS"></div>' +
+            '<details class="ac-call"><summary>Already spoken to them? Record the first call</summary>' +
+            '<p class="list-note">Everything here is optional. Choose an outcome and the call is saved against the club the moment it is added, exactly like a worksheet call.</p>' +
+            '<div class="field-row">' +
+            '<div class="field"><label for="ac-dm-email">Their direct email</label><input type="email" id="ac-dm-email" autocomplete="off"></div>' +
+            '<div class="field"><label for="ac-dm-phone">Their direct phone</label><input type="tel" id="ac-dm-phone" autocomplete="off"></div>' +
+            "</div>" +
+            emailPrefSelectHtml("ac-email-pref") +
+            contactsBlockHtml("ac") +
+            '<div class="field"><label for="ac-grants">Does the club participate in ClubGRANTS / community funding?</label><input type="text" id="ac-grants" autocomplete="off"></div>' +
+            '<div class="field"><label for="ac-others">Who else is involved in the decision?</label><input type="text" id="ac-others" autocomplete="off"></div>' +
+            '<div class="field"><label for="ac-board">When does the relevant committee or board meet?</label><input type="text" id="ac-board" autocomplete="off"></div>' +
+            '<div class="field checkbox"><input type="checkbox" id="ac-wants"><label for="ac-wants">They want to receive more information &mdash; needs their email above.</label></div>' +
+            '<div class="field"><label for="ac-outcome">Outcome of the call</label>' +
+            '<select id="ac-outcome">' +
+            '<option value="">No call yet &mdash; just add the club</option>' +
+            '<option value="wants_info_only">Wants information &mdash; partnership pack</option>' +
+            '<option value="gatekeeper">Could not get to the decision maker</option>' +
+            '<option value="not_interested">Not interested</option>' +
+            '<option value="no_answer">No answer / voicemail</option>' +
+            '<option value="wrong_number">Wrong number / bad contact details</option>' +
+            '<option value="other">Other &mdash; see notes</option>' +
+            "</select></div>" +
+            callbackBlockHtml("ac") +
+            '<div class="field"><label for="ac-notes">Call notes</label><textarea id="ac-notes" rows="3"></textarea></div>' +
+            "</details>" +
             '<div class="actions"><button type="submit" class="btn-primary" id="ac-save">Add to my list</button>' +
             '<button type="button" class="btn-ghost" id="ac-cancel">Cancel</button></div>' +
             '<div class="msg" id="ac-msg"></div>' +
@@ -4121,6 +4150,18 @@
             e.preventDefault();
             clearMsg("ac-msg");
             var btn = document.getElementById("ac-save");
+            var outcome = document.getElementById("ac-outcome").value;
+            var wants = document.getElementById("ac-wants").checked || outcome === "wants_info_only";
+            var dmEmail = document.getElementById("ac-dm-email").value.trim() || document.getElementById("ac-email").value.trim();
+            if (outcome && wants && !dmEmail) {
+              flagField("ac-msg", "ac-dm-email", "To send the partnership pack you need their email address.");
+              return;
+            }
+            var acb = outcome ? readCallback("ac") : { at: null };
+            if (acb.error) {
+              flagField("ac-msg", "ac-ns-date", acb.error);
+              return;
+            }
             btn.disabled = true;
             btn.textContent = "Adding...";
             api("add_club", {
@@ -4143,12 +4184,40 @@
                   btn.textContent = "Add to my list";
                   return;
                 }
-                close();
-                if (typeof toast === "function") toast("Club added", r.target.entity_name + " is in your round 1 list.", "extra");
-                else alert(r.target.entity_name + " has been added to your round 1 list.");
-                api("me", {}).then(function (me) { setStats(me.stats); }).catch(function () {});
-                var ab = document.getElementById("admin-body");
-                if (ab && !ab.classList.contains("hidden")) loadOverview();
+                // The first call, if there was one, goes on the new club straight away.
+                var logged = outcome
+                  ? api("log_call", {
+                      target_id: r.target.id,
+                      decision_maker_name: document.getElementById("ac-contact").value,
+                      decision_maker_role: document.getElementById("ac-role").value,
+                      decision_maker_email: dmEmail,
+                      decision_maker_phone: document.getElementById("ac-dm-phone").value.trim() || document.getElementById("ac-phone").value.trim(),
+                      decision_maker_email_preference: (document.getElementById("ac-email-pref") || {}).value || null,
+                      clubgrants: document.getElementById("ac-grants").value,
+                      others_involved: document.getElementById("ac-others").value,
+                      board_meeting: document.getElementById("ac-board").value,
+                      wants_info: wants,
+                      notes: document.getElementById("ac-notes").value,
+                      outcome: outcome,
+                      next_step: acb.at ? acb : undefined,
+                      callback_at: acb.at,
+                      callback_note: acb.note,
+                      contacts: readContacts("ac"),
+                    })
+                  : Promise.resolve(null);
+                return logged.then(function (lc) {
+                  close();
+                  var where = outcome && ["no_answer", "gatekeeper", "wrong_number"].indexOf(outcome) < 0 ? "your round 2 list, with the call recorded" : "your round 1 list" + (outcome ? ", with the call recorded" : "");
+                  if (typeof toast === "function") toast("Club added", r.target.entity_name + " is in " + where + ".", "extra");
+                  else alert(r.target.entity_name + " has been added to " + where + ".");
+                  if (lc && lc.callback_at) toast("Next step booked", "In your calendar for " + fmtWhen(lc.callback_at) + ".", "desk");
+                  api("me", {}).then(function (me) { setStats(me.stats); }).catch(function () {});
+                  var ab = document.getElementById("admin-body");
+                  if (ab && !ab.classList.contains("hidden")) loadOverview();
+                }).catch(function (err) {
+                  close();
+                  alert(r.target.entity_name + " was added, but the call could not be saved: " + err.message + "\nOpen the club on the Overview and record it there.");
+                });
               })
               .catch(function (err) {
                 msg("ac-msg", err.message, "error");
@@ -5025,7 +5094,7 @@
             '<button type="submit" form="call-form" class="btn-primary" id="save-btn">Done</button>' +
             '<button type="button" class="btn-ghost" id="skip-btn">Skip</button>' +
             '<button type="button" class="btn-ghost" data-handoff="' + esc(t.id) + '" data-club-name="' + esc(t.entity_name) + '" title="Hand this club to another caller’s list.">Reallocate</button>' +
-            '<button type="button" class="btn-ghost" id="add-club-btn" title="Were you told about another club worth calling? Add it to your list.">Add a lead</button>' +
+            '<button type="button" class="btn-ghost" id="add-club-btn" title="Were you told about another club worth calling, or spoke to one that is not on the list? Add it.">Add a club / lead</button>' +
             "</div>" +
             "</div>" +
             "</div>";
