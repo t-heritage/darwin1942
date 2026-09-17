@@ -4923,6 +4923,14 @@
               '<input type="text" id="f-dm" autocomplete="off"></div>' +
               '<div class="field"><label for="f-role">What is their role?</label>' +
               '<input type="text" id="f-role" autocomplete="off"></div>' +
+              "</div>" +
+              // Second calls need the send box too: a call-back is often where
+              // the person finally agrees to see the presentation. The address
+              // comes from "who did you speak to" (or the one captured on the
+              // first call) — there is no email input on this lean form.
+              '<div class="field checkbox">' +
+              '<input type="checkbox" id="f-wants">' +
+              '<label for="f-wants">Send them the presentation &mdash; adds them to Customer.io and moves the club on a funnel stage (had first call, had second call&hellip;), which is what triggers the email. Needs an email address for the person above.</label>' +
               "</div>";
             outcomeHtml =
               '<div class="field"><label>Where did the call land? <span class="req">*</span></label>' +
@@ -5239,8 +5247,13 @@
           var whoEmail = val("f-who-email").trim() || val("f-who-new-email").trim();
           var email =
             formRound >= 2 ? whoEmail || formCarryEmail : val("f-email").trim();
+          // Round 1 has an email input; the lean form has the "who did you
+          // speak to" picker instead, so the error lands on whichever exists.
+          var emailField = formRound >= 2
+            ? (document.getElementById("f-who-new-email") ? "f-who-new-email" : "f-who")
+            : "f-email";
           if (wants && !email) {
-            flagField("save-msg", "f-email", "To send more information you need their email address.");
+            flagField("save-msg", emailField, "To send the presentation you need an email address for this person. Pick \u201cSomeone new\u201d and add it, or take their address on the call.");
             return;
           }
 
@@ -5306,7 +5319,7 @@
           if (outcome === "wants_info_only" && !wants) {
             wants = true;
             if (!email) {
-              flagField("save-msg", "f-email", "To send the partnership pack you need their email address.");
+              flagField("save-msg", emailField, "To send the partnership pack you need their email address.");
               return;
             }
           }
