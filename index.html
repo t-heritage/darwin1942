@@ -92,6 +92,16 @@
     --heading-font:'Bebas Neue', 'Arial Narrow', Arial, sans-serif;
     --hero-h:76vh;
     --strip-h:19vh;
+    /* The band of picture the sky blue fades in over, above the cards... */
+    --strip-fade:11vh;
+    /* ...and how far the cards themselves ride up into the picture on top of
+       that. Raise or lower the whole block by editing this one number. */
+    --strip-raise:12vh;
+    /* Where the hero tagline and logo start from the left edge, and the card
+       strip's side padding. The news row's edge is worked out from these so
+       "IN THE NEWS" lines up with the logo rather than the cards' padding. */
+    --hero-inset:40px;
+    --strip-pad:20px;
   }
   *{box-sizing:border-box;margin:0;padding:0;}
   body{
@@ -276,6 +286,13 @@
     width:100%;
     overflow:hidden;
   }
+  /* The picture and everything drawn on top of it. The cards used to be pinned
+     to the bottom of the hero, which fixed the page at one screen no matter how
+     much was in them; they now follow this box in normal flow (still tucked over
+     its last 11vh, see .info-strip), so the page simply scrolls. */
+  .hero-media{
+    position:relative;
+  }
   .hero-bg{
     display:block;
     width:100%;
@@ -291,7 +308,7 @@
   .hero-tagline{
     position:absolute;
     top:10%;
-    left:40px;
+    left:var(--hero-inset);
     font-family:var(--heading-font);
     font-size:1.9vw;
     font-weight:400;
@@ -309,7 +326,7 @@
   }
   .hero-logo{
     position:absolute;
-    left:40px;
+    left:var(--hero-inset);
     top:28%;
     width:31%;
     max-width:600px;
@@ -323,15 +340,16 @@
 
   /* INFO STRIP */
   .info-strip{
-    position:absolute;
-    bottom:0;
-    left:0;
-    right:0;
+    position:relative;
+    /* Back over the foot of the picture by exactly the top padding below, so the
+       cards sit where they always have while the strip's own height now adds to
+       the page instead of being swallowed by the hero. */
+    margin-top:calc(-1 * (var(--strip-fade) + var(--strip-raise)));
     display:grid;
     grid-template-columns:1fr 1fr 1fr;
     gap:14px;
-    padding:11vh 20px 0;
-    background:linear-gradient(180deg, transparent 0, transparent 6vh, var(--sky-blue) 11vh);
+    padding:var(--strip-fade) var(--strip-pad) 0;
+    background:linear-gradient(180deg, transparent 0, transparent calc(var(--strip-fade) * 0.55), var(--sky-blue) var(--strip-fade));
     z-index:3;
   }
   .info-card{
@@ -433,67 +451,76 @@
     padding:12px 22px;
   }
 
-  /* IN THE NEWS — a slim row under the three cards, in the same dark card colour,
-     holding the three most recent items of outside coverage. Nothing here is
+  /* IN THE NEWS — a row under the three cards holding the three most recent items
+     of outside coverage, as pictures only: the artwork each outlet published, at
+     the same size it appears on /news-and-media/. The row has no colour of its
+     own, so it sits straight on the strip's sky blue. Nothing here is
      hand-edited: the items are read at page load from the same Google Sheet that
      fills /news-and-media/ (see /assets/news-feed.js and /news-and-media/README.md).
      The row stays hidden until items arrive, so an empty or unreachable sheet
      leaves the home page exactly as it was. */
   .news-strip{
     grid-column:1 / -1;
-    background:#081524;
-    padding:16px 36px;
+    background:transparent;
+    padding:26px calc(var(--hero-inset) - var(--strip-pad)) 32px;
     display:flex;
-    align-items:center;
-    gap:clamp(20px, 3vw, 44px);
+    align-items:flex-start;
+    gap:clamp(28px, 3.5vw, 56px);
+  }
+  /* The label with the button under it, both starting on the same left edge. */
+  .news-strip-head{
+    flex:0 0 auto;
+    display:flex;
+    flex-direction:column;
+    align-items:flex-start;
+    gap:14px;
   }
   .news-strip h3{
     font-family:var(--heading-font);
-    font-size:20px;
+    font-size:clamp(40px, 4vw, 60px);
     font-weight:400;
     letter-spacing:1px;
+    line-height:1;
     color:var(--white);
     white-space:nowrap;
-    flex:0 0 auto;
   }
+  /* The heading holds the left edge and the pictures hold the right, so the
+     row has the same shape as the cards above it. Left-packed, two pictures
+     sat in the middle of an otherwise empty strip. */
   .news-strip-items{
     flex:1 1 auto;
     min-width:0;
     display:flex;
-    gap:clamp(18px, 2.5vw, 36px);
+    flex-wrap:wrap;
+    justify-content:flex-end;
+    gap:20px;
   }
   .news-strip-item{
-    flex:1 1 0;
-    min-width:0;
-    display:flex;
-    align-items:center;
-    gap:14px;
+    flex:0 1 220px;
+    max-width:220px;
+    display:block;
     color:var(--white);
     text-decoration:none;
   }
-  /* A press photo fills the small square; a logo on a transparent background is
-     fitted on a ground of its own so it does not vanish into the dark row (the feed
-     script picks white or blue from the artwork's own brightness). */
+  /* The same square box as a row on /news-and-media/ (220px there), so the two
+     pages show the artwork at one size. A press photo fills it. A logo on a
+     transparent background is fitted on a ground of its own so it is never
+     cropped (the feed script picks white or blue from the artwork's brightness). */
   .news-strip-img{
-    flex:0 0 auto;
-    width:56px;
-    height:56px;
+    display:block;
+    width:100%;
+    max-width:220px;
+    aspect-ratio:1 / 1;
     object-fit:cover;
     object-position:center;
     background:rgba(255,255,255,0.06);
   }
   .news-strip-img.on-white,
-  .news-strip-img.on-blue{object-fit:contain;padding:6px;}
+  .news-strip-img.on-blue{object-fit:contain;padding:11%;}
   .news-strip-img.on-white{background:var(--white);}
   .news-strip-img.on-blue{background:var(--sky-blue);}
-  .news-strip-text{min-width:0;}
-  .news-strip-date{
-    font-family:var(--heading-font);
-    font-size:12px;
-    letter-spacing:2px;
-    color:#a8c4d8;
-    margin-bottom:3px;
-  }
+  /* Only ever seen on an item the sheet gave no picture for, so the row still
+     says what the coverage was. */
   .news-strip-title{
     font-family:var(--heading-font);
     font-size:18px;
@@ -506,26 +533,19 @@
     overflow:hidden;
   }
   .news-strip-item:hover .news-strip-title{text-decoration:underline;}
-  .news-strip-source{
-    font-size:13px;
-    font-weight:bold;
-    color:#e6eef5;
-    margin-top:3px;
-    white-space:nowrap;
-    overflow:hidden;
-    text-overflow:ellipsis;
-  }
-  .news-strip .btn{flex:0 0 auto;align-self:center;}
+  .news-strip .btn{flex:0 0 auto;}
   .news-strip .btn:hover{background:var(--white);color:#081524;}
   @media (max-width:1100px){
-    .news-strip{padding:14px 28px;}
+    .news-strip{padding-top:14px;}
   }
   /* Where the cards stack, the row does too: label, then the items one under the
      other, then the button. */
   @media (max-width:900px){
-    .news-strip{flex-direction:column;align-items:stretch;gap:14px;padding:18px 22px;}
-    .news-strip h3{font-size:18px;}
-    .news-strip-items{flex-direction:column;gap:14px;}
+    .news-strip{flex-direction:column;align-items:stretch;gap:18px;padding-top:18px;padding-bottom:26px;}
+    .news-strip h3{font-size:36px;}
+    /* Stacked, the pictures sit in a row of their own under the heading,
+       starting on its left edge. */
+    .news-strip-items{gap:14px;justify-content:flex-start;}
     .news-strip-title{font-size:17px;}
     .news-strip .btn{
       display:inline-block;
@@ -574,9 +594,10 @@
     header.nav{padding:22px 24px 0;}
     nav ul{gap:20px;}
     nav a{font-size:14px;}
-    .hero-tagline{left:24px;font-size:2.3vw;max-width:34%;}
-    .hero-logo{left:24px;width:42%;top:auto;bottom:5vh;}
-    .info-strip{padding:0 16px;gap:12px;}
+    :root{--hero-inset:24px;--strip-pad:16px;}
+    .hero-tagline{font-size:2.3vw;max-width:34%;}
+    .hero-logo{width:42%;top:auto;bottom:5vh;}
+    .info-strip{padding:0 var(--strip-pad);gap:12px;margin-top:0;}
     .info-card{padding:26px 28px;}
     .info-card p{max-width:60%;}
   }
@@ -589,7 +610,7 @@
     .brand{max-width:220px;}
     .hero-tagline{top:10vh;font-size:3vw;max-width:44%;}
     .hero-logo{top:auto;bottom:4vh;width:56%;}
-    .info-strip{grid-template-columns:1fr;gap:14px;padding:16px;}
+    .info-strip{grid-template-columns:1fr;gap:14px;padding:var(--strip-pad);}
     .info-card{min-height:190px;}
     .info-card p{max-width:55%;}
   }
@@ -602,9 +623,11 @@
     .brand .title{font-size:26px;}
     .brand .subtitle{font-size:9px;letter-spacing:2px;}
     .hero-image{min-height:70vh;}
-    .hero-tagline{left:20px;top:12vh;font-size:5.5vw;max-width:64%;}
-    .hero-logo{left:20px;top:auto;bottom:4vh;width:84%;}
-    .info-strip{padding:14px;}
+    :root{--hero-inset:20px;--strip-pad:14px;}
+    .hero-tagline{top:12vh;font-size:5.5vw;max-width:64%;}
+    .hero-logo{top:auto;bottom:4vh;width:84%;}
+    .info-strip{padding:var(--strip-pad);}
+    .news-strip-item{flex:0 1 calc(50% - 10px);}
     .info-card{min-height:200px;padding:22px 22px;}
     .info-card h3{font-size:22px;}
     .info-card p{max-width:70%;font-size:14px;}
@@ -627,6 +650,7 @@
     margin-left:auto;
   }
   @media (max-width:768px){
+    :root{--hero-inset:20px;--strip-pad:12px;}
     header.nav{
       flex-wrap:nowrap;
       align-items:center;
@@ -646,6 +670,7 @@
     }
     .hero-bg{display:none;}
     .hero-gradient{display:none;}
+    .hero-media{display:contents;}
     .hero-top{
       position:relative;
       flex:0 0 auto;
@@ -670,7 +695,7 @@
       position:relative;
       z-index:2;
       top:auto;left:auto;
-      margin:80px 20px 0;
+      margin:80px var(--hero-inset) 0;
       font-size:6.5vw;
       max-width:100%;
       flex:0 0 auto;
@@ -680,13 +705,13 @@
       z-index:2;
       top:auto;left:auto;bottom:auto;
       width:75%;
-      margin:16px 20px 0;
+      margin:16px var(--hero-inset) 0;
       flex:0 0 auto;
     }
     .info-strip{
       position:relative;
       grid-template-columns:1fr;
-      padding:12px;
+      padding:var(--strip-pad);
       gap:12px;
       background:var(--sky-blue);
       flex:1 0 auto;
@@ -888,6 +913,7 @@
   </header>
 
   <section class="hero">
+    <div class="hero-media">
     <img class="hero-bg" src="images/background.webp" alt="Darwin 1942 background">
     <div class="hero-gradient"></div>
     <div class="hero-top">
@@ -900,6 +926,7 @@
       <div class="hero-logo">
         <img src="images/logo.webp" alt="Darwin 1942 — The Forgotten War That Reshaped Australia">
       </div>
+    </div>
     </div>
     <div class="info-strip">
 
@@ -939,9 +966,11 @@
       <!-- IN THE NEWS — filled at page load from the client's Google Sheet (the same
            one behind /news-and-media/). Hidden until there is something to show. -->
       <section class="news-strip" id="news-strip" aria-label="In the news" hidden>
-        <h3>IN THE NEWS</h3>
+        <div class="news-strip-head">
+          <h3>IN THE NEWS</h3>
+          <a class="btn" href="/news-and-media/">ALL COVERAGE</a>
+        </div>
         <div class="news-strip-items" id="news-strip-items"></div>
-        <a class="btn" href="/news-and-media/">ALL COVERAGE</a>
       </section>
     </div>
   </section>
@@ -989,26 +1018,31 @@
     return n;
   }
 
+  /* The picture alone — the headline, date and masthead are on /news-and-media/.
+     The headline still rides along as the image's alt text and the link's
+     tooltip, so the link has a name to read out and to hover. */
   function item(it){
     /* The whole item is the link when there is one. */
     var a = el(it.url ? 'a' : 'div', 'news-strip-item');
     if (it.url) { a.href = it.url; a.target = '_blank'; a.rel = 'noopener noreferrer'; }
+    if (it.title) a.title = it.title;
 
     if (it.image) {
       var img = el('img', 'news-strip-img');
       img.src = it.image;
-      img.alt = '';
+      img.alt = it.title || '';
       img.loading = 'lazy';
       DarwinNews.groundFor(img, it.image);
-      img.addEventListener('error', function(){ img.remove(); });
+      /* A picture that will not load leaves the headline in its place rather
+         than an empty gap. */
+      img.addEventListener('error', function(){
+        img.remove();
+        if (!a.querySelector('.news-strip-title')) a.appendChild(el('div', 'news-strip-title', it.title));
+      });
       a.appendChild(img);
+    } else {
+      a.appendChild(el('div', 'news-strip-title', it.title));
     }
-
-    var text = el('div', 'news-strip-text');
-    if (it.dateLabel) text.appendChild(el('div', 'news-strip-date', it.dateLabel));
-    text.appendChild(el('div', 'news-strip-title', it.title));
-    if (it.publication) text.appendChild(el('div', 'news-strip-source', it.publication));
-    a.appendChild(text);
     return a;
   }
 
