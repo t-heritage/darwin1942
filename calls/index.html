@@ -3994,6 +3994,8 @@
               ].concat(p.scope === "all" ? [mk(11, 30, "Wants to see the pack first", "upcoming", "Danella", "other", "Send partnership pack")] : []) };
             }
             case "cancel_callback": return { ok: true };
+            // The add-lead form can be walked through in the demo; nothing is kept.
+            case "add_club": return { added: true, target: { id: "demo-added", entity_name: p.entity_name, suburb: p.suburb, state: p.state, call_group: 2, sheet_row: 999 } };
             case "claim_target": {
               var ct = DEMO_CLUBS.filter(function (x) { return x.id === p.target_id; })[0] || DEMO_CLUBS[0];
               return { target: ct, round: 1, history: [], stats: stats, contacts: demoContactsFor(ct) };
@@ -4137,6 +4139,12 @@
             "</div>" +
             '<div class="field"><label for="ac-ref">Who referred them <span class="optional">(optional &mdash; leave blank if nobody did)</span></label><input type="text" id="ac-ref" autocomplete="off" value="' + esc(referred) + '" placeholder="e.g. Jane Smith at Dee Why RSL"></div>' +
             '<div class="field"><label for="ac-note">Anything they told you <span class="optional">(optional)</span></label><input type="text" id="ac-note" autocomplete="off" placeholder="e.g. secretary is keen, runs ClubGRANTS"></div>' +
+            // Sending the presentation does not need a call to have happened: a
+            // lead handed over by another club can be sent the pack straight
+            // away. Without a recorded call it is saved as a wants-information
+            // contact so the send goes out and the club moves to the call-back
+            // list to be followed up.
+            '<div class="field checkbox"><input type="checkbox" id="ac-send"><label for="ac-send">Send them the presentation.</label></div>' +
             '<details class="ac-call"><summary>Already spoken to them? Record the first call</summary>' +
             '<p class="list-note">Everything here is optional. Choose an outcome and the call is saved against the club the moment it is added, exactly like a worksheet call.</p>' +
             '<div class="field-row">' +
@@ -4148,7 +4156,7 @@
             '<div class="field"><label for="ac-grants">Does the club participate in ClubGRANTS / community funding?</label><input type="text" id="ac-grants" autocomplete="off"></div>' +
             '<div class="field"><label for="ac-others">Who else is involved in the decision?</label><input type="text" id="ac-others" autocomplete="off"></div>' +
             '<div class="field"><label for="ac-board">When does the relevant committee or board meet?</label><input type="text" id="ac-board" autocomplete="off"></div>' +
-            '<div class="field checkbox"><input type="checkbox" id="ac-wants"><label for="ac-wants">They want to receive more information &mdash; needs their email above.</label></div>' +
+            '<div class="field checkbox"><input type="checkbox" id="ac-wants"><label for="ac-wants">Send them the presentation.</label></div>' +
             '<div class="field"><label for="ac-outcome">Outcome of the call</label>' +
             '<select id="ac-outcome">' +
             '<option value="">No call yet &mdash; just add the club</option>' +
@@ -4176,12 +4184,14 @@
             clearMsg("ac-msg");
             var btn = document.getElementById("ac-save");
             var outcome = document.getElementById("ac-outcome").value;
-            var wants = document.getElementById("ac-wants").checked || outcome === "wants_info_only";
+            var sendNoCall = document.getElementById("ac-send").checked && !outcome;
+            var wants = document.getElementById("ac-send").checked || document.getElementById("ac-wants").checked || outcome === "wants_info_only";
             var dmEmail = document.getElementById("ac-dm-email").value.trim() || document.getElementById("ac-email").value.trim();
-            if (outcome && wants && !dmEmail) {
-              flagField("ac-msg", "ac-dm-email", "To send the partnership pack you need their email address.");
+            if (wants && !dmEmail) {
+              flagField("ac-msg", outcome ? "ac-dm-email" : "ac-email", "Needs an email address to send the presentation.");
               return;
             }
+            if (sendNoCall) outcome = "wants_info_only";
             var acb = outcome ? readCallback("ac") : { at: null };
             if (acb.error) {
               flagField("ac-msg", "ac-ns-date", acb.error);
@@ -4222,7 +4232,9 @@
                       others_involved: document.getElementById("ac-others").value,
                       board_meeting: document.getElementById("ac-board").value,
                       wants_info: wants,
-                      notes: document.getElementById("ac-notes").value,
+                      notes: (sendNoCall ? "Presentation sent when the lead was added - no call made yet." : "") +
+                        (sendNoCall && document.getElementById("ac-notes").value ? "\n" : "") +
+                        document.getElementById("ac-notes").value,
                       outcome: outcome,
                       next_step: acb.at ? acb : undefined,
                       callback_at: acb.at,
@@ -4232,7 +4244,9 @@
                   : Promise.resolve(null);
                 return logged.then(function (lc) {
                   close();
-                  var where = outcome && ["no_answer", "gatekeeper", "wrong_number"].indexOf(outcome) < 0 ? "your round 2 list, with the call recorded" : "your round 1 list" + (outcome ? ", with the call recorded" : "");
+                  var where = sendNoCall
+                    ? "your round 2 list to follow up, and the presentation is on its way"
+                    : outcome && ["no_answer", "gatekeeper", "wrong_number"].indexOf(outcome) < 0 ? "your round 2 list, with the call recorded" : "your round 1 list" + (outcome ? ", with the call recorded" : "");
                   if (typeof toast === "function") toast("Club added", r.target.entity_name + " is in " + where + ".", "extra");
                   else alert(r.target.entity_name + " has been added to " + where + ".");
                   if (lc && lc.callback_at) toast("Next step booked", "In your calendar for " + fmtWhen(lc.callback_at) + ".", "desk");
