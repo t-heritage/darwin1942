@@ -4930,7 +4930,7 @@
               // first call) — there is no email input on this lean form.
               '<div class="field checkbox">' +
               '<input type="checkbox" id="f-wants">' +
-              '<label for="f-wants">Send them the presentation &mdash; adds them to Customer.io and moves the club on a funnel stage (had first call, had second call&hellip;), which is what triggers the email. Needs an email address for the person above.</label>' +
+              '<label for="f-wants">Send them the presentation.</label>' +
               "</div>";
             outcomeHtml =
               '<div class="field"><label>Where did the call land? <span class="req">*</span></label>' +
@@ -5253,7 +5253,7 @@
             ? (document.getElementById("f-who-new-email") ? "f-who-new-email" : "f-who")
             : "f-email";
           if (wants && !email) {
-            flagField("save-msg", emailField, "To send the presentation you need an email address for this person. Pick \u201cSomeone new\u201d and add it, or take their address on the call.");
+            flagField("save-msg", emailField, "Needs an email address to send the presentation.");
             return;
           }
 
