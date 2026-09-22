@@ -4016,9 +4016,8 @@
               if (!newParent) throw new Error("Club not found.");
               pTarget.parent_id = newParent.id;
               pTarget.parent_name = newParent.entity_name;
-              if (!pTarget.parked) { pTarget.parked = true; pTarget.parked_reason = "Sub-branch of " + newParent.entity_name; }
               newParent.children = (newParent.children || []).concat([{ id: pTarget.id, entity_name: pTarget.entity_name }]);
-              return { ok: true, parked: true, parent: { id: newParent.id, entity_name: newParent.entity_name, where: newParent.where } };
+              return { ok: true, parked: !!pTarget.parked, parent: { id: newParent.id, entity_name: newParent.entity_name, where: newParent.where } };
             }
             case "update_club": {
               var ut = DEMO_CLUBS.filter(function (x) { return x.id === p.target_id; })[0];
@@ -5732,7 +5731,7 @@
               unlinkBtn.disabled = true;
               api("set_parent", { target_id: t.id, parent_id: null })
                 .then(function (r) {
-                  toast("Unlinked", (t.entity_name || "This club") + " is no longer a sub-branch" + (r && r.parked === false && t.parked ? " and is back in the call queues." : "."), "desk");
+                  toast("Unlinked", (t.entity_name || "This club") + " is no longer a sub-branch. Its place in the call queues is unchanged.", "desk");
                   openClub(t.id);
                 })
                 .catch(function (err) {
@@ -5783,7 +5782,7 @@
             b.disabled = true;
             api("set_parent", { target_id: t.id, parent_id: pid })
               .then(function (r) {
-                toast("Linked", (t.entity_name || "This club") + " is now a sub-branch of " + pname + (r && r.parked ? ", out of the call queues (open it by hand from the drawer)." : "."), "desk");
+                toast("Linked", (t.entity_name || "This club") + " is now a sub-branch of " + pname + (r && r.parked ? ". It stays parked, so open it by hand from the drawer." : ". Its place in the call queues is unchanged."), "desk");
                 openClub(t.id);
               })
               .catch(function (err) {
