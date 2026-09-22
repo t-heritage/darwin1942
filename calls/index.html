@@ -548,6 +548,14 @@
       .parent-results .parent-pick:hover { background: var(--paper-2); }
 
       .danger-zone { margin-top: 28px; padding-top: 16px; border-top: 2px dashed var(--line); }
+      .edit-club-toggle { margin: -8px 0 16px; }
+      .edit-club { margin: 0 0 20px; padding: 14px 16px 6px; border: 2px dashed var(--line); border-radius: 8px; }
+      .edit-club h3 { margin: 0 0 10px; font-size: 15px; }
+      .edit-club .field label { font-size: 12px; }
+      .edit-club .field input { font-size: 14px; padding: 8px 10px; }
+      .edit-club .actions { display: flex; gap: 8px; margin: 4px 0 10px; }
+      .edit-club .actions button { padding: 9px 16px; font-size: 13px; }
+      .parked-banner { margin: 0 0 12px; padding: 10px 14px; background: var(--paper-2); border: 2px solid var(--ink); border-radius: 8px; font-size: 14px; }
       .btn-ghost.danger { color: var(--red); border-color: var(--red); }
       .btn-ghost.danger:hover:not(:disabled) { background: #fde7ea; }
       .danger-confirm { margin-top: 10px; padding: 12px 14px; background: #fde7ea; border-radius: 8px; }
@@ -1208,10 +1216,19 @@
         function canCall() {
           return !meCaller || meCaller.can_call !== false;
         }
+        // An oversight-only admin has no queue, but can pull a parked sub-branch
+        // onto the worksheet by hand — the tab exists for them only while they
+        // hold one.
+        function worksheetAvailable() {
+          return canCall() || !!(meCaller && meCaller.is_admin && current);
+        }
+        function canOpenByHand(t) {
+          return canCall() || !!(meCaller && meCaller.is_admin && t && t.parked);
+        }
 
         function switchTab(which) {
           if (needsTraining()) which = "training";
-          if (which === "work" && !canCall()) which = "admin";
+          if (which === "work" && !worksheetAvailable()) which = "admin";
           endTourView();
           ["work", "admin", "training", "board", "calendar"].forEach(function (t) {
             document
@@ -2427,7 +2444,9 @@
             '<td class="nowrap">' + esc(t.primary_phone || "—") + "</td>" +
             "<td>" + esc(t.primary_person || "—") + (t.primary_email ? "<br><span style='color:var(--muted)'>" + esc(t.primary_email) + "</span>" : "") + "</td>" +
             "<td>" + (t.calls ? esc(t.calls) + (t.last_outcome ? " · " + esc(outcomeLabel(t.last_outcome)) : "") : "—") + "</td>" +
-            '<td class="row-actions"><button type="button" class="handoff-btn" data-handoff="' +
+            '<td class="row-actions">' +
+            (canOpenByHand({ parked: true }) ? '<button type="button" class="handoff-btn" data-callnow="' + esc(t.id) + '">Open in worksheet</button> ' : "") +
+            '<button type="button" class="handoff-btn" data-handoff="' +
             esc(t.id) +
             '" data-club-name="' +
             esc(t.entity_name) +
@@ -2847,9 +2866,38 @@
             empty = "No clubs match your filters.";
           }
           var q = String(CLUB_FILTER_STATE.q || "").trim().toLowerCase();
-          if (q) rows = rows.filter(function (r) { return rowText(r).indexOf(q) >= 0; });
+          if (q) rows = rows.filter(function (r) { return fuzzyMatch(rowText(r), q); });
           CLUBS_LAST = { shown: rows.length, total: total };
           return pagedTable("clubs-" + tab, head, rows, { filters: [], pageSize: 25, empty: empty, noSearch: true });
+        }
+        // Word-by-word search: every word typed has to be found, in any order,
+        // and a near miss (one letter out, "Kempsy" for "Kempsey") still counts.
+        function editDistance(a, b) {
+          var prev = [], cur, i, j;
+          for (j = 0; j <= b.length; j++) prev[j] = j;
+          for (i = 1; i <= a.length; i++) {
+            cur = [i];
+            for (j = 1; j <= b.length; j++) {
+              cur[j] = Math.min(prev[j] + 1, cur[j - 1] + 1, prev[j - 1] + (a[i - 1] === b[j - 1] ? 0 : 1));
+            }
+            prev = cur;
+          }
+          return prev[b.length];
+        }
+        function fuzzyMatch(text, q) {
+          text = String(text || "").toLowerCase();
+          var words = String(q || "").toLowerCase().split(/\s+/).filter(Boolean);
+          if (!words.length) return true;
+          var textWords = null;
+          return words.every(function (w) {
+            if (text.indexOf(w) >= 0) return true;
+            if (w.length < 4) return false;
+            if (!textWords) textWords = text.split(/[^a-z0-9]+/).filter(Boolean);
+            var slack = w.length >= 8 ? 2 : 1;
+            return textWords.some(function (tw) {
+              return Math.abs(tw.length - w.length) <= slack && editDistance(tw, w) <= slack;
+            });
+          });
         }
         function clubsCountText() {
           var what = CLUBS_TAB === "recent" ? "calls" : "clubs";
@@ -3968,8 +4016,16 @@
               if (!newParent) throw new Error("Club not found.");
               pTarget.parent_id = newParent.id;
               pTarget.parent_name = newParent.entity_name;
+              if (!pTarget.parked) { pTarget.parked = true; pTarget.parked_reason = "Sub-branch of " + newParent.entity_name; }
               newParent.children = (newParent.children || []).concat([{ id: pTarget.id, entity_name: pTarget.entity_name }]);
-              return { ok: true, parent: { id: newParent.id, entity_name: newParent.entity_name, where: newParent.where } };
+              return { ok: true, parked: true, parent: { id: newParent.id, entity_name: newParent.entity_name, where: newParent.where } };
+            }
+            case "update_club": {
+              var ut = DEMO_CLUBS.filter(function (x) { return x.id === p.target_id; })[0];
+              if (!ut) throw new Error("Club not found.");
+              Object.keys(p.fields || {}).forEach(function (k) { ut[k] = String(p.fields[k] || "").trim() || null; });
+              ut.where = [ut.suburb, ut.state].filter(Boolean).join(" ");
+              return { ok: true, target: ut, sheet: "updated" };
             }
             case "delete_club": {
               var dt = DEMO_CLUBS.filter(function (x) { return x.id === p.target_id; })[0];
@@ -4073,7 +4129,15 @@
 
         function loadNext() {
           if (needsTraining()) return Promise.resolve(); // no clubs are claimed until training is done
-          if (!canCall()) return Promise.resolve(); // oversight-only accounts never claim a club
+          if (!canCall()) {
+            // Oversight-only accounts are never served a club. If an admin had
+            // opened a sub-branch by hand, that call is done: back to the overview.
+            current = null;
+            document.getElementById("tab-work").classList.add("hidden");
+            document.getElementById("work-body").innerHTML = "";
+            switchTab("admin");
+            return Promise.resolve();
+          }
           document.getElementById("work-body").innerHTML =
             '<div class="empty"><p>Finding your next club...</p></div>';
           return api("next", { round: roundMode })
@@ -4409,7 +4473,8 @@
               var show = !c && !emailEl && !phoneEl;
               newBlock.classList.toggle("hidden", !show);
               if (!show) newBlock.querySelectorAll("input").forEach(function (i) { i.value = ""; });
-              var prefWrap = document.querySelector("." + prefix + "-who-new-wrap");
+              // Forms with their own Emails select don't need the second one.
+              var prefWrap = document.getElementById(prefix + "-email-pref") ? null : document.querySelector("." + prefix + "-who-new-wrap");
               if (prefWrap) {
                 prefWrap.classList.toggle("hidden", !show);
                 if (!show) prefWrap.querySelector("select").value = "";
@@ -4528,6 +4593,8 @@
         document.addEventListener("click", function (e) {
           var b = e.target.closest && e.target.closest("[data-handoff]");
           if (b) { e.stopPropagation(); openAssign(b.getAttribute("data-handoff"), b.getAttribute("data-club-name")); return; }
+          var cn = e.target.closest && e.target.closest("[data-callnow]");
+          if (cn) { e.stopPropagation(); callNow(cn.getAttribute("data-callnow")); return; }
           if (e.target.id === "assign-modal") { e.target.classList.add("hidden"); e.target.innerHTML = ""; }
         });
 
@@ -4856,6 +4923,7 @@
               roundMode = r.round === 3 ? 3 : r.round === 2 ? 2 : 1;
               try { localStorage.setItem("d1942_round", String(roundMode)); } catch (err) {}
               renderRoundSwitch();
+              document.getElementById("tab-work").classList.remove("hidden");
               switchTab("work");
               render(r.target, r.history || [], r.round, r.contacts || []);
             })
@@ -4938,6 +5006,10 @@
               '<div class="field"><label for="f-role">What is their role?</label>' +
               '<input type="text" id="f-role" autocomplete="off"></div>' +
               "</div>" +
+              // The email level was missing from this lean form for anyone
+              // already known, so it could only ever be "Not set" on a second
+              // call. It prefills from the contact picked above.
+              emailPrefSelectHtml("f-email-pref") +
               // Second calls need the send box too: a call-back is often where
               // the person finally agrees to see the presentation. The address
               // comes from "who did you speak to" (or the one captured on the
@@ -5147,6 +5219,16 @@
             "</div>";
 
           document.getElementById("work-body").innerHTML = html;
+          if (t.parked) {
+            document.getElementById("work-body").insertAdjacentHTML(
+              "afterbegin",
+              '<div class="parked-banner"><b>Sub-branch, opened by hand.</b> ' +
+                (t.parked_reason ? esc(t.parked_reason) + ". " : "") +
+                "It is not in any call queue and saving this call keeps it that way" +
+                (canCall() ? "; your usual queue carries on afterwards." : ".") +
+                "</div>",
+            );
+          }
           formRound = round;
           // The lean second-call form doesn't re-ask for the email, but a saved
           // call only reaches the Customer.io history when it carries one — so
@@ -5508,6 +5590,106 @@
           );
         }
 
+        // Admin-only: edit the club's own details in place. The fields mirror
+        // the club columns on the sheet, which the API brings into line too.
+        var EDIT_CLUB_FIELDS = [
+          ["entity_name", "Club name", "text"],
+          ["primary_person", "Contact on file", "text"],
+          ["primary_phone", "Phone", "tel"],
+          ["primary_email", "Email on file", "email"],
+          ["websites", "Website", "text"],
+          ["full_address", "Address", "text"],
+          ["suburb", "Suburb / town", "text"],
+          ["state", "State", "text"],
+          ["postcode", "Postcode", "text"],
+          ["licence_name", "Licence", "text"],
+          ["egm_count", "Gaming machines", "text"],
+          ["gaming_revenue", "Gaming revenue", "text"],
+          ["gaming_rank", "State profit rank", "text"],
+        ];
+        function editClubHtml(t) {
+          if (!(meCaller && meCaller.is_admin)) return "";
+          var rows = "";
+          for (var i = 0; i < EDIT_CLUB_FIELDS.length; i += 2) {
+            var pair = EDIT_CLUB_FIELDS.slice(i, i + 2);
+            rows +=
+              '<div class="field-row">' +
+              pair
+                .map(function (f) {
+                  var v = t[f[0]];
+                  return (
+                    '<div class="field"><label for="ec-' + f[0] + '">' + f[1] + "</label>" +
+                    '<input type="' + f[2] + '" id="ec-' + f[0] + '" data-ec="' + f[0] + '" autocomplete="off" value="' + esc(v == null ? "" : v) + '"></div>'
+                  );
+                })
+                .join("") +
+              "</div>";
+          }
+          return (
+            '<div class="edit-club-toggle"><button type="button" class="btn-ghost" id="d-edit-open">Edit club details</button></div>' +
+            '<form class="edit-club hidden" id="d-edit-form" novalidate>' +
+            "<h3>Edit club details</h3>" +
+            rows +
+            '<div class="actions"><button type="submit" class="btn-primary" id="d-edit-save">Save details</button>' +
+            '<button type="button" class="btn-ghost" id="d-edit-cancel">Cancel</button></div>' +
+            '<div class="msg" id="d-edit-msg"></div>' +
+            "</form>"
+          );
+        }
+        function wireEditClub(t) {
+          var open = document.getElementById("d-edit-open");
+          var form = document.getElementById("d-edit-form");
+          if (!open || !form) return;
+          open.addEventListener("click", function () {
+            form.classList.toggle("hidden");
+            if (!form.classList.contains("hidden")) {
+              var first = form.querySelector("input");
+              if (first) first.focus();
+            }
+          });
+          document.getElementById("d-edit-cancel").addEventListener("click", function () {
+            form.classList.add("hidden");
+            clearMsg("d-edit-msg");
+          });
+          form.addEventListener("submit", function (e) {
+            e.preventDefault();
+            clearMsg("d-edit-msg");
+            var fields = {};
+            var changed = false;
+            form.querySelectorAll("[data-ec]").forEach(function (inp) {
+              var k = inp.getAttribute("data-ec");
+              var before = t[k] == null ? "" : String(t[k]);
+              if (inp.value.trim() !== before.trim()) changed = true;
+              fields[k] = inp.value;
+            });
+            if (!changed) {
+              msg("d-edit-msg", "Nothing has changed.", "ok");
+              return;
+            }
+            if (!String(fields.entity_name || "").trim()) {
+              flagField("d-edit-msg", "ec-entity_name", "The club needs a name.");
+              return;
+            }
+            var btn = document.getElementById("d-edit-save");
+            btn.disabled = true;
+            btn.textContent = "Saving...";
+            api("update_club", { target_id: t.id, fields: fields })
+              .then(function (r) {
+                var sheetNote = r && typeof r.sheet === "string" && r.sheet.indexOf("failed") === 0
+                  ? " Saved here, but the sheet row could not be updated: " + r.sheet.replace(/^failed: /, "")
+                  : "";
+                toast("Saved", (fields.entity_name || t.entity_name) + "'s details are updated." + sheetNote, "desk");
+                openClub(t.id);
+                if (!document.getElementById("admin-body").classList.contains("hidden")) loadOverview();
+              })
+              .catch(function (err) {
+                msg("d-edit-msg", err.message, "error");
+                btn.disabled = false;
+                btn.textContent = "Save details";
+              });
+          });
+        }
+
         // Part of / sub-branches, plus a "link to a parent" control fed by
         // club_search. The parent link and any children are plain spans with
         // data-club so they reuse the page's existing drawer-opening handler.
@@ -5549,8 +5731,8 @@
             unlinkBtn.addEventListener("click", function () {
               unlinkBtn.disabled = true;
               api("set_parent", { target_id: t.id, parent_id: null })
-                .then(function () {
-                  toast("Unlinked", (t.entity_name || "This club") + " is no longer a sub-branch.", "desk");
+                .then(function (r) {
+                  toast("Unlinked", (t.entity_name || "This club") + " is no longer a sub-branch" + (r && r.parked === false && t.parked ? " and is back in the call queues." : "."), "desk");
                   openClub(t.id);
                 })
                 .catch(function (err) {
@@ -5600,8 +5782,8 @@
             var pname = b.getAttribute("data-name");
             b.disabled = true;
             api("set_parent", { target_id: t.id, parent_id: pid })
-              .then(function () {
-                toast("Linked", (t.entity_name || "This club") + " is now a sub-branch of " + pname + ".", "desk");
+              .then(function (r) {
+                toast("Linked", (t.entity_name || "This club") + " is now a sub-branch of " + pname + (r && r.parked ? ", out of the call queues (open it by hand from the drawer)." : "."), "desk");
                 openClub(t.id);
               })
               .catch(function (err) {
@@ -5998,7 +6180,7 @@
             esc(t.entity_name) +
             "</h2>" +
             '<div class="drawer-top-actions">' +
-            (canCall() ? '<button type="button" class="btn-primary" id="d-open-worksheet">Open in worksheet</button>' : "") +
+            (canOpenByHand(t) ? '<button type="button" class="btn-primary" id="d-open-worksheet">Open in worksheet</button>' : "") +
             '<button class="drawer-close" id="drawer-close" aria-label="Close">&times;</button>' +
             "</div></div>" +
             '<p class="drawer-sub">' +
@@ -6047,6 +6229,7 @@
                 (t.parked ? " · parked (" + (t.parked_reason || "not in the call queue") + ")" : ""),
             ) +
             "</dl>" +
+            editClubHtml(t) +
             relationshipBlockHtml(t) +
             '<button type="button" class="handoff-btn" data-handoff="' + esc(t.id) + '" data-club-name="' + esc(t.entity_name) + '">Hand this club to someone else</button>' +
             "<h3>Record another call</h3>" +
@@ -6096,6 +6279,7 @@
             });
           }
 
+          wireEditClub(t);
           wireRelationshipBlock(t);
           wireDeleteZone(t);
           wireBounceBox(t, d);
