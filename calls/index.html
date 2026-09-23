@@ -497,12 +497,11 @@
 
       /* ---------------------------------------------------- all clubs / bounces */
       /* One 7-column grid: the filter selects take a column each on row 2, and
-         row 1 lines up with them (tabs over columns 1-4, search over Outcome,
-         count over the last two). */
+         row 1 lines up with them (list dropdown over columns 1-2, search over
+         the middle, count at the end). */
       .clubs-controls { display: grid; grid-template-columns: repeat(7, minmax(0, 1fr)); align-items: center; gap: 12px; margin: 0 0 12px; }
-      .clubs-controls .clubs-tabs { grid-column: 1 / 5; display: flex; width: 100%; box-sizing: border-box; }
-      .clubs-controls .clubs-tabs .tab { flex: 1 1 0; text-align: center; padding-left: 8px; padding-right: 8px; white-space: nowrap; }
-      .clubs-controls .clubs-q { grid-column: 5 / 7; width: 100%; box-sizing: border-box; padding: 7px 12px; font-size: 13px; -webkit-appearance: none; appearance: none; }
+      .clubs-controls .clubs-tabs { grid-column: 1 / 3; width: 100%; box-sizing: border-box; }
+      .clubs-controls .clubs-q { grid-column: 3 / 7; width: 100%; box-sizing: border-box; padding: 7px 12px; font-size: 13px; -webkit-appearance: none; appearance: none; }
       .clubs-controls .clubs-count { grid-column: 7 / 8; margin: 0; white-space: nowrap; justify-self: end; }
       .clubs-controls .clubs-toolbar { grid-column: 1 / 8; display: grid; grid-template-columns: repeat(7, minmax(0, 1fr)); margin: 0; gap: 12px; }
       .clubs-controls .clubs-toolbar select { width: 100%; max-width: none; box-sizing: border-box; }
@@ -513,8 +512,7 @@
         .clubs-controls .clubs-count { grid-column: 2 / 3; }
         .clubs-controls .clubs-toolbar { grid-column: 1 / 3; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); }
       }
-      .clubs-tabs { margin: 0; flex-wrap: wrap; }
-      .clubs-tabs .tab-count { font-weight: 400; opacity: 0.8; margin-left: 4px; }
+      .clubs-tabs { margin: 0; }
       /* Correspondence tabs + bounce worksheet in the club drawer. */
       .corr-tabs { margin: 10px 0 12px; flex-wrap: wrap; }
       .corr-tabs .tab { padding: 6px 12px; }
@@ -1539,7 +1537,7 @@
           },
           {
             t: "Your lists",
-            tour: { tab: "admin", subtab: "r1", sel: "#list-r1" },
+            tour: { tab: "admin", subtab: "r1", sel: "#clubs-tabs" },
             h:
               "<p><b>First round &mdash; to call</b> is every club in your list nobody has spoken to yet, biggest first. <b>Second round &mdash; call back</b> is the clubs you&rsquo;ve had a real conversation with, in priority order.</p>" +
               "<p>Click any club, anywhere it appears, to open its full record: every call, every note, and every email the campaign has sent it &mdash; including whether it was opened. You can also log a call from there.</p>",
@@ -2749,9 +2747,9 @@
           );
         }
         // ---- the tabbed clubs section -------------------------------------
-        // One tab strip (All / First round / Second round / Recent calls / Do
-        // not call) and ONE shared filter row, both on the page background; the
-        // chosen tab's table sits in the card below. Tabs are the base set,
+        // One list dropdown (All / First round / Second round / Recent calls /
+        // Do not call) and ONE shared filter row, both on the page background;
+        // the chosen list's table sits in the card below. The list is the base set,
         // the filters narrow it, and both survive a re-render.
         var CLUBS_TAB = "all";
         var CLUBS_DATA = null;
@@ -2806,18 +2804,17 @@
         function clubsTabsHtml() {
           var n = clubsBucketCounts();
           var tabs = [
-            ["all", "All", n.all], ["r1", "First round", n.r1], ["r2", "Second round", n.r2], ["r3", "Third round", n.r3],
+            ["all", "All clubs", n.all], ["r1", "First round", n.r1], ["r2", "Second round", n.r2], ["r3", "Third round", n.r3],
             ["recent", "Recent calls", n.recent], ["parked", "Sub branches", n.parked], ["dnc", "Do not call", n.dnc],
           ];
           if (!CLUBS_DATA.admin) tabs = tabs.filter(function (t) { return t[0] !== "dnc"; });
           return (
-            '<div class="tabs clubs-tabs" id="clubs-tabs">' +
+            '<select class="round-select clubs-tabs" id="clubs-tabs" title="Which list to show">' +
             tabs.map(function (t) {
-              var id = t[0] === "r1" ? ' id="list-r1"' : t[0] === "r2" ? ' id="list-r2"' : t[0] === "r3" ? ' id="list-r3"' : "";
-              return '<button type="button" class="tab' + (CLUBS_TAB === t[0] ? " on" : "") + '" data-clubs-tab="' + t[0] + '"' + id + ">" +
-                t[1] + '<span class="tab-count">(' + t[2] + ")</span></button>";
+              return '<option value="' + t[0] + '"' + (CLUBS_TAB === t[0] ? " selected" : "") + ">" +
+                t[1] + " (" + t[2] + ")</option>";
             }).join("") +
-            "</div>"
+            "</select>"
           );
         }
         function clubsTableHtml(tab) {
@@ -2909,9 +2906,8 @@
           wrap.innerHTML = clubsTableHtml(CLUBS_TAB);
           var line = document.getElementById("clubs-count-line");
           if (line) line.textContent = clubsCountText();
-          document.querySelectorAll("#clubs-tabs [data-clubs-tab]").forEach(function (b) {
-            b.classList.toggle("on", b.getAttribute("data-clubs-tab") === CLUBS_TAB);
-          });
+          var tabSel = document.getElementById("clubs-tabs");
+          if (tabSel) tabSel.value = CLUBS_TAB;
         }
         function switchClubsTab(tab) {
           if (!CLUBS_DATA) return;
@@ -2925,9 +2921,8 @@
           CLUB_FILTER_STATE[sel.getAttribute("data-cf")] = sel.value;
           rerenderClubsTable();
         });
-        document.addEventListener("click", function (e) {
-          var b = e.target.closest && e.target.closest("[data-clubs-tab]");
-          if (b) switchClubsTab(b.getAttribute("data-clubs-tab"));
+        document.addEventListener("change", function (e) {
+          if (e.target && e.target.id === "clubs-tabs") switchClubsTab(e.target.value);
         });
         var cfQTimer = null;
         document.addEventListener("input", function (e) {
@@ -3252,7 +3247,7 @@
             '<table class="rent">' +
             (phone
               ? row("Phone number", '<a class="phone-cta inline" href="' + esc(telHref) + '">' + esc(phone) + "</a>", true)
-              : row("Phone number", '<span style="color:var(--muted);font-weight:400">Not on file</span>', true)) +
+              : row("Phone number", '<span id="deed-phone-empty" style="color:var(--muted);font-weight:400">Not on file &middot; <button type="button" class="linkbtn" data-add-phone="' + esc(t.id) + '">add one</button></span>', true)) +
             (dmPhone
               ? row(
                   dmName ? dmName + "’s direct line" : "Decision maker’s line",
@@ -3480,7 +3475,9 @@
               order.push(s);
             }
             s.calls++;
-            if (NO_CONTACT.indexOf(r.outcome) < 0) {
+            // A tick in "wants more info" counts as reaching the club, even via
+            // a gatekeeper: the pack is going to the decision maker.
+            if (NO_CONTACT.indexOf(r.outcome) < 0 || r.wants_info) {
               s.state = r.outcome === "not_interested" ? "out" : "done";
               // One house: the decision maker was reached.
               if (s.state === "done") s.houses = Math.max(s.houses, 1);
@@ -5551,7 +5548,7 @@
           api("club_detail", { target_id: targetId, email: opts.email || null })
             .then(function (d) {
               if (drawerClub !== targetId) return; // another club was opened meanwhile
-              renderDrawer(d);
+              renderDrawer(d, opts);
             })
             .catch(function (e) {
               document.getElementById("drawer-inner").innerHTML =
@@ -5589,8 +5586,10 @@
           );
         }
 
-        // Admin-only: edit the club's own details in place. The fields mirror
-        // the club columns on the sheet, which the API brings into line too.
+        // Edit the club's own details in place. The fields mirror the club
+        // columns on the sheet, which the API brings into line too. Callers
+        // can fix the contact details (a missing phone number, say); admins
+        // can edit everything.
         var EDIT_CLUB_FIELDS = [
           ["entity_name", "Club name", "text"],
           ["primary_person", "Contact on file", "text"],
@@ -5606,11 +5605,19 @@
           ["gaming_revenue", "Gaming revenue", "text"],
           ["gaming_rank", "State profit rank", "text"],
         ];
+        var CALLER_EDIT_FIELDS = ["primary_phone", "primary_email", "primary_person"];
+        function editClubFields() {
+          if (meCaller && meCaller.is_admin) return EDIT_CLUB_FIELDS;
+          return EDIT_CLUB_FIELDS.filter(function (f) { return CALLER_EDIT_FIELDS.indexOf(f[0]) >= 0; });
+        }
         function editClubHtml(t) {
-          if (!(meCaller && meCaller.is_admin)) return "";
+          if (!meCaller) return "";
+          var admin = !!meCaller.is_admin;
+          var fields = editClubFields();
+          var label = admin ? "Edit club details" : t.primary_phone ? "Edit contact details" : "Add a phone number";
           var rows = "";
-          for (var i = 0; i < EDIT_CLUB_FIELDS.length; i += 2) {
-            var pair = EDIT_CLUB_FIELDS.slice(i, i + 2);
+          for (var i = 0; i < fields.length; i += 2) {
+            var pair = fields.slice(i, i + 2);
             rows +=
               '<div class="field-row">' +
               pair
@@ -5625,9 +5632,9 @@
               "</div>";
           }
           return (
-            '<div class="edit-club-toggle"><button type="button" class="btn-ghost" id="d-edit-open">Edit club details</button></div>' +
+            '<div class="edit-club-toggle"><button type="button" class="btn-ghost" id="d-edit-open">' + label + "</button></div>" +
             '<form class="edit-club hidden" id="d-edit-form" novalidate>' +
-            "<h3>Edit club details</h3>" +
+            "<h3>" + (admin ? "Edit club details" : "Contact details") + "</h3>" +
             rows +
             '<div class="actions"><button type="submit" class="btn-primary" id="d-edit-save">Save details</button>' +
             '<button type="button" class="btn-ghost" id="d-edit-cancel">Cancel</button></div>' +
@@ -5635,17 +5642,20 @@
             "</form>"
           );
         }
-        function wireEditClub(t) {
+        function wireEditClub(t, startOpen) {
           var open = document.getElementById("d-edit-open");
           var form = document.getElementById("d-edit-form");
           if (!open || !form) return;
+          function reveal(focusId) {
+            form.classList.remove("hidden");
+            var first = (focusId && document.getElementById(focusId)) || form.querySelector("input");
+            if (first) first.focus();
+          }
           open.addEventListener("click", function () {
-            form.classList.toggle("hidden");
-            if (!form.classList.contains("hidden")) {
-              var first = form.querySelector("input");
-              if (first) first.focus();
-            }
+            if (form.classList.contains("hidden")) reveal();
+            else form.classList.add("hidden");
           });
+          if (startOpen) reveal("ec-primary_phone");
           document.getElementById("d-edit-cancel").addEventListener("click", function () {
             form.classList.add("hidden");
             clearMsg("d-edit-msg");
@@ -5665,7 +5675,7 @@
               msg("d-edit-msg", "Nothing has changed.", "ok");
               return;
             }
-            if (!String(fields.entity_name || "").trim()) {
+            if ("entity_name" in fields && !String(fields.entity_name || "").trim()) {
               flagField("d-edit-msg", "ec-entity_name", "The club needs a name.");
               return;
             }
@@ -5678,6 +5688,7 @@
                   ? " Saved here, but the sheet row could not be updated: " + r.sheet.replace(/^failed: /, "")
                   : "";
                 toast("Saved", (fields.entity_name || t.entity_name) + "'s details are updated." + sheetNote, "desk");
+                patchWorksheetPhone(t.id, fields.primary_phone);
                 openClub(t.id);
                 if (!document.getElementById("admin-body").classList.contains("hidden")) loadOverview();
               })
@@ -5688,6 +5699,25 @@
               });
           });
         }
+
+        // A number added from the drawer shows on the club already on the
+        // worksheet straight away, without re-rendering (and losing) the form.
+        function patchWorksheetPhone(targetId, phone) {
+          phone = String(phone || "").trim();
+          if (!phone || !current || current.id !== targetId) return;
+          current.primary_phone = phone;
+          var empty = document.getElementById("deed-phone-empty");
+          if (!empty) return;
+          var a = document.createElement("a");
+          a.className = "phone-cta inline";
+          a.href = "tel:" + phone.replace(/[^0-9+]/g, "");
+          a.textContent = phone;
+          empty.replaceWith(a);
+        }
+        document.addEventListener("click", function (e) {
+          var b = e.target.closest && e.target.closest("[data-add-phone]");
+          if (b) openClub(b.getAttribute("data-add-phone"), { editPhone: true });
+        });
 
         // Part of / sub-branches, plus a "link to a parent" control fed by
         // club_search. The parent link and any children are plain spans with
@@ -6005,7 +6035,7 @@
           });
         }
 
-        function renderDrawer(d) {
+        function renderDrawer(d, opts) {
           var t = d.target;
           var phone = (t.primary_phone || "").trim();
           var place =
@@ -6016,7 +6046,7 @@
           // One card per call (the oldest call is call 1; d.calls arrives newest first).
           function callCardHtml(c, n) {
             var who = (c.d1942_callers && c.d1942_callers.name) || "";
-            var noContact = ["no_answer", "gatekeeper", "wrong_number"].indexOf(c.outcome) >= 0;
+            var noContact = !c.wants_info && ["no_answer", "gatekeeper", "wrong_number"].indexOf(c.outcome) >= 0;
             var spokeTo = c.decision_maker_name || (noContact ? "Nobody reached" : "");
             var extras = [];
             if (c.decision_maker_email) extras.push(c.decision_maker_email);
@@ -6278,7 +6308,7 @@
             });
           }
 
-          wireEditClub(t);
+          wireEditClub(t, !!(opts && opts.editPhone));
           wireRelationshipBlock(t);
           wireDeleteZone(t);
           wireBounceBox(t, d);
