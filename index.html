@@ -93,10 +93,16 @@
     --hero-h:76vh;
     --strip-h:19vh;
     /* The band of picture the sky blue fades in over, above the cards... */
-    --strip-fade:11vh;
+    --strip-fade:14vh;
     /* ...and how far the cards themselves ride up into the picture on top of
-       that. Raise or lower the whole block by editing this one number. */
-    --strip-raise:12vh;
+       that. The picture is 3:2 at full width, so its height follows the window's
+       WIDTH (66.6vw) while the fold follows its HEIGHT — on a wide, short laptop
+       the foot of the picture lands well below the fold. So the raise is worked
+       out rather than fixed: enough to put the top of the cards at about 78% of
+       the window (hence 66.6vw - 78vh), never less than the 12vh they used to
+       ride up on tall windows, and never more than 40vh so the cards can't eat
+       the picture on very wide ones. */
+    --strip-raise:clamp(12vh, calc(66.6vw - 78vh), 40vh);
     /* Where the hero tagline and logo start from the left edge, and the card
        strip's side padding. The news row's edge is worked out from these so
        "IN THE NEWS" lines up with the logo rather than the cards' padding. */
@@ -289,7 +295,7 @@
   /* The picture and everything drawn on top of it. The cards used to be pinned
      to the bottom of the hero, which fixed the page at one screen no matter how
      much was in them; they now follow this box in normal flow (still tucked over
-     its last 11vh, see .info-strip), so the page simply scrolls. */
+     its last 14vh, see .info-strip), so the page simply scrolls. */
   .hero-media{
     position:relative;
   }
