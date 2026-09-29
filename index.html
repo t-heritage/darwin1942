@@ -457,10 +457,11 @@
     padding:12px 22px;
   }
 
-  /* IN THE NEWS — a row under the three cards holding the three most recent items
-     of outside coverage, as pictures only: the artwork each outlet published, at
-     the same size it appears on /news-and-media/. The row has no colour of its
-     own, so it sits straight on the strip's sky blue. Nothing here is
+  /* IN THE NEWS — a single row under the three cards holding every item of
+     outside coverage, as pictures only: the artwork each outlet published, at
+     up to the size it appears on /news-and-media/ (they shrink to stay on one
+     line as the sheet grows). The row has no colour of its own, so it sits
+     straight on the strip's sky blue. Nothing here is
      hand-edited: the items are read at page load from the same Google Sheet that
      fills /news-and-media/ (see /assets/news-feed.js and /news-and-media/README.md).
      The row stays hidden until items arrive, so an empty or unreachable sheet
@@ -497,12 +498,17 @@
     flex:1 1 auto;
     min-width:0;
     display:flex;
-    flex-wrap:wrap;
+    /* However many items the sheet holds, they stay on one line: each is at
+       most 220px and shrinks from there to make them all fit. */
+    flex-wrap:nowrap;
     justify-content:flex-end;
-    gap:20px;
+    gap:clamp(10px, 1.4vw, 20px);
   }
   .news-strip-item{
     flex:0 1 220px;
+    /* Without this a picture's own width is its floor and the row overflows
+       instead of shrinking. */
+    min-width:0;
     max-width:220px;
     display:block;
     color:var(--white);
@@ -549,9 +555,10 @@
   @media (max-width:900px){
     .news-strip{flex-direction:column;align-items:stretch;gap:18px;padding-top:18px;padding-bottom:26px;}
     .news-strip h3{font-size:36px;}
-    /* Stacked, the pictures sit in a row of their own under the heading,
-       starting on its left edge. */
-    .news-strip-items{gap:14px;justify-content:flex-start;}
+    /* Stacked, the pictures sit under the heading, starting on its left edge —
+       and here they wrap, since a phone is too narrow to shrink a whole row of
+       them onto one line and still leave anything to look at. */
+    .news-strip-items{gap:14px;justify-content:flex-start;flex-wrap:wrap;}
     .news-strip-title{font-size:17px;}
     .news-strip .btn{
       display:inline-block;
@@ -1009,13 +1016,11 @@
 </script>
 <script src="assets/news-feed.js"></script>
 <script>
-/* In the news: the three most recent items from the shared feed, as one slim row. */
+/* In the news: every item from the shared feed, as pictures in one row. */
 (function(){
   var strip = document.getElementById('news-strip');
   var list = document.getElementById('news-strip-items');
   if (!strip || !list || !window.DarwinNews || !DarwinNews.configured) return;
-
-  var MAX_ITEMS = 3;
 
   function el(tag, className, text){
     var n = document.createElement(tag);
@@ -1054,7 +1059,6 @@
 
   DarwinNews.load()
     .then(function(items){
-      items = items.slice(0, MAX_ITEMS);
       if (!items.length) return;
       list.innerHTML = '';
       items.forEach(function(it){ list.appendChild(item(it)); });

@@ -5,8 +5,8 @@
 /* Darwin 1942 — news and media feed.
 
    One copy of the code that turns the client's Google Sheet into a list of coverage
-   items, shared by /news-and-media/ (the full list) and the home page (the latest
-   three). The sheet is published to the web as CSV; its address is the single key
+   items, shared by /news-and-media/ (the full list) and the home page (the same
+   list, as pictures in one row). The sheet is published to the web as CSV; its address is the single key
    `news_csv_url` in /_config.yml and is written into this file at build time.
 
    Usage:  DarwinNews.load().then(function (items) { ... })
