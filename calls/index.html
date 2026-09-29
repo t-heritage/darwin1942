@@ -332,7 +332,7 @@
       .tab { background: none; border: 0; color: var(--muted); padding: 6px 18px; font-size: 13px; font-weight: 400; border-radius: 999px; font-family: inherit; transition: background 0.15s, color 0.15s; }
       .tab:hover:not(.on) { color: var(--ink); }
       .tab.on { background: var(--ink); color: #fff; font-weight: 700; }
-      #add-club-modal, #assign-modal { position: fixed; inset: 0; z-index: 72; background: rgba(34,34,34,0.5); display: flex; align-items: center; justify-content: center; padding: 20px; overflow-y: auto; }
+      #add-club-modal, #assign-modal, #notes-modal { position: fixed; inset: 0; z-index: 72; background: rgba(34,34,34,0.5); display: flex; align-items: center; justify-content: center; padding: 20px; overflow-y: auto; }
       .add-card { background: var(--paper); border: 3px solid var(--ink); border-radius: var(--radius); box-shadow: 10px 10px 0 rgba(34,34,34,0.25); width: 100%; max-width: 560px; max-height: calc(100vh - 40px); overflow-y: auto; }
       .add-card .band { background: var(--pollen); padding: 14px 22px; border-bottom: 3px solid var(--ink); display: flex; justify-content: space-between; align-items: flex-start; gap: 12px; }
       .add-card .band h2 { font-size: 20px; margin: 0; }
@@ -342,6 +342,11 @@
       .add-card .actions { margin-top: 6px; }
       .referral-pill { background: var(--pollen); border: 1px solid var(--ink); }
       .add-club-row { margin: 0 0 12px; }
+      #notes-modal { z-index: 74; }
+      #notes-modal .add-card { max-width: 820px; }
+      #notes-modal textarea { width: 100%; min-height: 50vh; resize: vertical; }
+      .notes-label { display: flex; justify-content: space-between; align-items: baseline; gap: 10px; }
+      .call-item .ci-edit { margin-left: 8px; }
       .add-card label .optional { font-weight: 400; color: var(--muted); }
       .add-card details.ac-call { border: 1px solid var(--line); border-radius: var(--radius); padding: 10px 14px; margin: 4px 0 14px; background: var(--paper-2); }
       .add-card details.ac-call summary { cursor: pointer; font-weight: 700; }
@@ -881,6 +886,7 @@
     <!-- ======================================================== CLUB DRAWER -->
     <div id="add-club-modal" class="hidden"></div>
     <div id="assign-modal" class="hidden"></div>
+    <div id="notes-modal" class="hidden"></div>
     <div id="drawer-backdrop"></div>
     <aside id="drawer" class="drawer" aria-label="Club details">
       <div class="drawer-inner" id="drawer-inner"></div>
@@ -3830,6 +3836,7 @@
           return {
             target_id: t.id, club: t.entity_name, where: t.where, egm_count: t.egm_count, outcome: c[1], wants_info: c[2],
             decision_maker: c[3], decision_maker_name: c[3], decision_maker_role: c[4], decision_maker_email: c[5],
+            id: "dc" + i, caller_id: DEMO_CALLER.id,
             round: 1, sheet_synced: true, notes: c[1] === "committed" ? "Keen to host a screening for members." : "",
             created_at: new Date(Date.now() - c[6] * 3600e3 * 5).toISOString(), d1942_callers: { name: DEMO_CALLER.name },
           };
@@ -4031,6 +4038,12 @@
               DEMO_CLUBS = DEMO_CLUBS.filter(function (x) { return x.id !== dt.id; });
               return { ok: true, deleted: dt.entity_name, sheet: "row_deleted" };
             }
+            case "edit_call_notes": {
+              var ec = DEMO_CALLS.filter(function (x) { return x.id === p.record_id; })[0];
+              if (!ec) throw new Error("That call no longer exists.");
+              ec.notes = String(p.notes || "").trim() || null;
+              return { ok: true, record_id: ec.id, notes: ec.notes };
+            }
             case "save": case "log_call":
               return { ok: true, saved: "Demo", callback_at: p.callback_at || null, next_step: p.next_step || null };
             case "callbacks": {
@@ -4228,7 +4241,7 @@
             '<option value="other">Other &mdash; see notes</option>' +
             "</select></div>" +
             callbackBlockHtml("ac") +
-            '<div class="field"><label for="ac-notes">Call notes</label><textarea id="ac-notes" rows="3"></textarea></div>' +
+            '<div class="field"><label for="ac-notes" class="notes-label"><span>Call notes</span><button type="button" class="linkbtn" data-expand-notes="ac-notes">Expand</button></label><textarea id="ac-notes" rows="3"></textarea></div>' +
             "</details>" +
             '<div class="actions"><button type="submit" class="btn-primary" id="ac-save">Add to my list</button>' +
             '<button type="button" class="btn-ghost" id="ac-cancel">Cancel</button></div>' +
@@ -4592,6 +4605,89 @@
           var cn = e.target.closest && e.target.closest("[data-callnow]");
           if (cn) { e.stopPropagation(); callNow(cn.getAttribute("data-callnow")); return; }
           if (e.target.id === "assign-modal") { e.target.classList.add("hidden"); e.target.innerHTML = ""; }
+        });
+
+        // ---------------------------------------------------------- notes popup
+        // A big writing space for call notes. opts: { title, sub, value,
+        // saveLabel, onSave(text) -> promise|undefined }. Closing without
+        // saving throws nothing away from the field it was opened from.
+        function openNotesPopup(opts) {
+          var m = document.getElementById("notes-modal");
+          m.innerHTML =
+            '<div class="add-card" role="dialog" aria-modal="true" aria-labelledby="notes-title"><div class="band"><div><h2 id="notes-title">' + esc(opts.title || "Notes") + "</h2>" +
+            (opts.sub ? "<p>" + esc(opts.sub) + "</p>" : "") + "</div>" +
+            '<button type="button" id="notes-close" aria-label="Close">&times;</button></div>' +
+            '<form id="notes-form">' +
+            '<div class="field"><textarea id="notes-text" aria-label="Notes"></textarea></div>' +
+            '<div class="actions"><button type="submit" class="btn-primary" id="notes-save">' + esc(opts.saveLabel || "Done") + "</button>" +
+            '<button type="button" class="btn-ghost" id="notes-cancel">Cancel</button></div>' +
+            '<div class="msg" id="notes-msg"></div>' +
+            "</form></div>";
+          m.classList.remove("hidden");
+          var ta = document.getElementById("notes-text");
+          ta.value = opts.value || "";
+          ta.focus();
+          ta.setSelectionRange(ta.value.length, ta.value.length);
+          var close = function () { m.classList.add("hidden"); m.innerHTML = ""; document.removeEventListener("keydown", onKey); };
+          var onKey = function (e) { if (e.key === "Escape") close(); };
+          document.addEventListener("keydown", onKey);
+          document.getElementById("notes-close").addEventListener("click", close);
+          document.getElementById("notes-cancel").addEventListener("click", close);
+          m.onclick = function (e) { if (e.target === m) close(); };
+          document.getElementById("notes-form").addEventListener("submit", function (e) {
+            e.preventDefault();
+            clearMsg("notes-msg");
+            var done = opts.onSave ? opts.onSave(ta.value) : null;
+            if (!done || typeof done.then !== "function") { close(); return; }
+            var btn = document.getElementById("notes-save");
+            btn.disabled = true; btn.textContent = "Saving...";
+            done.then(close).catch(function (err) {
+              msg("notes-msg", err.message, "error");
+              btn.disabled = false; btn.textContent = opts.saveLabel || "Done";
+            });
+          });
+        }
+
+        // Calls in the open drawer, by id, so their notes can be edited.
+        var drawerCalls = {};
+        var drawerOpts = {};
+        function canEditNotes(c) {
+          if (!c.id || !meCaller) return false;
+          return !!meCaller.is_admin || (!!c.caller_id && c.caller_id === meCaller.id);
+        }
+
+        document.addEventListener("click", function (e) {
+          var ex = e.target.closest && e.target.closest("[data-expand-notes]");
+          if (ex) {
+            e.preventDefault();
+            var field = document.getElementById(ex.getAttribute("data-expand-notes"));
+            if (!field) return;
+            var lbl = ex.parentNode.querySelector("span");
+            openNotesPopup({
+              title: lbl ? lbl.textContent : "Notes",
+              value: field.value,
+              onSave: function (text) { field.value = text; field.dispatchEvent(new Event("input", { bubbles: true })); },
+            });
+            return;
+          }
+          var ed = e.target.closest && e.target.closest("[data-edit-notes]");
+          if (ed) {
+            var c = drawerCalls[ed.getAttribute("data-edit-notes")];
+            if (!c) return;
+            var targetId = drawerClub;
+            openNotesPopup({
+              title: c.notes ? "Edit the notes on this call" : "Add notes to this call",
+              sub: when(c.created_at) + ((c.d1942_callers && c.d1942_callers.name) ? " · " + c.d1942_callers.name : ""),
+              value: c.notes || "",
+              saveLabel: "Save notes",
+              onSave: function (text) {
+                return api("edit_call_notes", { record_id: c.id, notes: text }).then(function () {
+                  if (typeof toast === "function") toast("Notes saved", "The call's notes are updated.", "desk");
+                  if (drawerClub === targetId) openClub(targetId, drawerOpts);
+                });
+              },
+            });
+          }
         });
 
         // ------------------------------------------------------- referrals table
@@ -5198,7 +5294,7 @@
             fieldsHtml +
             outcomeHtml +
             nextStepBlockHtml("f") +
-            '<div class="field"><label for="f-notes">Any other notes on how the call went</label>' +
+            '<div class="field"><label for="f-notes" class="notes-label"><span>Any other notes on how the call went</span><button type="button" class="linkbtn" data-expand-notes="f-notes">Expand</button></label>' +
             '<textarea id="f-notes" rows="4"></textarea></div>' +
             '<div class="msg" id="save-msg"></div>' +
             "</form>" +
@@ -6077,6 +6173,10 @@
               ) +
               fact("Notes", c.notes) +
               "</dl>" +
+              (canEditNotes(c)
+                ? '<button type="button" class="linkbtn" data-edit-notes="' + esc(c.id) + '">' +
+                  (c.notes ? "Edit notes" : "Add notes") + "</button>"
+                : "") +
               (extras.length
                 ? '<div class="ci-extra">' + extras.map(esc).join(" · ") + "</div>"
                 : "") +
@@ -6097,6 +6197,10 @@
               "</div>"
             );
           }
+
+          drawerCalls = {};
+          (d.calls || []).forEach(function (c) { if (c.id) drawerCalls[c.id] = c; });
+          drawerOpts = opts;
 
           var em = d.emails || {};
           // Unix seconds -> short date; a chip only appears when its stage happened.
@@ -6289,7 +6393,7 @@
             '<option value="other">Other &mdash; see notes</option>' +
             "</select></div>" +
             callbackBlockHtml("d") +
-            '<div class="field"><label for="d-notes">Notes</label><textarea id="d-notes" rows="3"></textarea></div>' +
+            '<div class="field"><label for="d-notes" class="notes-label"><span>Notes</span><button type="button" class="linkbtn" data-expand-notes="d-notes">Expand</button></label><textarea id="d-notes" rows="3"></textarea></div>' +
             '<button type="submit" class="btn-primary" id="d-save-btn">Save this call</button>' +
             '<div class="msg" id="d-save-msg"></div>' +
             "</form>" +
