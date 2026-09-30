@@ -4054,8 +4054,9 @@
               var ew = "wants_info" in ef ? !!ef.wants_info : !!eca.wants_info;
               var ee = "decision_maker_email" in ef ? String(ef.decision_maker_email || "").trim() : eca.decision_maker_email;
               if (ew && !ee) throw new Error("To send more information you need an email address for the decision maker.");
+              var eOld = eca.decision_maker_email;
               Object.keys(ef).forEach(function (k) { eca[k] = k === "wants_info" ? !!ef[k] : (String(ef[k] == null ? "" : ef[k]).trim() || null); });
-              return { ok: true, record: eca, resent: true };
+              return { ok: true, record: eca, resent: true, old_contact: eOld && eOld !== eca.decision_maker_email ? { email: eOld, journey: "stopped" } : null };
             }
             case "save": case "log_call":
               return { ok: true, saved: "Demo", callback_at: p.callback_at || null, next_step: p.next_step || null };
@@ -4756,6 +4757,7 @@
           document.getElementById("ce-outcome").addEventListener("change", function () {
             if (this.value === "wants_info_only") document.getElementById("ce-wants").checked = true;
           });
+          var confirmedSameEmail = false;
           var close = function () { m.classList.add("hidden"); m.innerHTML = ""; document.removeEventListener("keydown", onKey); };
           var onKey = function (e) {
             if (e.key === "Escape" && document.getElementById("notes-modal").classList.contains("hidden")) close();
@@ -4779,14 +4781,30 @@
               return;
             }
             if (!Object.keys(fields).length) { close(); return; }
+            // A new name on the old person's email would rename that person in
+            // Customer.io rather than add someone. Ask once; a second Save keeps it.
+            var oldEmail = String(c.decision_maker_email || "").trim();
+            if ("decision_maker_name" in fields && !("decision_maker_email" in fields) && oldEmail && c.decision_maker_name && !confirmedSameEmail) {
+              confirmedSameEmail = true;
+              flagField("ce-msg", "ce-email", "You changed who you spoke to, but this is still " + c.decision_maker_name + "’s email (" + oldEmail + "). " +
+                "Enter the new person’s email, or clear it if you don’t have one. If it really is their address too, press Save changes again.");
+              return;
+            }
             var btn = document.getElementById("ce-save");
             btn.disabled = true; btn.textContent = "Saving...";
             api("edit_call", { record_id: c.id, fields: fields })
               .then(function (r) {
                 close();
+                var oc = r && r.old_contact, foot = "";
+                if (oc) {
+                  var j = String(oc.journey || "");
+                  foot = j === "stopped" ? oc.email + " is off the partnership emails."
+                    : j.indexOf("kept") === 0 ? oc.email + " stays on the emails: " + j.replace(/^kept: /, "") + "."
+                    : "Couldn't take " + oc.email + " off the emails; tell Taylor (" + j.replace(/^failed: /, "") + ").";
+                }
                 toast("Call updated", r && r.resent
                   ? "The changes are saved and going to the sheet and Customer.io."
-                  : "The changes are saved. This isn't the club's latest call, so the sheet row and Customer.io keep the latest call's answers.", "desk");
+                  : "The changes are saved. This isn't the club's latest call, so the sheet row and Customer.io keep the latest call's answers.", "desk", foot);
                 if (onSaved) onSaved(r && r.record);
               })
               .catch(function (err) {
