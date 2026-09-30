@@ -2718,7 +2718,9 @@
               (c.children.length === 1 ? "" : "es") +
               "</span>";
           }
-          var hiddenSearch = [c.licence_name, c.primary_person].filter(Boolean).join(" ");
+          // Hidden text the search also matches: the licence name and everyone
+          // on file for the club (contact_search), so a person finds their club.
+          var hiddenSearch = [c.licence_name, c.primary_person, CLUBS_DATA && CLUBS_DATA.contacts[c.id]].filter(Boolean).join(" ");
           var callsCell = c.calls ? c.calls + (c.spoken_to ? " (" + c.spoken_to + " spoken)" : "") : "0";
           var flags = [];
           if (c.do_not_call) flags.push('<span class="pill bad">do not call</span>');
@@ -2945,14 +2947,14 @@
           ALL_CLUBS_RAW = clubs;
           var byId = {};
           clubs.forEach(function (c) { byId[c.id] = c; });
-          CLUBS_DATA = { clubs: clubs, byId: byId, lists: d.lists || {}, recent: d.recent || [], admin: !!admin, callers: d.callers || [] };
+          CLUBS_DATA = { clubs: clubs, byId: byId, lists: d.lists || {}, recent: d.recent || [], admin: !!admin, callers: d.callers || [], contacts: d.contact_search || {} };
           if (!admin && CLUBS_TAB === "dnc") CLUBS_TAB = "all";
           var table = clubsTableHtml(CLUBS_TAB);
           return (
             "<h2>Clubs</h2>" +
             '<div class="clubs-controls">' +
             clubsTabsHtml() +
-            '<input type="search" id="cf-q" class="pg-q clubs-q" placeholder="Search clubs" autocomplete="off" value="' + esc(CLUB_FILTER_STATE.q || "") + '">' +
+            '<input type="search" id="cf-q" class="pg-q clubs-q" placeholder="Search clubs or contacts" autocomplete="off" value="' + esc(CLUB_FILTER_STATE.q || "") + '">' +
             '<span class="clubs-count" id="clubs-count-line">' + esc(clubsCountText()) + "</span>" +
             clubsToolbarHtml(clubs, admin) +
             "</div>" +
@@ -3953,14 +3955,18 @@
             }
             case "overview": {
               var byOut = DEMO_CALLS.reduce(function (a, c) { a[c.outcome] = (a[c.outcome] || 0) + 1; return a; }, {});
-              if (!DEMO_ADMIN) return { scope: "mine", stats: stats, by_outcome: byOut, lists: { round1: round1, round2: round2 }, recent: DEMO_CALLS.slice().reverse() };
+              var demoSearch = {};
+              DEMO_CLUBS.forEach(function (t) {
+                demoSearch[t.id] = demoContactsFor(t).map(function (c) { return [c.name, c.role, c.email, c.phone].filter(Boolean).join(" "); }).join(" ");
+              });
+              if (!DEMO_ADMIN) return { scope: "mine", stats: stats, by_outcome: byOut, lists: { round1: round1, round2: round2 }, recent: DEMO_CALLS.slice().reverse(), contact_search: demoSearch };
               var nx = function (i) { var t = DEMO_CLUBS[i]; return { id: t.id, entity_name: t.entity_name, where: t.where, egm_count: t.egm_count, holding: i % 2 === 0 }; };
               return {
                 scope: "all",
                 counters: { total: 196, do_not_call: 9, pending: 150, in_progress: 3, done: 34, calls: 61, wants_info: 12 },
                 funnel: {}, delivery: { waiting: 0, failing: 0 }, failing: [], do_not_call: [],
                 by_outcome: byOut, lists: { round1: round1, round2: round2 }, recent: DEMO_CALLS.slice().reverse(),
-                clubs: buildDemoClubs(), bounces: buildDemoBounces(),
+                clubs: buildDemoClubs(), bounces: buildDemoBounces(), contact_search: demoSearch,
                 callers: [
                   { name: "Danella", username: "danella", active: true, is_admin: true, call_group: 1, piece: "dog", calls: 22, group_total: 40, group_dnc: 2, group_remaining: 24, round: 2, r2_waiting: 6, r2_done: 3, next_club: Object.assign(nx(4), { holding: false }) },
                   { name: DEMO_CALLER.name, username: DEMO_CALLER.username, active: true, is_admin: false, call_group: 2, piece: DEMO_CALLER.piece, calls: 10, group_total: 40, group_dnc: 2, group_remaining: 30, round: 1, r2_waiting: 4, r2_done: 0, next_club: nx(1) },
