@@ -332,7 +332,7 @@
       .tab { background: none; border: 0; color: var(--muted); padding: 6px 18px; font-size: 13px; font-weight: 400; border-radius: 999px; font-family: inherit; transition: background 0.15s, color 0.15s; }
       .tab:hover:not(.on) { color: var(--ink); }
       .tab.on { background: var(--ink); color: #fff; font-weight: 700; }
-      #add-club-modal, #assign-modal, #notes-modal { position: fixed; inset: 0; z-index: 72; background: rgba(34,34,34,0.5); display: flex; align-items: center; justify-content: center; padding: 20px; overflow-y: auto; }
+      #add-club-modal, #assign-modal, #notes-modal, #call-edit-modal { position: fixed; inset: 0; z-index: 72; background: rgba(34,34,34,0.5); display: flex; align-items: center; justify-content: center; padding: 20px; overflow-y: auto; }
       .add-card { background: var(--paper); border: 3px solid var(--ink); border-radius: var(--radius); box-shadow: 10px 10px 0 rgba(34,34,34,0.25); width: 100%; max-width: 560px; max-height: calc(100vh - 40px); overflow-y: auto; }
       .add-card .band { background: var(--pollen); padding: 14px 22px; border-bottom: 3px solid var(--ink); display: flex; justify-content: space-between; align-items: flex-start; gap: 12px; }
       .add-card .band h2 { font-size: 20px; margin: 0; }
@@ -343,6 +343,8 @@
       .referral-pill { background: var(--pollen); border: 1px solid var(--ink); }
       .add-club-row { margin: 0 0 12px; }
       #notes-modal { z-index: 74; }
+      #call-edit-modal { z-index: 73; }
+      #call-edit-modal .add-card { max-width: 640px; }
       #notes-modal .add-card { max-width: 820px; }
       #notes-modal textarea { width: 100%; min-height: 50vh; resize: vertical; }
       .notes-label { display: flex; justify-content: space-between; align-items: baseline; gap: 10px; }
@@ -887,6 +889,7 @@
     <div id="add-club-modal" class="hidden"></div>
     <div id="assign-modal" class="hidden"></div>
     <div id="notes-modal" class="hidden"></div>
+    <div id="call-edit-modal" class="hidden"></div>
     <div id="drawer-backdrop"></div>
     <aside id="drawer" class="drawer" aria-label="Club details">
       <div class="drawer-inner" id="drawer-inner"></div>
@@ -4044,6 +4047,16 @@
               ec.notes = String(p.notes || "").trim() || null;
               return { ok: true, record_id: ec.id, notes: ec.notes };
             }
+            case "edit_call": {
+              var eca = DEMO_CALLS.filter(function (x) { return x.id === p.record_id; })[0];
+              if (!eca) throw new Error("That call no longer exists.");
+              var ef = p.fields || {};
+              var ew = "wants_info" in ef ? !!ef.wants_info : !!eca.wants_info;
+              var ee = "decision_maker_email" in ef ? String(ef.decision_maker_email || "").trim() : eca.decision_maker_email;
+              if (ew && !ee) throw new Error("To send more information you need an email address for the decision maker.");
+              Object.keys(ef).forEach(function (k) { eca[k] = k === "wants_info" ? !!ef[k] : (String(ef[k] == null ? "" : ef[k]).trim() || null); });
+              return { ok: true, record: eca, resent: true };
+            }
             case "save": case "log_call":
               return { ok: true, saved: "Demo", callback_at: p.callback_at || null, next_step: p.next_step || null };
             case "callbacks": {
@@ -4648,10 +4661,12 @@
           });
         }
 
-        // Calls in the open drawer, by id, so their notes can be edited.
+        // Calls in the open drawer, by id, so they can be edited.
         var drawerCalls = {};
         var drawerOpts = {};
-        function canEditNotes(c) {
+        // The same for the "Previous contact" list on the worksheet.
+        var worksheetCalls = {};
+        function canEditCall(c) {
           if (!c.id || !meCaller) return false;
           return !!meCaller.is_admin || (!!c.caller_id && c.caller_id === meCaller.id);
         }
@@ -4670,25 +4685,117 @@
             });
             return;
           }
-          var ed = e.target.closest && e.target.closest("[data-edit-notes]");
+          var ed = e.target.closest && e.target.closest("[data-edit-call]");
           if (ed) {
-            var c = drawerCalls[ed.getAttribute("data-edit-notes")];
+            var c = drawerCalls[ed.getAttribute("data-edit-call")];
             if (!c) return;
             var targetId = drawerClub;
-            openNotesPopup({
-              title: c.notes ? "Edit the notes on this call" : "Add notes to this call",
-              sub: when(c.created_at) + ((c.d1942_callers && c.d1942_callers.name) ? " · " + c.d1942_callers.name : ""),
-              value: c.notes || "",
-              saveLabel: "Save notes",
-              onSave: function (text) {
-                return api("edit_call_notes", { record_id: c.id, notes: text }).then(function () {
-                  if (typeof toast === "function") toast("Notes saved", "The call's notes are updated.", "desk");
-                  if (drawerClub === targetId) openClub(targetId, drawerOpts);
-                });
-              },
+            openCallEditor(c, function () {
+              if (drawerClub === targetId) openClub(targetId, drawerOpts);
+            });
+            return;
+          }
+          // On the worksheet the row is redrawn in place, so nothing typed into
+          // the call form underneath is lost.
+          var hed = e.target.closest && e.target.closest("[data-edit-history-call]");
+          if (hed) {
+            var hc = worksheetCalls[hed.getAttribute("data-edit-history-call")];
+            if (!hc) return;
+            openCallEditor(hc, function (rec) {
+              Object.assign(hc, rec || {});
+              var li = hed.closest("li");
+              if (li) li.outerHTML = historyItemHtml(hc);
             });
           }
         });
+
+        // Correct any answer on a call already saved. Only changed fields are
+        // sent; the backend (edit_call) re-sends the club's latest call to the
+        // sheet and Customer.io, and keeps "wants info needs an email".
+        var CALL_EDIT_FIELDS = [
+          ["decision_maker_name", "ce-dm"], ["decision_maker_role", "ce-role"],
+          ["decision_maker_email", "ce-email"], ["decision_maker_phone", "ce-phone"],
+          ["decision_maker_email_preference", "ce-pref"], ["clubgrants", "ce-grants"],
+          ["others_involved", "ce-others"], ["board_meeting", "ce-board"],
+          ["outcome", "ce-outcome"], ["notes", "ce-notes"],
+        ];
+        function openCallEditor(c, onSaved) {
+          var m = document.getElementById("call-edit-modal");
+          var inp = function (id, label, type, ph) {
+            return '<div class="field"><label for="' + id + '">' + label + "</label>" +
+              '<input type="' + (type || "text") + '" id="' + id + '" autocomplete="off"' + (ph ? ' placeholder="' + esc(ph) + '"' : "") + "></div>";
+          };
+          var outcomes = Object.keys(OUTCOME_LABELS);
+          if (c.outcome && outcomes.indexOf(c.outcome) < 0) outcomes.push(c.outcome);
+          m.innerHTML =
+            '<div class="add-card" role="dialog" aria-modal="true" aria-labelledby="ce-title"><div class="band"><div><h2 id="ce-title">Edit this call</h2>' +
+            "<p>" + esc(when(c.created_at) + ((c.d1942_callers && c.d1942_callers.name) ? " · " + c.d1942_callers.name : "")) + "</p></div>" +
+            '<button type="button" id="ce-close" aria-label="Close">&times;</button></div>' +
+            '<form id="ce-form">' +
+            '<div class="field-row">' + inp("ce-dm", "Who did you speak to?") + inp("ce-role", "Their role") + "</div>" +
+            '<div class="field-row">' + inp("ce-email", "Their direct email", "email") + inp("ce-phone", "Their direct phone", "tel") + "</div>" +
+            emailPrefSelectHtml("ce-pref") +
+            inp("ce-grants", "Does the club participate in ClubGRANTS / community funding?", "text", "Yes / No / details") +
+            inp("ce-others", "Who else is involved in the decision?") +
+            inp("ce-board", "When does the relevant committee meet?") +
+            '<div class="field"><label for="ce-outcome">Outcome</label><select id="ce-outcome">' +
+            outcomes.map(function (k) { return '<option value="' + esc(k) + '">' + esc(outcomeLabel(k)) + "</option>"; }).join("") +
+            "</select></div>" +
+            '<div class="field checkbox"><input type="checkbox" id="ce-wants"><label for="ce-wants">They want to receive more information &mdash; needs their email above.</label></div>' +
+            '<div class="field"><label for="ce-notes" class="notes-label"><span>Notes</span><button type="button" class="linkbtn" data-expand-notes="ce-notes">Expand</button></label><textarea id="ce-notes" rows="5"></textarea></div>' +
+            '<div class="actions"><button type="submit" class="btn-primary" id="ce-save">Save changes</button>' +
+            '<button type="button" class="btn-ghost" id="ce-cancel">Cancel</button></div>' +
+            '<div class="msg" id="ce-msg"></div>' +
+            "</form></div>";
+          m.classList.remove("hidden");
+          CALL_EDIT_FIELDS.forEach(function (f) {
+            var el = document.getElementById(f[1]);
+            if (el) el.value = c[f[0]] == null ? "" : c[f[0]];
+          });
+          document.getElementById("ce-wants").checked = !!c.wants_info;
+          document.getElementById("ce-outcome").addEventListener("change", function () {
+            if (this.value === "wants_info_only") document.getElementById("ce-wants").checked = true;
+          });
+          var close = function () { m.classList.add("hidden"); m.innerHTML = ""; document.removeEventListener("keydown", onKey); };
+          var onKey = function (e) {
+            if (e.key === "Escape" && document.getElementById("notes-modal").classList.contains("hidden")) close();
+          };
+          document.addEventListener("keydown", onKey);
+          document.getElementById("ce-close").addEventListener("click", close);
+          document.getElementById("ce-cancel").addEventListener("click", close);
+          m.onclick = function (e) { if (e.target === m) close(); };
+          document.getElementById("ce-form").addEventListener("submit", function (e) {
+            e.preventDefault();
+            clearMsg("ce-msg");
+            var fields = {};
+            CALL_EDIT_FIELDS.forEach(function (f) {
+              var v = document.getElementById(f[1]).value.trim();
+              if (v !== String(c[f[0]] == null ? "" : c[f[0]]).trim()) fields[f[0]] = v;
+            });
+            var wants = document.getElementById("ce-wants").checked;
+            if (wants !== !!c.wants_info) fields.wants_info = wants;
+            if (wants && !document.getElementById("ce-email").value.trim()) {
+              flagField("ce-msg", "ce-email", "Needs an email address to send the presentation.");
+              return;
+            }
+            if (!Object.keys(fields).length) { close(); return; }
+            var btn = document.getElementById("ce-save");
+            btn.disabled = true; btn.textContent = "Saving...";
+            api("edit_call", { record_id: c.id, fields: fields })
+              .then(function (r) {
+                close();
+                toast("Call updated", r && r.resent
+                  ? "The changes are saved and going to the sheet and Customer.io."
+                  : "The changes are saved. This isn't the club's latest call, so the sheet row and Customer.io keep the latest call's answers.", "desk");
+                if (onSaved) onSaved(r && r.record);
+              })
+              .catch(function (err) {
+                if (/email/i.test(err.message)) flagField("ce-msg", "ce-email", err.message);
+                else msg("ce-msg", err.message, "error");
+                btn.disabled = false; btn.textContent = "Save changes";
+              });
+          });
+        }
 
         // ------------------------------------------------------- referrals table
         // Clubs added on a call (recommended by someone) — shown on the overview so
@@ -5041,6 +5148,19 @@
           return v ? String(v) : "";
         }
 
+        // One earlier call in the worksheet's "Previous contact" list.
+        function historyItemHtml(h) {
+          var day = h.created_at ? new Date(h.created_at).toLocaleDateString("en-AU") : "";
+          var who = (h.d1942_callers && h.d1942_callers.name) || "";
+          return (
+            "<li><b>" + esc(day) + "</b> " + esc(who) + " &mdash; " + esc(h.outcome || "") +
+            (h.decision_maker_name ? " (spoke to " + esc(h.decision_maker_name) + ")" : "") +
+            (h.notes ? "<br>" + esc(h.notes) : "") +
+            (canEditCall(h) ? ' <button type="button" class="linkbtn" data-edit-history-call="' + esc(h.id) + '">Edit call</button>' : "") +
+            "</li>"
+          );
+        }
+
         function render(t, history, round, contacts) {
           contacts = contacts || [];
           var phone = (t.primary_phone || "").trim();
@@ -5057,30 +5177,12 @@
           var distance = t.distance_km ? t.distance_km + " km from Sydney" : "";
 
           var historyHtml = "";
+          worksheetCalls = {};
+          history.forEach(function (h) { if (h.id) worksheetCalls[h.id] = h; });
           if (history.length) {
             historyHtml =
               '<div class="history"><h4>Previous contact</h4><ul>' +
-              history
-                .map(function (h) {
-                  var when = h.created_at
-                    ? new Date(h.created_at).toLocaleDateString("en-AU")
-                    : "";
-                  var who = (h.d1942_callers && h.d1942_callers.name) || "";
-                  return (
-                    "<li><b>" +
-                    esc(when) +
-                    "</b> " +
-                    esc(who) +
-                    " &mdash; " +
-                    esc(h.outcome || "") +
-                    (h.decision_maker_name
-                      ? " (spoke to " + esc(h.decision_maker_name) + ")"
-                      : "") +
-                    (h.notes ? "<br>" + esc(h.notes) : "") +
-                    "</li>"
-                  );
-                })
-                .join("") +
+              history.map(historyItemHtml).join("") +
               "</ul></div>";
           }
 
@@ -5103,13 +5205,15 @@
               // call. It prefills from the contact picked above.
               emailPrefSelectHtml("f-email-pref") +
               // Second calls need the send box too: a call-back is often where
-              // the person finally agrees to see the presentation. The address
-              // comes from "who did you speak to" (or the one captured on the
-              // first call) — there is no email input on this lean form.
+              // the person finally agrees to see the presentation. Ticking it
+              // shows the address it will go to, prefilled from "who did you
+              // speak to" (or the first call), so a missing one can be typed.
               '<div class="field checkbox">' +
               '<input type="checkbox" id="f-wants">' +
               '<label for="f-wants">Send them the presentation.</label>' +
-              "</div>";
+              "</div>" +
+              '<div class="field hidden" id="f-r2-email-wrap"><label for="f-r2-email">Send it to <span class="req">*</span></label>' +
+              '<input type="email" id="f-r2-email" autocomplete="off" placeholder="name@club.com.au"></div>';
             outcomeHtml =
               '<div class="field"><label>Where did the call land? <span class="req">*</span></label>' +
               '<div class="paths">' +
@@ -5371,6 +5475,27 @@
 
           bindWhoSelect("f", contacts);
 
+          if (round >= 2) {
+            // The address the pack goes to: whoever was picked above, else the
+            // one captured on an earlier call. Refilled when the person changes.
+            var r2Wrap = document.getElementById("f-r2-email-wrap");
+            var r2Email = document.getElementById("f-r2-email");
+            var knownEmail = function () {
+              var v = function (id) { var n = document.getElementById(id); return n ? n.value.trim() : ""; };
+              return v("f-who-email") || v("f-who-new-email") || formCarryEmail;
+            };
+            document.getElementById("f-wants").addEventListener("change", function () {
+              r2Wrap.classList.toggle("hidden", !this.checked);
+              if (this.checked && !r2Email.value.trim()) r2Email.value = knownEmail();
+            });
+            ["f-who", "f-who-new-email"].forEach(function (id) {
+              var n = document.getElementById(id);
+              if (n) n.addEventListener(id === "f-who" ? "change" : "input", function () {
+                if (!r2Wrap.classList.contains("hidden")) r2Email.value = knownEmail();
+              });
+            });
+          }
+
           document
             .getElementById("call-form")
             .addEventListener("submit", onSave);
@@ -5433,13 +5558,12 @@
           // (hidden field, since round 2 has no visible email input); otherwise
           // fall back to whatever earlier call captured one.
           var whoEmail = val("f-who-email").trim() || val("f-who-new-email").trim();
+          // Round 2 shows a "Send it to" box once the send box is ticked
+          // (prefilled with the picked contact's address), and that is where
+          // the pack goes.
           var email =
-            formRound >= 2 ? whoEmail || formCarryEmail : val("f-email").trim();
-          // Round 1 has an email input; the lean form has the "who did you
-          // speak to" picker instead, so the error lands on whichever exists.
-          var emailField = formRound >= 2
-            ? (document.getElementById("f-who-new-email") ? "f-who-new-email" : "f-who")
-            : "f-email";
+            formRound >= 2 ? (wants ? val("f-r2-email").trim() : whoEmail || formCarryEmail) : val("f-email").trim();
+          var emailField = formRound >= 2 ? "f-r2-email" : "f-email";
           if (wants && !email) {
             flagField("save-msg", emailField, "Needs an email address to send the presentation.");
             return;
@@ -6173,9 +6297,8 @@
               ) +
               fact("Notes", c.notes) +
               "</dl>" +
-              (canEditNotes(c)
-                ? '<button type="button" class="linkbtn" data-edit-notes="' + esc(c.id) + '">' +
-                  (c.notes ? "Edit notes" : "Add notes") + "</button>"
+              (canEditCall(c)
+                ? '<button type="button" class="linkbtn" data-edit-call="' + esc(c.id) + '">Edit call</button>'
                 : "") +
               (extras.length
                 ? '<div class="ci-extra">' + extras.map(esc).join(" · ") + "</div>"
