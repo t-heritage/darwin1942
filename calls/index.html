@@ -411,6 +411,21 @@
       .card { background: var(--paper); border: 2px solid var(--ink); border-radius: var(--radius); padding: 14px 16px; }
       .card b { display: block; font-family: var(--heading-font); font-weight: 700; font-size: 28px; line-height: 1; margin-bottom: 5px; }
       .card span { color: var(--muted); font-size: 13px; }
+      .card small { display: block; margin-top: 8px; padding-top: 7px; border-top: 1px solid var(--line); color: var(--muted); font-size: 12px; line-height: 1.45; }
+      .card small em { font-style: normal; font-weight: 700; color: var(--ink); }
+      .cards-row { grid-template-columns: repeat(2, minmax(0, 1fr)); flex: 1 1 auto; }
+      .progress-split.even { grid-template-columns: 1fr 1fr; }
+      @media (max-width: 1100px) { .progress-split.even { grid-template-columns: 1fr; } }
+      .group-head { display: flex; align-items: baseline; gap: 12px; flex-wrap: wrap; margin: 0 0 8px; }
+      .group-head .group-label { margin: 0; }
+      .list-line { margin: 0; font-size: 13px; color: var(--muted); }
+      .ring-key { display: flex; justify-content: center; gap: 16px; flex-wrap: wrap; margin-top: 6px; font-size: 12px; color: var(--muted); }
+      .ring-key i { display: inline-block; width: 18px; height: 6px; border: 1.5px solid var(--ink); border-radius: 3px; vertical-align: middle; margin-right: 6px; }
+      .ring-key em { font-style: normal; font-weight: 700; color: var(--ink); }
+      .list-line em { font-style: normal; font-weight: 700; color: var(--ink); }
+      .group-label { font-size: 12px; font-weight: 700; letter-spacing: .06em; text-transform: uppercase; color: var(--muted); margin: 0 0 8px; }
+      .clubs-col { display: flex; flex-direction: column; }
+      .calls-panel { flex: 1 1 auto; display: flex; flex-direction: column; justify-content: center; }
       .card.warn { border-color: var(--red); } .card.warn b { color: var(--red); }
       .card.good { background: var(--pollen); }
       table { width: 100%; border-collapse: collapse; font-size: 14px; }
@@ -1929,7 +1944,9 @@
 
         // Hand-rolled SVG donut with labels either side, joined to their slices by
         // leader lines. No chart library, so nothing external to load.
-        function pieChart(byOutcome) {
+        // rounds (optional): { r1, r2 } call counts, drawn as a thin outer ring.
+        var RING_COLOURS = { r1: "#ffffff", r2: "#2b7fc0" };
+        function pieChart(byOutcome, rounds) {
           var keys = Object.keys(byOutcome || {}).filter(function (k) {
             return byOutcome[k] > 0;
           });
@@ -1943,7 +1960,7 @@
             return byOutcome[b] - byOutcome[a];
           });
 
-          var W = 520,
+          var W = 580,
             H = 264,
             cx = 260,
             cy = 132,
@@ -2068,6 +2085,29 @@
           }
           var decor = listSvg(left, 8) + listSvg(right, cx + r + 26);
 
+          // Outer ring: the same calls split by round, starting at the top.
+          var ring = "", ringKey = "";
+          if (rounds && rounds.r1 + rounds.r2 > 0) {
+            var R0 = r + 5, R1 = r + 13, a0 = -Math.PI / 2;
+            [["r1", rounds.r1], ["r2", rounds.r2]].forEach(function (p) {
+              if (!p[1]) return;
+              var f = p[1] / (rounds.r1 + rounds.r2);
+              if (f >= 0.9999) {
+                ring += '<circle cx="' + cx + '" cy="' + cy + '" r="' + (R0 + R1) / 2 + '" fill="none" stroke="' + RING_COLOURS[p[0]] + '" stroke-width="' + (R1 - R0) + '"></circle>';
+                return;
+              }
+              var a1 = a0 + f * Math.PI * 2, lg = f > 0.5 ? 1 : 0;
+              function pt(rad, ang) { return (cx + rad * Math.cos(ang)).toFixed(2) + " " + (cy + rad * Math.sin(ang)).toFixed(2); }
+              ring += '<path d="M' + pt(R1, a0) + " A" + R1 + " " + R1 + " 0 " + lg + " 1 " + pt(R1, a1) +
+                " L" + pt(R0, a1) + " A" + R0 + " " + R0 + " 0 " + lg + " 0 " + pt(R0, a0) +
+                ' Z" fill="' + RING_COLOURS[p[0]] + '" stroke="#081524" stroke-width="1.5"></path>';
+              a0 = a1;
+            });
+            ringKey = '<div class="ring-key">Outer ring:' +
+              '<span><i style="background:' + RING_COLOURS.r1 + '"></i><em>' + esc(rounds.r1) + "</em> round 1 calls</span>" +
+              '<span><i style="background:' + RING_COLOURS.r2 + '"></i><em>' + esc(rounds.r2) + "</em> round 2 calls</span></div>";
+          }
+
           return (
             '<svg viewBox="0 0 ' +
             W +
@@ -2078,6 +2118,7 @@
             'px;display:block;margin:0 auto" role="img" ' +
             'aria-label="Call outcomes as a proportion of all calls">' +
             paths +
+            ring +
             decor +
             '<text x="' +
             cx +
@@ -2091,7 +2132,8 @@
             '" y="' +
             (cy + 16) +
             '" text-anchor="middle" fill="#5f6b64" font-size="12" font-family="Arial">calls</text>' +
-            "</svg>"
+            "</svg>" +
+            ringKey
           );
         }
 
@@ -2285,7 +2327,7 @@
         function funnelChart(f, totalClubs) {
           var stages = [
             { key: "waiting", label: "Waiting to be called" },
-            { key: "called_once", label: "Called" },
+            { key: "called_once", label: "Spoke to decision maker" },
             { key: "into_cio", label: "Into Customer.io" },
             { key: "second_call", label: "Second call" },
             { key: "committed", label: "Committed money" },
@@ -2341,7 +2383,9 @@
           );
         }
 
-        function card(value, label, cls) {
+        // sub: optional [[number, words], ...] shown under the label, the parts
+        // that make up the tile's number.
+        function card(value, label, cls, sub) {
           return (
             '<div class="card ' +
             (cls || "") +
@@ -2349,7 +2393,14 @@
             esc(value) +
             "</b><span>" +
             esc(label) +
-            "</span></div>"
+            "</span>" +
+            (arguments[4] || "") +
+            (sub
+              ? "<small>" +
+                sub.map(function (p) { return "<em>" + esc(p[0]) + "</em> " + esc(p[1]); }).join("<br>") +
+                "</small>"
+              : "") +
+            "</div>"
           );
         }
         function when(iso) {
@@ -3051,37 +3102,63 @@
               "</tbody></table></div>";
           }
 
+          // Club tiles read left to right, each a subset of the one before, so
+          // every number appears once. Calls sit apart, with the outcome pie.
+          var bk = c.breakdown;
+          var more = bk && bk.clubs_once != null;
+          var second = (d.funnel || {}).second_call;
+          var tiles = bk
+            ? card(bk.not_called, "clubs still to call", "", [[c.in_progress, "on a call now"]]) +
+              card(bk.called, "clubs called", "", more ? [[bk.called - bk.clubs_once, "called more than once"]] : null) +
+              card(bk.reached, "clubs spoke to the decision maker", "good",
+                more
+                  ? [[bk.reached - bk.spoke_once, "talked to more than once" + (second != null ? " (" + second + " in round 2)" : "")]]
+                  : second != null ? [[second, "had a round 2 call"]] : null) +
+              card(bk.pack, "clubs want the pack", "", [[bk.talked, "talked, no pack yet"], [bk.not_interested, "not interested"]].concat(
+                bk.committed ? [[bk.committed, "committed"]] : []))
+            : card(c.total, "clubs on the list") +
+              card(c.done, "called", "good") +
+              card(c.pending, "still to call") +
+              card(c.in_progress, "on a call now") +
+              card(c.do_not_call, "do not call") +
+              card(c.calls, "calls recorded");
+          var listLine = bk
+            ? '<p class="list-line"><em>' + esc(bk.list_total) + "</em> clubs on the list · " + esc(c.do_not_call) + " do-not-call clubs left out</p>"
+            : "";
+          var callsLine = bk
+            ? '<p class="list-line"><em>' + esc(bk.calls) + "</em> calls made" +
+              (more && bk.dnc_calls ? " · " + esc(bk.list_calls) + " to clubs · " + esc(bk.dnc_calls) + " to do-not-call clubs" : "") +
+              "</p>"
+            : "";
+
           var outcomeHtml =
             '<h2>Where the clubs are up to</h2><div class="panel">' +
             infoIcon(
               "Every club counted once, at each stage it has reached. " +
-                "Attempts that reached nobody (no answer, reception, wrong number) " +
-                "do not count as a call. " +
+                "Calls that only got no answer, a receptionist or a wrong number " +
+                "do not count as speaking to the decision maker. " +
                 c.do_not_call +
                 " club(s) are excluded as do-not-call.",
             ) +
-            funnelChart(d.funnel || {}, c.total) +
+            funnelChart(d.funnel || {}, bk ? bk.list_total : c.total) +
             "</div>";
 
           el.innerHTML =
             '<div class="admin">' +
             banner +
             "<h2>Progress</h2>" +
-            '<div class="progress-split">' +
-            '<div class="cards cards-tight">' +
-            card(c.total, "clubs on the list") +
-            card(c.done, "called", "good") +
-            card(c.pending, "still to call") +
-            card(c.in_progress, "on a call now") +
-            card(c.do_not_call, "do not call") +
-            card(c.calls, "calls recorded") +
+            '<div class="progress-split' + (bk ? " even" : "") + '">' +
+            (bk
+              ? '<div class="clubs-col"><div class="group-head"><h3 class="group-label">Clubs</h3>' + listLine + '</div><div class="cards cards-row">' + tiles + "</div></div>"
+              : '<div class="cards cards-tight">' + tiles + "</div>") +
+            (bk
+              ? '<div class="clubs-col"><div class="group-head"><h3 class="group-label">Calls</h3>' + callsLine + "</div>" +
+                '<div class="panel calls-panel">' +
+                pieChart(d.by_outcome, bk.calls_round2 != null ? { r1: bk.calls - bk.calls_round2, r2: bk.calls_round2 } : null) +
+                "</div></div>"
+              : '<div class="panel"><h3 class="panel-title">Outcome of every call</h3>' + pieChart(d.by_outcome) + "</div>") +
             "</div>" +
-            '<div class="panel">' +
-            '<h3 class="panel-title">Outcome of every call</h3>' +
-            pieChart(d.by_outcome) +
-            "</div>" +
-            "</div>" +
-            outcomeHtml +
+            (bk ? "" : outcomeHtml) +
             clubsSectionHtml(d, true) +
             referralsTableHtml(d.referrals) +
             (d.bounces ? bouncesSectionHtml(d.bounces) : "") +
@@ -3687,11 +3764,13 @@
           }
 
           var c = d.counters || {};
-          var out = (d.by_outcome || {}).not_interested || 0;
+          // Same club numbers as the overview tiles when the breakdown is there.
+          var bk = c.breakdown;
+          var out = bk ? bk.not_interested : (d.by_outcome || {}).not_interested || 0;
           var corners =
             '<div class="corner go" style="grid-row:11;grid-column:11"><img src="assets/chance/corner-go.png" alt="GO"><small>collect a call</small></div>' +
             '<div class="corner jail" style="grid-row:11;grid-column:1"><img src="assets/chance/corner-in-jail.png" alt=""><span class="cl">Do not call</span><small>' + (c.do_not_call || 0) + " came to us" + "</small></div>" +
-            '<div class="corner" style="grid-row:1;grid-column:1"><img src="assets/chance/corner-free-parking.png" alt=""><span class="cl">Free parking</span><small>' + (c.in_progress || 0) + " being called now" + "</small></div>" +
+            '<div class="corner" style="grid-row:1;grid-column:1"><img src="assets/chance/corner-free-parking.png" alt=""><span class="cl">Free parking</span><small>' + (bk ? bk.only_no_answer + bk.only_gatekeeper + " to try again" : (c.in_progress || 0) + " being called now") + "</small></div>" +
             '<div class="corner" style="grid-row:1;grid-column:11"><img src="assets/chance/corner-goto-jail.png" alt=""><span class="cl">Not interested</span><small>' + out + " passed" + "</small></div>";
 
           var doneAll = players.reduce(function (n, p) { return n + p.done; }, 0);
@@ -3699,7 +3778,7 @@
           var centre =
             '<div class="centre">' +
             '<div class="nameplate"><span>The team</span></div>' +
-            '<div class="tally">' + doneAll + " of " + totalAll + " clubs called across " + players.length + (players.length === 1 ? " list" : " lists") + "</div>" +
+            '<div class="tally">' + (bk ? bk.called + " of " + bk.list_total : doneAll + " of " + totalAll) + " clubs called across " + players.length + (players.length === 1 ? " list" : " lists") + "</div>" +
             '<div class="cc"><b>' + (players.length ? "Where everyone is up to" : "No players yet") + "</b>" +
             (players.length
               ? '<div class="team-list">' + players.map(function (p) {
