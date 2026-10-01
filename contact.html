@@ -720,6 +720,7 @@
         <label for="message">Message <span class="required">*</span></label>
         <textarea id="message" name="message" rows="7" placeholder="Your message..." required></textarea>
       </div>
+      <div class="hp-field" aria-hidden="true" style="position:absolute;left:-9999px;width:1px;height:1px;overflow:hidden;"><label for="contact-website">Website</label><input type="text" id="contact-website" name="website" tabindex="-1" autocomplete="off"></div>
       <button type="submit" class="btn-submit" id="contact-submit-btn">SEND MESSAGE</button>
       <p class="form-note">We aim to respond to all enquiries within two business days.</p>
       <div id="contact-form-message" style="display:none;margin-top:24px;padding:18px 24px;font-size:15px;line-height:1.6;"></div>
@@ -790,7 +791,8 @@
       name: document.getElementById('name').value.trim(),
       email: document.getElementById('email').value.trim(),
       subject: document.getElementById('subject').value.trim(),
-      message: document.getElementById('message').value.trim()
+      message: document.getElementById('message').value.trim(),
+      website: document.getElementById('contact-website').value
     };
 
     fetch(INTAKE_URL, {
