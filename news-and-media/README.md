@@ -109,6 +109,10 @@ Pictures sit in a square, and the page works out how to fit each one:
 - **A logo on a transparent background** is placed whole on a panel of its own, never
   cropped — white behind a dark logo, Darwin 1942 blue behind a white one. That is
   worked out from the logo itself.
+- **A logo on its own solid background** (a JPEG masthead on white, say) is placed
+  whole too, if it is wider or taller than a square. The rest of the square is filled
+  with the logo's own background colour, so it looks as if the logo was made to fit. A
+  square logo already fits exactly and simply fills the box.
 
 Reading a picture closely enough to tell those apart is something browsers only allow
 for pictures **hosted on this site**. For one linked from an outlet's own server, the

@@ -18,7 +18,8 @@
 
    DarwinNews.groundFor(img, src) is also exported: it works out whether a picture is
    a photograph or a logo and, for a logo, adds `on-white` / `on-blue` to the <img>
-   so the page can give it a ground it will show up on. */
+   so the page can give it a ground it will show up on, or `on-own` (with the
+   logo's own background colour set on the <img>) for one that brings its own. */
 (function () {
   var CSV_URL = {{ site.news_csv_url | default: "" | jsonify }};
 
@@ -210,8 +211,34 @@
         }
       }
       /* A few soft edges are normal in a photograph; a logo is mostly open space. */
-      if (!lit || clear / total < 0.12) return;
-      img.classList.add(luma / lit > 0.6 ? 'on-blue' : 'on-white');
+      if (lit && clear / total >= 0.12) {
+        img.classList.add(luma / lit > 0.6 ? 'on-blue' : 'on-white');
+        return;
+      }
+
+      /* An opaque picture can still be a logo: a masthead saved as a JPEG on its own
+         white (or coloured) background. Cropping that to the square cuts the name
+         off, so a picture that is clearly not square and whose border is one flat
+         colour is fitted whole instead, on a ground of that same colour so the
+         artwork's own background simply carries on to the edges of the box. A
+         square picture already fits exactly and is left alone. */
+      var ratio = probe.naturalWidth / probe.naturalHeight;
+      if (ratio > 0.85 && ratio < 1.18) return;
+      var ring = [], x, y, j, sum = [0, 0, 0], near = 0;
+      for (x = 0; x < size; x++) ring.push(x, (size - 1) * size + x);
+      for (y = 1; y < size - 1; y++) ring.push(y * size, y * size + size - 1);
+      ring.forEach(function (p) { for (j = 0; j < 3; j++) sum[j] += px[p * 4 + j]; });
+      var mean = sum.map(function (v) { return v / ring.length; });
+      ring.forEach(function (p) {
+        var d = 0;
+        for (j = 0; j < 3; j++) d = Math.max(d, Math.abs(px[p * 4 + j] - mean[j]));
+        if (d < 28) near++;
+      });
+      /* A little of the artwork may touch the edge; a photograph's border never
+         comes close to this uniform. */
+      if (near / ring.length < 0.85) return;
+      img.style.backgroundColor = 'rgb(' + mean.map(Math.round).join(',') + ')';
+      img.classList.add('on-own');
     };
     probe.src = src;
   }
