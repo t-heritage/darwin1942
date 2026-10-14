@@ -407,6 +407,10 @@
       .admin { padding: 24px 24px 72px; max-width: 1200px; margin: 0 auto; }
       .admin h2 { font-size: 17px; margin: 30px 0 12px; }
       .admin h2:first-child { margin-top: 0; }
+      .ov-head { display: flex; align-items: center; justify-content: space-between; gap: 12px; flex-wrap: wrap; margin: 30px 0 12px; }
+      .ov-head h2 { margin: 0; }
+      .ov-head .handoff-btn { font-size: 13px; padding: 6px 14px; }
+      .ov-head .handoff-btn:disabled { opacity: .6; cursor: wait; }
       .cards { display: grid; grid-template-columns: repeat(auto-fit, minmax(140px, 1fr)); gap: 12px; }
       .card { background: var(--paper); border: 2px solid var(--ink); border-radius: var(--radius); padding: 14px 16px; }
       .card b { display: block; font-family: var(--heading-font); font-weight: 700; font-size: 28px; line-height: 1; margin-bottom: 5px; }
@@ -946,11 +950,12 @@
           if (roundMode !== 2 && roundMode !== 3) roundMode = 1;
         } catch (e) {}
 
-        function api(action, payload) {
+        // url: another d1942 function on the same session (the export).
+        function api(action, payload, url) {
           if (DEMO) return demoApi(action, payload);
           var body = Object.assign({ action: action }, payload || {});
           if (token) body.token = token;
-          return fetch(API, {
+          return fetch(url || API, {
             method: "POST",
             headers: { "Content-Type": "application/json" },
             body: JSON.stringify(body),
@@ -3146,7 +3151,8 @@
           el.innerHTML =
             '<div class="admin">' +
             banner +
-            "<h2>Progress</h2>" +
+            '<div class="ov-head"><h2>Progress</h2>' +
+            '<button type="button" class="handoff-btn" id="export-btn" title="Everything on this page, every call and the email journey, as an Excel workbook">Export to Excel</button></div>' +
             '<div class="progress-split' + (bk ? " even" : "") + '">' +
             (bk
               ? '<div class="clubs-col"><div class="group-head"><h3 class="group-label">Clubs</h3>' + listLine + '</div><div class="cards cards-row">' + tiles + "</div></div>"
@@ -3228,6 +3234,228 @@
             ) +
             "</div>";
         }
+
+        // ---------------------------------------------------------------- export
+        // The admin overview as an Excel workbook: the numbers, the email
+        // journey, and every table. The overview data already on screen is
+        // reused; d1942-calls-export adds every call (the overview only has
+        // the latest 200) and the email journey from Customer.io's events.
+        // SheetJS is fetched on the first click, so nobody else pays for it.
+        var EXPORT_API = "https://nwchcduhlhhppvyhxbpo.supabase.co/functions/v1/d1942-calls-export";
+        var xlsxLoading = null;
+        function loadXlsx() {
+          if (window.XLSX) return Promise.resolve(window.XLSX);
+          if (!xlsxLoading) {
+            xlsxLoading = new Promise(function (res, rej) {
+              var s = document.createElement("script");
+              s.src = "https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js";
+              s.integrity = "sha512-r22gChDnGvBylk90+2e/ycr3RVrDi8DIOkIGNhJlKfuyQM4tIRAI062MaV8sfjQKYVGjOBaZBOA87z+IhZE9DA==";
+              s.crossOrigin = "anonymous";
+              s.onload = function () { res(window.XLSX); };
+              s.onerror = function () {
+                xlsxLoading = null;
+                rej(new Error("Could not load the spreadsheet tool. Check your connection and try again."));
+              };
+              document.head.appendChild(s);
+            });
+          }
+          return xlsxLoading;
+        }
+
+        // Real dates, so Excel can sort and filter them.
+        function xDate(iso) {
+          if (!iso) return "";
+          var d = new Date(iso);
+          return isNaN(d.getTime()) ? "" : d;
+        }
+        function pct(n, of) {
+          return of ? Math.round((n / of) * 1000) / 10 + "%" : "";
+        }
+
+        // The nurture emails in order, then any other journey (the
+        // register-interest reply), each with a short name for column heads.
+        function journeySteps(ej) {
+          var steps = (ej && ej.steps) || [];
+          var nurture = steps.filter(function (s) { return s.campaign_id === "297"; });
+          return steps.map(function (s) {
+            var i = nurture.indexOf(s);
+            return Object.assign({}, s, {
+              key: s.campaign_id + ":" + s.template_id,
+              label: i >= 0 ? "Email " + (i + 1) : s.campaign_id === "298" ? "Register-interest reply" : s.campaign || "Email",
+              nurture: i >= 0,
+            });
+          });
+        }
+        function emailResult(e) {
+          if (!e) return "";
+          if (e.bounced_at && !e.delivered_at) return "Bounced";
+          if (e.clicked_at) return "Clicked";
+          if (e.opened_at) return "Opened";
+          if (e.delivered_at) return "Delivered";
+          return "Sent";
+        }
+        // Where a person is up to in the nurture journey.
+        function journeyStage(p, steps) {
+          var mine = {};
+          (p.emails || []).forEach(function (e) { mine[e.campaign_id + ":" + e.template_id] = e; });
+          if ((p.emails || []).some(function (e) { return e.unsubscribed_at; })) return "Unsubscribed";
+          var nurture = steps.filter(function (s) { return s.nurture; });
+          var got = nurture.filter(function (s) { return mine[s.key]; });
+          if (!got.length) {
+            if ((p.emails || []).length) return "Register-interest reply only";
+            return p.email_preference === "none" ? "Set to no emails" : "Not sent";
+          }
+          var last = got[got.length - 1], n = nurture.indexOf(last) + 1;
+          if (emailResult(mine[last.key]) === "Bounced") return "Bounced on email " + n;
+          if (n === nurture.length) return nurture.length === 1 ? "Had the email" : nurture.length === 2 ? "Had both emails" : "Had all " + nurture.length + " emails";
+          return "Waiting for email " + (n + 1);
+        }
+
+        function sheetFrom(XLSX, rows) {
+          var ws = XLSX.utils.aoa_to_sheet(rows, { cellDates: true, dateNF: "d mmm yyyy h:mm" });
+          var widths = [];
+          rows.forEach(function (r) {
+            r.forEach(function (v, i) {
+              var len = v instanceof Date ? 17 : String(v == null ? "" : v).length;
+              widths[i] = Math.min(Math.max(widths[i] || 8, len + 2), 60);
+            });
+          });
+          ws["!cols"] = widths.map(function (w) { return { wch: w }; });
+          return ws;
+        }
+
+        function buildWorkbook(XLSX, d, extra) {
+          var c = d.counters || {}, bk = c.breakdown, ej = extra.email_journey || { steps: [], people: [] };
+          var steps = journeySteps(ej), people = ej.people || [];
+          var wb = XLSX.utils.book_new();
+          function add(name, rows) { XLSX.utils.book_append_sheet(wb, sheetFrom(XLSX, rows), name); }
+
+          // Summary --------------------------------------------------------
+          var S = [["Darwin 1942 outbound calls: overview"], ["Exported", new Date()], []];
+          S.push(["Clubs", "Number"]);
+          if (bk) {
+            S.push(
+              ["Clubs on the list", bk.list_total],
+              ["Still to call", bk.not_called],
+              ["On a call now", c.in_progress],
+              ["Called", bk.called],
+              ["Spoke to the decision maker", bk.reached],
+              ["Want the pack", bk.pack],
+              ["Talked, no pack yet", bk.talked],
+              ["Not interested", bk.not_interested],
+            );
+            if (bk.committed) S.push(["Committed", bk.committed]);
+            if (bk.clubs_once != null) S.push(["Called more than once", bk.called - bk.clubs_once], ["Talked to more than once", bk.reached - bk.spoke_once]);
+            S.push(["Do-not-call clubs (left out)", c.do_not_call]);
+          } else {
+            S.push(["Clubs on the list", c.total], ["Called", c.done], ["Still to call", c.pending], ["On a call now", c.in_progress], ["Do not call", c.do_not_call]);
+          }
+          S.push([], ["Calls", "Number"]);
+          var callsTotal = bk ? bk.calls : c.calls;
+          S.push(["Calls made", callsTotal]);
+          if (bk && bk.calls_round2 != null) S.push(["Round 1 calls", bk.calls - bk.calls_round2], ["Round 2 calls", bk.calls_round2]);
+          if (bk && bk.dnc_calls) S.push(["To do-not-call clubs", bk.dnc_calls]);
+          var outs = Object.keys(d.by_outcome || {}).filter(function (k) { return d.by_outcome[k] > 0; })
+            .sort(function (a, b) { return d.by_outcome[b] - d.by_outcome[a]; });
+          var outTotal = outs.reduce(function (a, k) { return a + d.by_outcome[k]; }, 0);
+          S.push([], ["Outcome of every call", "Calls", "Share"]);
+          outs.forEach(function (k) { S.push([outcomeLabel(k), d.by_outcome[k], pct(d.by_outcome[k], outTotal)]); });
+
+          S.push([], ["Email journey (people)", "Subject", "First sent", "Sent", "Delivered", "Opened", "Clicked", "Bounced", "Unsubscribed", "Opened, of delivered", "Clicked, of delivered"]);
+          if (ej.error) S.push(["Could not load the email journey: " + ej.error]);
+          steps.forEach(function (s) {
+            S.push([s.label + (s.nurture ? "" : " (" + (s.campaign || "") + ")"), s.subject || "", xDate(s.first_at), s.sent, s.delivered, s.opened, s.clicked, s.bounced, s.unsubscribed,
+              pct(s.opened, s.delivered), pct(s.clicked, s.delivered)]);
+          });
+          var stages = {};
+          people.forEach(function (p) { var k = journeyStage(p, steps); stages[k] = (stages[k] || 0) + 1; });
+          S.push([], ["Where people are up to", "People"]);
+          Object.keys(stages).sort(function (a, b) { return stages[b] - stages[a]; }).forEach(function (k) { S.push([k, stages[k]]); });
+          S.push([], ["Email numbers count people, from Customer.io's delivery events. Opens include automatic opens by some mail apps, so clicks are the firmer signal."]);
+          add("Summary", S);
+
+          // Email journey, one row per person -------------------------------
+          var J = [["Club", "Where", "Contact", "Role", "Email", "Caller", "Asked for info", "Email preference", "Up to"]
+            .concat([].concat.apply([], steps.map(function (s) { return [s.label + " sent", s.label + " result"]; })))];
+          people.forEach(function (p) {
+            var mine = {};
+            (p.emails || []).forEach(function (e) { mine[e.campaign_id + ":" + e.template_id] = e; });
+            J.push([p.club || "", p.where || "", p.contact || "", p.role || "", p.email, p.caller || "", xDate(p.asked_at),
+              p.email_preference ? EMAIL_PREF_LABEL[p.email_preference] || p.email_preference : "", journeyStage(p, steps)]
+              .concat([].concat.apply([], steps.map(function (s) { var e = mine[s.key]; return [xDate(e && e.sent_at), emailResult(e)]; }))));
+          });
+          add("Email journey", J);
+
+          // Clubs ----------------------------------------------------------
+          var statusWords = { do_not_call: "Do not call", not_called: "Not called yet", done: "Done", spoken: "Spoken to", attempted: "Attempted, nobody reached" };
+          var C = [["Club", "Where", "State", "Caller", "Machines", "Calls", "Spoken to", "Status", "Last outcome", "Last call", "Last caller",
+            "Next step", "Next step due", "Wants info", "Bounced", "Do not call", "Pinned to", "Sub-branch of", "Sub-branches"]];
+          (d.clubs || []).forEach(function (k) {
+            C.push([k.entity_name, k.where || "", k.state || "", k.call_group ? listOwnerLabel(k.call_group) : "", k.egm_count != null ? k.egm_count : "",
+              k.calls || 0, k.spoken_to || 0, statusWords[clubStatusBucket(k)] || "", k.last_outcome ? outcomeLabel(k.last_outcome) : "", xDate(k.last_call_at),
+              k.last_caller || k.first_caller_name || "", k.next_step ? nsKindLabel(k.next_step.kind, k.next_step.title) : "", xDate(k.next_step && k.next_step.due_at),
+              k.wants_info ? "yes" : "", k.bounced ? "yes" : "", k.do_not_call ? k.do_not_call_reason || "yes" : "", k.pinned_to_name || "",
+              k.parent_name || "", k.children && k.children.length ? k.children.length : ""]);
+          });
+          add("Clubs", C);
+
+          // Calls ----------------------------------------------------------
+          var calls = extra.calls || d.recent || [];
+          var K = [["When", "Club", "Where", "Caller", "Call", "Outcome", "Wants info", "Decision maker", "Role", "Email", "Phone", "Notes"]];
+          calls.forEach(function (r) {
+            K.push([xDate(r.created_at), r.club || "", r.where || "", r.caller || "", r.round || 1, outcomeLabel(r.outcome), r.wants_info ? "yes" : "",
+              r.decision_maker || "", r.decision_maker_role || "", r.decision_maker_email || "", r.decision_maker_phone || "", r.notes || ""]);
+          });
+          add("Calls", K);
+
+          // Callers --------------------------------------------------------
+          var P = [["Name", "Username", "Admin", "List", "Calls", "Left in list", "Clubs in list", "On a call", "Trained", "Password set", "Last login"]];
+          (d.callers || []).forEach(function (x) {
+            P.push([x.name, x.username, x.is_admin ? "yes" : "", x.call_group ? x.call_group + " of 5" : x.can_call === false ? "oversight" : "any",
+              x.calls, x.group_remaining, x.group_total, x.assigned_now || 0, x.onboarded ? "yes" : x.is_admin ? "n/a" : "not yet",
+              x.password_set ? "yes" : "no", xDate(x.last_login_at)]);
+          });
+          add("Callers", P);
+
+          // Call-backs, referrals, bounces ---------------------------------
+          var B = [["When", "Club", "Where", "Caller", "What", "Why"]];
+          (d.callbacks || []).forEach(function (x) {
+            B.push([xDate(x.due_at), x.club || "", x.where || "", x.caller || "", x.kind ? nsKindLabel(x.kind, x.title) : "Call back", x.note || ""]);
+          });
+          add("Call-backs", B);
+          var R = [["Club", "Where", "Via club", "Referred by", "Referral note", "Added by", "Added", "Status"]];
+          (d.referrals || []).forEach(function (t) {
+            R.push([t.entity_name, t.where || "", t.from_club || "", t.referred_by || "", t.referral_note || "", t.added_by || "", xDate(t.added_at),
+              t.do_not_call ? "do not call" : t.spoken_to ? outcomeLabel(t.last_outcome) : t.calls ? "attempted" : "not called yet"]);
+          });
+          add("Referrals", R);
+          var X = [["Email", "Club", "What", "Subject / campaign", "When"]];
+          (d.bounces || []).forEach(function (b) {
+            X.push([b.email, b.club || "", (b.event_type || "").replace(/_/g, " "), b.subject || b.campaign || "", xDate(b.at)]);
+          });
+          add("Bounced emails", X);
+          return wb;
+        }
+
+        document.addEventListener("click", function (e) {
+          var btn = e.target.closest && e.target.closest("#export-btn");
+          if (!btn || btn.disabled) return;
+          var d = document.getElementById("admin-body").__data;
+          if (!d) return;
+          btn.disabled = true;
+          btn.textContent = "Preparing…";
+          Promise.all([loadXlsx(), api("export", {}, EXPORT_API)])
+            .then(function (res) {
+              var XLSX = res[0];
+              var stamp = new Date().toLocaleDateString("en-CA"); // YYYY-MM-DD
+              XLSX.writeFile(buildWorkbook(XLSX, d, res[1] || {}), "darwin1942-calls-overview-" + stamp + ".xlsx", { compression: true });
+            })
+            .catch(function (err) { alert("Could not export: " + err.message); })
+            .then(function () {
+              btn.disabled = false;
+              btn.textContent = "Export to Excel";
+            });
+        });
 
         function setStats(s) {
           if (!s) return;
@@ -4055,6 +4283,24 @@
                   { name: "Taylor", username: "taylor", active: true, is_admin: true, call_group: null, piece: "top-hat", calls: 0, group_total: 196, group_dnc: 9, group_remaining: 150, next_club: null },
                 ],
               };
+            }
+            case "export": {
+              var at = function (h) { return h == null ? null : new Date(Date.now() - h * 3600e3).toISOString(); };
+              var steps = [
+                { campaign_id: "297", campaign: "D1942 Sales Outreach Nurture", template_id: "2519", subject: "Introducing the DARWIN 1942 project", first_at: at(400), sent: 5, delivered: 4, opened: 3, clicked: 2, bounced: 1, unsubscribed: 0 },
+                { campaign_id: "297", campaign: "D1942 Sales Outreach Nurture", template_id: "2539", subject: "Got questions about DARWIN 1942 project?", first_at: at(230), sent: 2, delivered: 2, opened: 1, clicked: 0, bounced: 0, unsubscribed: 0 },
+              ];
+              var mail = function (t, sent, res) {
+                return { campaign_id: "297", template_id: t, sent_at: at(sent), delivered_at: res === "bounced" ? null : at(sent), opened_at: res === "opened" || res === "clicked" ? at(sent - 1) : null,
+                  clicked_at: res === "clicked" ? at(sent - 2) : null, bounced_at: res === "bounced" ? at(sent) : null, unsubscribed_at: null };
+              };
+              var people = DEMO_CALLS.filter(function (c) { return c.wants_info; }).map(function (c, i) {
+                var emails = i === 0 ? [mail("2519", 300, "clicked"), mail("2539", 130, "opened")] : i === 1 ? [mail("2519", 250, "opened"), mail("2539", 80, "delivered")]
+                  : i === 2 ? [mail("2519", 60, "clicked")] : i === 3 ? [mail("2519", 40, "bounced")] : [];
+                return { email: c.decision_maker_email, target_id: c.target_id, club: c.club, where: c.where, contact: c.decision_maker_name, role: c.decision_maker_role,
+                  caller: DEMO_CALLER.name, asked_at: c.created_at, email_preference: null, emails: emails };
+              });
+              return { calls: DEMO_CALLS.slice().reverse().map(function (c) { return Object.assign({ caller: DEMO_CALLER.name }, c); }), email_journey: { steps: steps, people: people } };
             }
             case "club_detail": {
               var tt = DEMO_CLUBS.filter(function (x) { return x.id === p.target_id; })[0] || DEMO_CLUBS[0];
