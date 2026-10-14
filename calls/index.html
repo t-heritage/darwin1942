@@ -1911,6 +1911,7 @@
           gatekeeper: "#aae0fa",          // light blue
           wrong_number: "#7a3fa0",        // violet
           other: "#17a398",               // teal
+          gatekeeper_pack: "#4fb0d9",     // between light blue and sky
         };
         var OUTCOME_LABELS = {
           committed: "Committed",
@@ -1928,8 +1929,22 @@
         function outcomeColour(k) {
           return OUTCOME_COLOURS[k] || "#8fa3b3";
         }
+        // Chart-only slices, never offered as a call outcome.
+        var CHART_LABELS = { gatekeeper_pack: "Receptionist passed on the email, pack sent" };
         function outcomeLabel(k) {
-          return OUTCOME_LABELS[k] || String(k).replace(/_/g, " ");
+          return OUTCOME_LABELS[k] || CHART_LABELS[k] || String(k).replace(/_/g, " ");
+        }
+        // The admin pie, with "could not get to the decision maker" split the
+        // way the club tiles count it: a receptionist who passed on the email
+        // (wants info ticked) got the pack out, so that call got through.
+        function outcomesForChart(d) {
+          var bk = d.counters && d.counters.breakdown;
+          var by = Object.assign({}, d.by_outcome || {});
+          if (bk && bk.calls_gatekeeper != null && by.gatekeeper > bk.calls_gatekeeper) {
+            by.gatekeeper_pack = by.gatekeeper - bk.calls_gatekeeper;
+            by.gatekeeper = bk.calls_gatekeeper;
+          }
+          return by;
         }
 
         // Short names for the chart, where the full outcome labels won't fit.
@@ -1943,6 +1958,7 @@
           not_interested: "Not interested",
           no_answer: "No answer",
           gatekeeper: "No decision maker",
+          gatekeeper_pack: "Receptionist, pack sent",
           wrong_number: "Wrong number",
           other: "Other",
         };
@@ -3126,6 +3142,10 @@
           var bk = c.breakdown;
           var more = bk && bk.clubs_once != null;
           var second = (d.funnel || {}).second_call;
+          // Sub-branches sit off the call list but join the club numbers once
+          // someone calls one by hand: the call list is every club that is
+          // neither parked nor do-not-call.
+          var byHand = bk ? bk.list_total - (c.total - c.do_not_call) : 0;
           var tiles = bk
             ? card(bk.not_called + bk.only_no_answer + bk.only_gatekeeper, "clubs still to call", "",
                 [[bk.not_called, "not called yet"],
@@ -3145,7 +3165,9 @@
               card(c.do_not_call, "do not call") +
               card(c.calls, "calls recorded");
           var listLine = bk
-            ? '<p class="list-line"><em>' + esc(bk.list_total) + "</em> clubs on the list · " + esc(bk.called) + " called at least once" +
+            ? '<p class="list-line"><em>' + esc(bk.list_total) + "</em> clubs" +
+              (byHand > 0 ? ": " + esc(bk.list_total - byHand) + " on the call list + " + esc(byHand) + " sub-branch" + (byHand === 1 ? "" : "es") + " called by hand" : " on the list") +
+              " · " + esc(bk.called) + " called at least once" +
               (more ? " (" + esc(bk.called - bk.clubs_once) + " more than once)" : "") + " · " + esc(c.do_not_call) + " do-not-call clubs left out</p>"
             : "";
           var callsLine = bk
@@ -3178,7 +3200,7 @@
             (bk
               ? '<div class="clubs-col"><div class="group-head"><h3 class="group-label">Calls</h3>' + callsLine + "</div>" +
                 '<div class="panel calls-panel">' +
-                pieChart(d.by_outcome, bk.calls_round2 != null ? { r1: bk.calls - bk.calls_round2, r2: bk.calls_round2 } : null) +
+                pieChart(outcomesForChart(d), bk.calls_round2 != null ? { r1: bk.calls - bk.calls_round2, r2: bk.calls_round2 } : null) +
                 "</div></div>"
               : '<div class="panel"><h3 class="panel-title">Outcome of every call</h3>' + pieChart(d.by_outcome) + "</div>") +
             "</div>" +
@@ -3353,7 +3375,9 @@
           S.push(["Clubs", "Number"]);
           if (bk) {
             S.push(
-              ["Clubs on the list", bk.list_total],
+              ["Clubs", bk.list_total],
+              ["  On the call list", c.total - c.do_not_call],
+              ["  Sub-branches called by hand", bk.list_total - (c.total - c.do_not_call)],
               ["Still to call", bk.not_called + bk.only_no_answer + bk.only_gatekeeper],
               ["  Not called yet", bk.not_called],
               ["  Couldn't get through: no answer or wrong number", bk.only_no_answer],
@@ -3378,11 +3402,12 @@
           S.push(["Calls made", callsTotal]);
           if (bk && bk.calls_round2 != null) S.push(["Round 1 calls", bk.calls - bk.calls_round2], ["Round 2 calls", bk.calls_round2]);
           if (bk && bk.dnc_calls) S.push(["To do-not-call clubs", bk.dnc_calls]);
-          var outs = Object.keys(d.by_outcome || {}).filter(function (k) { return d.by_outcome[k] > 0; })
-            .sort(function (a, b) { return d.by_outcome[b] - d.by_outcome[a]; });
-          var outTotal = outs.reduce(function (a, k) { return a + d.by_outcome[k]; }, 0);
+          var byOut = outcomesForChart(d);
+          var outs = Object.keys(byOut).filter(function (k) { return byOut[k] > 0; })
+            .sort(function (a, b) { return byOut[b] - byOut[a]; });
+          var outTotal = outs.reduce(function (a, k) { return a + byOut[k]; }, 0);
           S.push([], ["Outcome of every call", "Calls", "Share"]);
-          outs.forEach(function (k) { S.push([outcomeLabel(k), d.by_outcome[k], pct(d.by_outcome[k], outTotal)]); });
+          outs.forEach(function (k) { S.push([outcomeLabel(k), byOut[k], pct(byOut[k], outTotal)]); });
 
           S.push([], ["Email journey (people)", "Subject", "First sent", "Sent", "Delivered", "Opened", "Clicked", "Bounced", "Unsubscribed", "Opened, of delivered", "Clicked, of delivered"]);
           if (ej.error) S.push(["Could not load the email journey: " + ej.error]);
@@ -4294,8 +4319,8 @@
               return {
                 scope: "all",
                 counters: { total: 196, do_not_call: 9, pending: 150, in_progress: 3, done: 34, calls: 61, wants_info: 12,
-                  breakdown: { calls: 61, calls_round2: 8, dnc_calls: 2, list_calls: 59, clubs_once: 25, spoke_once: 20, list_total: 187, not_called: 150,
-                    called: 37, only_no_answer: 4, only_gatekeeper: 3, reached: 30, pack: 12, talked: 9, not_interested: 8, committed: 1 } },
+                  breakdown: { calls: 61, calls_round2: 8, dnc_calls: 2, list_calls: 59, clubs_once: 25, spoke_once: 20, list_total: 190, not_called: 150, calls_gatekeeper: 0,
+                    called: 40, only_no_answer: 4, only_gatekeeper: 3, reached: 33, pack: 15, talked: 9, not_interested: 8, committed: 1 } },
                 funnel: {}, delivery: { waiting: 0, failing: 0 }, failing: [], do_not_call: [],
                 by_outcome: byOut, lists: { round1: round1, round2: round2 }, recent: DEMO_CALLS.slice().reverse(),
                 clubs: buildDemoClubs(), bounces: buildDemoBounces(), contact_search: demoSearch,
