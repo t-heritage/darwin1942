@@ -2627,7 +2627,7 @@
         // Admin-only table over every club (d.clubs), filtered entirely client
         // side. Filter state lives here so it survives a table re-render; the
         // table itself is rebuilt (not the whole overview) on any change.
-        var CLUB_FILTER_STATE = { q: "", state: "", list: "", status: "", calls: "", outcome: "", rel: "", bounced: "" };
+        var CLUB_FILTER_STATE = { q: "", state: "", kind: "", list: "", status: "", calls: "", outcome: "", rel: "", bounced: "" };
         var ALL_CLUBS_RAW = [];
         var CLUBS_HEAD =
           "<th>Club</th><th>Caller</th><th>Machines</th><th>Calls</th><th>Last outcome</th>" +
@@ -2666,6 +2666,12 @@
           if (c.spoken_to > 0) return "spoken";
           return "attempted";
         }
+        // Club or sub-branch. A sub-branch is one from the imported sub-branch
+        // list that was kept off the call list (parked); everything on the call
+        // list is a club, whatever its name says.
+        function clubKind(c) {
+          return c.parked ? "sub_branch" : "club";
+        }
         function clubCallsMatch(c, val) {
           var n = Number(c.calls || 0);
           if (val === "0") return n === 0;
@@ -2677,6 +2683,7 @@
         function clubMatchesFilters(c) {
           var f = CLUB_FILTER_STATE;
           if (f.state && c.state !== f.state) return false;
+          if (f.kind && clubKind(c) !== f.kind) return false;
           if (f.list && String(c.call_group || "") !== f.list) return false;
           if (f.status && clubStatusBucket(c) !== f.status) return false;
           if (f.calls && !clubCallsMatch(c, f.calls)) return false;
@@ -2737,6 +2744,10 @@
           return (
             '<div class="clubs-toolbar">' +
             sel("cf-state", "State", "state", states.map(function (s) { return { v: s, t: s }; })) +
+            sel("cf-kind", "Type", "kind", [
+              { v: "club", t: "Club" },
+              { v: "sub_branch", t: "Sub-branch" },
+            ]) +
             (admin ? sel("cf-list", "Caller", "list", listOwnerOptions()) : "") +
             sel("cf-status", "Status", "status", [
               { v: "not_called", t: "Not called yet" },
@@ -2825,7 +2836,8 @@
         // Callers without the admin club table get one built from their round
         // lists, so the same filters work for them.
         function deriveClubsFromLists(lists) {
-          var out = [], seen = {};
+          var out = [], seen = {}, parked = {};
+          ((lists && lists.parked) || []).forEach(function (t) { parked[t.id] = true; });
           ((lists && lists.round1) || []).forEach(function (t) {
             if (seen[t.id]) return;
             seen[t.id] = 1;
@@ -2843,7 +2855,7 @@
               id: t.id, entity_name: t.entity_name, where: t.where, state: stateOf(t.where), call_group: t.call_group,
               egm_count: t.egm_count, gaming_rank: t.gaming_rank, calls: t.calls || 0, spoken_to: t.called_again ? 2 : (t.calls ? 1 : 0),
               last_outcome: t.last_outcome, last_call_at: t.last_call_at, do_not_call: false,
-              pinned_to_name: t.pinned_to_name || null, status: t.status || "done", children: [],
+              pinned_to_name: t.pinned_to_name || null, status: t.status || "done", children: [], parked: !!parked[t.id],
               lead_source: t.lead_source || null, lead_name: t.lead_name || null, lead_assigned_name: t.lead_assigned_name || null,
             });
           });
@@ -3388,10 +3400,10 @@
 
           // Clubs ----------------------------------------------------------
           var statusWords = { do_not_call: "Do not call", not_called: "Not called yet", done: "Done", spoken: "Spoken to", attempted: "Attempted, nobody reached" };
-          var C = [["Club", "Where", "State", "Caller", "Machines", "Calls", "Spoken to", "Status", "Last outcome", "Last call", "Last caller",
+          var C = [["Club", "Type", "Where", "State", "Caller", "Machines", "Calls", "Spoken to", "Status", "Last outcome", "Last call", "Last caller",
             "Next step", "Next step due", "Wants info", "Bounced", "Do not call", "Pinned to", "Sub-branch of", "Sub-branches"]];
           (d.clubs || []).forEach(function (k) {
-            C.push([k.entity_name, k.where || "", k.state || "", k.call_group ? listOwnerLabel(k.call_group) : "", k.egm_count != null ? k.egm_count : "",
+            C.push([k.entity_name, clubKind(k) === "sub_branch" ? "Sub-branch" : "Club", k.where || "", k.state || "", k.call_group ? listOwnerLabel(k.call_group) : "", k.egm_count != null ? k.egm_count : "",
               k.calls || 0, k.spoken_to || 0, statusWords[clubStatusBucket(k)] || "", k.last_outcome ? outcomeLabel(k.last_outcome) : "", xDate(k.last_call_at),
               k.last_caller || k.first_caller_name || "", k.next_step ? nsKindLabel(k.next_step.kind, k.next_step.title) : "", xDate(k.next_step && k.next_step.due_at),
               k.wants_info ? "yes" : "", k.bounced ? "yes" : "", k.do_not_call ? k.do_not_call_reason || "yes" : "", k.pinned_to_name || "",
