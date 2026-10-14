@@ -3119,20 +3119,25 @@
               "</tbody></table></div>";
           }
 
-          // Club tiles read left to right, each a subset of the one before, so
-          // every number appears once. Calls sit apart, with the outcome pie.
+          // Every club counted once: still to call (never dialled, or dialled
+          // and never got through) + spoke to the decision maker = the list,
+          // and the decision-maker clubs split into want the pack / no pack yet.
+          // Calls sit apart, with the outcome pie.
           var bk = c.breakdown;
           var more = bk && bk.clubs_once != null;
           var second = (d.funnel || {}).second_call;
           var tiles = bk
-            ? card(bk.not_called, "clubs still to call", "", [[c.in_progress, "on a call now"]]) +
-              card(bk.called, "clubs called", "", more ? [[bk.called - bk.clubs_once, "called more than once"]] : null) +
+            ? card(bk.not_called + bk.only_no_answer + bk.only_gatekeeper, "clubs still to call", "",
+                [[bk.not_called, "not called yet"],
+                  [bk.only_no_answer + bk.only_gatekeeper, "couldn\u2019t get through (" + bk.only_no_answer + " no answer or wrong number, " +
+                    bk.only_gatekeeper + " didn\u2019t reach the decision maker)"]]
+                  .concat(c.in_progress ? [[c.in_progress, "on a call now"]] : [])) +
               card(bk.reached, "clubs spoke to the decision maker", "good",
                 more
                   ? [[bk.reached - bk.spoke_once, "talked to more than once" + (second != null ? " (" + second + " in round 2)" : "")]]
                   : second != null ? [[second, "had a round 2 call"]] : null) +
-              card(bk.pack, "clubs want the pack", "", [[bk.talked, "talked, no pack yet"], [bk.not_interested, "not interested"]].concat(
-                bk.committed ? [[bk.committed, "committed"]] : []))
+              card(bk.pack + (bk.committed || 0), "clubs want the pack", "", bk.committed ? [[bk.committed, "committed"]] : null) +
+              card(bk.talked + bk.not_interested, "clubs no pack yet", "", [[bk.talked, "still talking"], [bk.not_interested, "not interested"]])
             : card(c.total, "clubs on the list") +
               card(c.done, "called", "good") +
               card(c.pending, "still to call") +
@@ -3140,7 +3145,8 @@
               card(c.do_not_call, "do not call") +
               card(c.calls, "calls recorded");
           var listLine = bk
-            ? '<p class="list-line"><em>' + esc(bk.list_total) + "</em> clubs on the list · " + esc(c.do_not_call) + " do-not-call clubs left out</p>"
+            ? '<p class="list-line"><em>' + esc(bk.list_total) + "</em> clubs on the list · " + esc(bk.called) + " called at least once" +
+              (more ? " (" + esc(bk.called - bk.clubs_once) + " more than once)" : "") + " · " + esc(c.do_not_call) + " do-not-call clubs left out</p>"
             : "";
           var callsLine = bk
             ? '<p class="list-line"><em>' + esc(bk.calls) + "</em> calls made" +
@@ -3348,15 +3354,20 @@
           if (bk) {
             S.push(
               ["Clubs on the list", bk.list_total],
-              ["Still to call", bk.not_called],
-              ["On a call now", c.in_progress],
-              ["Called", bk.called],
+              ["Still to call", bk.not_called + bk.only_no_answer + bk.only_gatekeeper],
+              ["  Not called yet", bk.not_called],
+              ["  Couldn't get through: no answer or wrong number", bk.only_no_answer],
+              ["  Couldn't get through: didn't reach the decision maker", bk.only_gatekeeper],
               ["Spoke to the decision maker", bk.reached],
-              ["Want the pack", bk.pack],
-              ["Talked, no pack yet", bk.talked],
-              ["Not interested", bk.not_interested],
+              ["  Want the pack", bk.pack + (bk.committed || 0)],
             );
-            if (bk.committed) S.push(["Committed", bk.committed]);
+            if (bk.committed) S.push(["    of which committed", bk.committed]);
+            S.push(
+              ["  No pack yet: still talking", bk.talked],
+              ["  No pack yet: not interested", bk.not_interested],
+              ["Called at least once", bk.called],
+              ["On a call now", c.in_progress],
+            );
             if (bk.clubs_once != null) S.push(["Called more than once", bk.called - bk.clubs_once], ["Talked to more than once", bk.reached - bk.spoke_once]);
             S.push(["Do-not-call clubs (left out)", c.do_not_call]);
           } else {
@@ -4282,7 +4293,9 @@
               var nx = function (i) { var t = DEMO_CLUBS[i]; return { id: t.id, entity_name: t.entity_name, where: t.where, egm_count: t.egm_count, holding: i % 2 === 0 }; };
               return {
                 scope: "all",
-                counters: { total: 196, do_not_call: 9, pending: 150, in_progress: 3, done: 34, calls: 61, wants_info: 12 },
+                counters: { total: 196, do_not_call: 9, pending: 150, in_progress: 3, done: 34, calls: 61, wants_info: 12,
+                  breakdown: { calls: 61, calls_round2: 8, dnc_calls: 2, list_calls: 59, clubs_once: 25, spoke_once: 20, list_total: 187, not_called: 150,
+                    called: 37, only_no_answer: 4, only_gatekeeper: 3, reached: 30, pack: 12, talked: 9, not_interested: 8, committed: 1 } },
                 funnel: {}, delivery: { waiting: 0, failing: 0 }, failing: [], do_not_call: [],
                 by_outcome: byOut, lists: { round1: round1, round2: round2 }, recent: DEMO_CALLS.slice().reverse(),
                 clubs: buildDemoClubs(), bounces: buildDemoBounces(), contact_search: demoSearch,
