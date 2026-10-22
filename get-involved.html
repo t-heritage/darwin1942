@@ -871,8 +871,7 @@
 
 <script>
 (function(){
-  var SUPABASE_URL = 'https://nwchcduhlhhppvyhxbpo.supabase.co';
-  var SUPABASE_ANON_KEY = 'sb_publishable_-CW4LY8e61BQX68E4494zA_K-8pRRQY';
+  var INTAKE_URL = 'https://nwchcduhlhhppvyhxbpo.supabase.co/functions/v1/darwin1942-intake';
 
   document.getElementById('rsl-interest-form').addEventListener('submit', function(e){
     e.preventDefault();
@@ -882,47 +881,25 @@
     btn.textContent = 'SUBMITTING...';
     msg.style.display = 'none';
 
-    var payload = {
-      club_name: document.getElementById('club-name').value.trim(),
-      your_name: document.getElementById('your-name').value.trim(),
-      your_role: document.getElementById('your-role').value.trim(),
-      email: document.getElementById('email').value.trim(),
-      phone: document.getElementById('phone').value.trim(),
-      referral_source: document.getElementById('referral').value
-    };
-
-    // Push to Customer.io (identify + contacted_about_darwin1942 event) and email notification.
-    // Best-effort — does not block the Supabase record or the success state below.
-    try {
-      fetch('https://nwchcduhlhhppvyhxbpo.supabase.co/functions/v1/darwin1942-intake', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          event_type: 'contacted_about_darwin1942',
-          source: 'get-involved',
-          name: payload.your_name,
-          email: payload.email,
-          phone: payload.phone,
-          club_name: payload.club_name,
-          your_role: payload.your_role,
-          referral_source: payload.referral_source,
-          website: document.getElementById('rsl-website').value
-        })
-      }).catch(function(){});
-    } catch(e){}
-
-    fetch(SUPABASE_URL + '/rest/v1/darwin1942_enquiries', {
+    // One call does everything: the enquiry record, Customer.io, the shared sheet
+    // and the team alert. darwin1942-intake carries the honeypot and rate limits.
+    fetch(INTAKE_URL, {
       method: 'POST',
-      headers: {
-        'apikey': SUPABASE_ANON_KEY,
-        'Authorization': 'Bearer ' + SUPABASE_ANON_KEY,
-        'Content-Type': 'application/json',
-        'Prefer': 'return=minimal'
-      },
-      body: JSON.stringify(payload)
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        event_type: 'contacted_about_darwin1942',
+        source: 'get-involved',
+        name: document.getElementById('your-name').value.trim(),
+        email: document.getElementById('email').value.trim(),
+        phone: document.getElementById('phone').value.trim(),
+        club_name: document.getElementById('club-name').value.trim(),
+        your_role: document.getElementById('your-role').value.trim(),
+        referral_source: document.getElementById('referral').value,
+        website: document.getElementById('rsl-website').value
+      })
     })
     .then(function(res){
-      if(res.ok || res.status === 201){
+      if(res.ok){
         msg.style.cssText = 'display:block;margin-top:24px;padding:18px 24px;font-size:15px;line-height:1.6;background:rgba(63,163,232,0.12);border-left:3px solid #3fa3e8;color:#c8dff0;';
         msg.textContent = 'Thank you for your enquiry. A member of our team will be in touch with your partnership presentation shortly. If you don\'t see it in your inbox, please check your junk/spam folder.';
         document.getElementById('rsl-interest-form').reset();
