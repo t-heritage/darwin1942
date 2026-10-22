@@ -1,6 +1,7 @@
 User-agent: *
 Allow: /
 Disallow: /rsl/
+Disallow: /rsl-packages/
 Disallow: /calls/
 Disallow: /admin/
 
