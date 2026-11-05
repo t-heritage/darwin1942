@@ -925,6 +925,10 @@
     doc.setFont('helvetica', 'normal');
     doc.setFontSize(11);
     doc.text('On behalf of Darwin 1942', M, 30);
+    doc.setFontSize(9);
+    doc.setTextColor(200, 214, 226);
+    doc.text('ABN 75 301 441 078', M, 36);
+    doc.setTextColor(255,255,255);
     if (logoPng) {
       var lw = 62, lh = lw * logoPng.ratio;
       doc.addImage(logoPng.data, 'PNG', R - lw, 23 - lh / 2, lw, lh, undefined, 'FAST');
@@ -1036,7 +1040,7 @@
     doc.setTextColor.apply(doc, grey);
     doc.setDrawColor(210, 216, 222);
     doc.line(M, 280, R, 280);
-    doc.text('Heritage Films on behalf of Darwin 1942', M, 285);
+    doc.text('Heritage Films (ABN 75 301 441 078) on behalf of Darwin 1942', M, 285);
     doc.text('darwin1942.com', R, 285, {align:'right'});
 
     var safeOrg = f.org.replace(/[^A-Za-z0-9]+/g, '-').replace(/^-|-$/g, '');
