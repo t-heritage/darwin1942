@@ -858,8 +858,7 @@
       '2 x commemorative screening licences. Host two public commemorative events within a 12-month period, for example on Remembrance Day, Battle for Australia Day or Victory in the Pacific Day, or at any other time that suits your calendar of events.',
       'Your own event page for each screening, with full RSVP and ticketing management.',
       'A personalised commemorative event kit, including posters, slides, a suggested order of proceedings and more, all tailored to your event.',
-      'Digital access to DARWIN 1942 for your commemorative screenings.',
-      'Grant application support. We’ll provide the screening quote and suggested wording for your NSW Veteran Community Grants Program application.'
+      'Digital access to DARWIN 1942 for your commemorative screenings.'
     ]
   };
 
@@ -879,23 +878,26 @@
     return '$' + n.toLocaleString('en-AU', {minimumFractionDigits:2, maximumFractionDigits:2});
   }
 
-  // The site logo is white on transparent, so it goes on the dark header band.
-  // jsPDF can't read WebP, so redraw it to a PNG first; the quote still works without it.
-  var logoPng = null;
-  (function(){
+  // Both logos are made for dark backgrounds, so they go on the navy header band.
+  // jsPDF can't read WebP, so each is redrawn to a PNG first. The logos are at
+  // most ~60mm wide on the page, so 700px is plenty and keeps the PDF small. If
+  // one fails to load, the quote falls back to text for it.
+  var logos = {};
+  function loadLogo(key, src){
     var img = new Image();
     img.onload = function(){
       try {
-        // 62mm wide on the page, so ~700px is plenty and keeps the PDF small.
         var c = document.createElement('canvas');
         c.width = Math.min(700, img.naturalWidth);
         c.height = Math.round(c.width * img.naturalHeight / img.naturalWidth);
         c.getContext('2d').drawImage(img, 0, 0, c.width, c.height);
-        logoPng = {data: c.toDataURL('image/png'), ratio: img.naturalHeight / img.naturalWidth};
+        logos[key] = {data: c.toDataURL('image/png'), ratio: img.naturalHeight / img.naturalWidth};
       } catch (e) {}
     };
-    img.src = 'images/logo.webp';
-  })();
+    img.src = src;
+  }
+  loadLogo('heritage', 'images/heritage-films-logo-inverted.png');
+  loadLogo('darwin', 'images/logo.webp');
 
   function quoteNumber(d){
     var pad = function(n){ return (n < 10 ? '0' : '') + n; };
@@ -913,29 +915,35 @@
     var num = f.quoteNumber;
     var dateStr = now.toLocaleDateString('en-AU', {day:'numeric', month:'long', year:'numeric'});
 
-    // Header band
+    // Header band: Heritage Films (the quoting business) on the left, the
+    // Darwin 1942 project it's quoting for on the right.
     doc.setFillColor.apply(doc, navy);
     doc.rect(0, 0, W, 46, 'F');
     doc.setFillColor.apply(doc, red);
     doc.rect(0, 46, W, 1.6, 'F');
     doc.setTextColor(255,255,255);
-    doc.setFont('helvetica', 'bold');
-    doc.setFontSize(24);
-    doc.text('HERITAGE FILMS', M, 22);
+    if (logos.heritage) {
+      var hw = 54, hh = hw * logos.heritage.ratio;
+      doc.addImage(logos.heritage.data, 'PNG', M, 9, hw, hh, undefined, 'FAST');
+    } else {
+      doc.setFont('helvetica', 'bold');
+      doc.setFontSize(24);
+      doc.text('HERITAGE FILMS', M, 22);
+    }
     doc.setFont('helvetica', 'normal');
-    doc.setFontSize(11);
-    doc.text('On behalf of Darwin 1942', M, 30);
     doc.setFontSize(9);
     doc.setTextColor(200, 214, 226);
-    doc.text('ABN 75 301 441 078', M, 36);
+    doc.text('ABN 75 301 441 078', M, 38);
+    doc.setFontSize(8);
+    doc.text('ON BEHALF OF', R, 13, {align:'right'});
     doc.setTextColor(255,255,255);
-    if (logoPng) {
-      var lw = 62, lh = lw * logoPng.ratio;
-      doc.addImage(logoPng.data, 'PNG', R - lw, 23 - lh / 2, lw, lh, undefined, 'FAST');
+    if (logos.darwin) {
+      var lw = 50, lh = lw * logos.darwin.ratio;
+      doc.addImage(logos.darwin.data, 'PNG', R - lw, 17, lw, lh, undefined, 'FAST');
     } else {
       doc.setFont('helvetica', 'bold');
       doc.setFontSize(20);
-      doc.text('DARWIN 1942', R, 25, {align:'right'});
+      doc.text('DARWIN 1942', R, 27, {align:'right'});
     }
 
     // Title and reference
@@ -952,12 +960,9 @@
     doc.setTextColor.apply(doc, ink);
     doc.text(num, R, y - 6, {align:'right'});
     doc.text(dateStr, R, y, {align:'right'});
-    y += 7;
-    doc.setTextColor.apply(doc, grey);
-    doc.text('For the NSW Veteran Community Grants Program', M, y);
 
     // Prepared for, in the same order as the form
-    y += 13;
+    y += 16;
     doc.setFont('helvetica', 'bold');
     doc.setFontSize(10);
     doc.setTextColor.apply(doc, red);
