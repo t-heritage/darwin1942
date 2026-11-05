@@ -797,7 +797,7 @@
     <div class="grant-tag">NSW SUB-BRANCHES ONLY</div>
     <h1>SCREEN DARWIN 1942 USING THE NSW GRANT</h1>
     <p class="grant-deadline">Applications close 5pm, Wednesday 11 November</p>
-    <a class="btn" href="#quote-form">GET YOUR QUOTE</a>
+    <a class="btn" href="#quote-form" id="hero-quote-btn">GET YOUR QUOTE</a>
   </div>
 </section>
 
@@ -810,7 +810,12 @@
       <p>We&rsquo;ve put together a simple <strong>$1,200 + GST package</strong> to make it quick and easy for your Sub-Branch to apply for funding through the <strong>NSW Veteran Community Grants Program</strong> and take part in DARWIN 1942.</p>
       <p>The package includes two public screening licences over a 12-month period, your own event page for each screening, and a personalised commemorative event kit. We&rsquo;ll also provide the screening quote and suggested wording for your grant application.</p>
       <p>The grant covers up to $3,000, so it can pay for the package and leave room for venue hire, catering and other event costs.</p>
-      <p>Fill in the form below to download a quote to attach to your grant application.</p>
+      <p id="q-fill-in">Fill in the form below to download a quote to attach to your grant application.</p>
+    </div>
+
+    <div class="guarantee-block" id="q-closed" hidden>
+      <h3>QUOTES ARE NOW CLOSED</h3>
+      <p>Applications for the NSW Veteran Community Grants Program closed at 5pm, Wednesday 11 November. If you have a question about screening DARWIN 1942, please <a href="/contact" style="color:var(--white);">contact us</a>.</p>
     </div>
 
     <form name="nsw-grant-quote" id="quote-form-el" novalidate>
@@ -866,6 +871,20 @@
   var form = document.getElementById('quote-form-el');
   var btn = document.getElementById('q-submit-btn');
   var msg = document.getElementById('q-form-message');
+
+  // Grant applications close 5pm Sydney time (AEDT), Wednesday 11 November 2026.
+  // Checked on load and again on submit, so a page left open past the deadline
+  // can't still produce a quote.
+  var CLOSES_AT = Date.parse('2026-11-11T17:00:00+11:00');
+  function isClosed(){ return Date.now() >= CLOSES_AT; }
+  function showClosed(){
+    form.hidden = true;
+    document.getElementById('q-fill-in').hidden = true;
+    document.getElementById('q-closed').hidden = false;
+    var hero = document.getElementById('hero-quote-btn');
+    hero.textContent = 'QUOTES CLOSED';
+  }
+  if (isClosed()) showClosed();
 
   function showMsg(ok, text){
     msg.style.cssText = 'display:block;margin-top:24px;padding:18px 24px;font-size:15px;line-height:1.6;' +
@@ -1055,6 +1074,7 @@
   form.addEventListener('submit', function(e){
     e.preventDefault();
     msg.style.display = 'none';
+    if (isClosed()) { showClosed(); return; }
     if (!form.checkValidity()) { form.reportValidity(); return; }
     if (!window.jspdf || !window.jspdf.jsPDF) {
       showMsg(false, 'The quote generator is still loading. Please try again in a moment.');
