@@ -991,7 +991,7 @@
     y += 16;
     doc.setTextColor.apply(doc, ink);
     doc.setFontSize(12);
-    doc.text(PACKAGE.title, M + 4, y);
+    doc.text(PACKAGE.title + ' (' + money(PACKAGE.price).replace(/\.00$/, '') + ' + GST)', M + 4, y);
     doc.text(money(PACKAGE.price), R - 4, y, {align:'right'});
     y += 8;
     doc.setFontSize(10);
