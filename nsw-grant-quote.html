@@ -837,10 +837,11 @@
         </div>
       </div>
 
+      <div class="hp-field" aria-hidden="true" style="position:absolute;left:-9999px;width:1px;height:1px;overflow:hidden;"><label for="q-website">Website</label><input type="text" id="q-website" name="website" tabindex="-1" autocomplete="off"></div>
       <div class="form-submit">
         <button type="submit" class="btn-submit" id="q-submit-btn">GENERATE QUOTE</button>
       </div>
-      <p class="form-note">Your quote downloads as a PDF straight away. Your details are only used to prepare the quote.</p>
+      <p class="form-note">Your quote downloads as a PDF straight away. We keep a copy of your request so our team can follow up on your grant application.</p>
       <div id="q-form-message" style="display:none;margin-top:24px;padding:18px 24px;font-size:15px;line-height:1.6;"></div>
     </form>
   </div>
@@ -862,6 +863,7 @@
     ]
   };
 
+  var INTAKE_URL = 'https://nwchcduhlhhppvyhxbpo.supabase.co/functions/v1/darwin1942-intake';
   var form = document.getElementById('quote-form-el');
   var btn = document.getElementById('q-submit-btn');
   var msg = document.getElementById('q-form-message');
@@ -907,8 +909,8 @@
     doc.setLineHeightFactor(1.35);
     var W = 210, M = 18, R = W - M;
     var navy = [11,28,44], red = [200,16,46], grey = [90,104,118], ink = [20,28,36];
-    var now = new Date();
-    var num = quoteNumber(now);
+    var now = f.date;
+    var num = f.quoteNumber;
     var dateStr = now.toLocaleDateString('en-AU', {day:'numeric', month:'long', year:'numeric'});
 
     // Header band
@@ -1054,14 +1056,41 @@
       email: document.getElementById('q-email').value.trim(),
       org: document.getElementById('q-org').value.trim(),
       address: document.getElementById('q-address').value.trim(),
-      phone: document.getElementById('q-phone').value.trim()
+      phone: document.getElementById('q-phone').value.trim(),
+      date: new Date()
     };
+    f.quoteNumber = quoteNumber(f.date);
     try {
       buildPdf(f);
       showMsg(true, 'Your quote has downloaded. Attach it to your NSW Veteran Community Grants Program application.');
     } catch (err) {
       showMsg(false, 'Something went wrong creating your quote. Please try again or contact us directly.');
+      return;
     }
+
+    // Record the request (Supabase, the enquiries sheet, Customer.io and the team
+    // alert). The PDF has already downloaded, so a failure here is not shown.
+    var gst = PACKAGE.price * PACKAGE.gstRate;
+    fetch(INTAKE_URL, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      keepalive: true,
+      body: JSON.stringify({
+        event_type: 'requested_nsw_grant_quote',
+        source: 'nsw-grant-quote',
+        name: f.name,
+        email: f.email,
+        organisation: f.org,
+        address: f.address,
+        phone: f.phone,
+        quote_number: f.quoteNumber,
+        quote_package: PACKAGE.title,
+        quote_amount_ex_gst: PACKAGE.price,
+        quote_gst: gst,
+        quote_total: PACKAGE.price + gst,
+        website: document.getElementById('q-website').value
+      })
+    }).catch(function(){});
   });
 })();
 </script>
