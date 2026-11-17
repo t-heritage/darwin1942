@@ -432,7 +432,9 @@
     color:var(--white);
   }
   .release-body blockquote + *{margin-top:36px;}
-  .release-body img{max-width:100%;height:auto;display:block;margin:24px 0;}
+  .release-body img{max-width:100%;max-height:640px;width:auto;height:auto;display:block;margin:24px 0;}
+  .release-body p:has(> img){margin-top:36px;}
+  .release-body p.release-caption{margin-top:-12px;margin-bottom:36px;font-size:14px;opacity:0.85;}
   .release-actions{
     display:flex;
     flex-wrap:wrap;
