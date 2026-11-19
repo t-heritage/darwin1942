@@ -4,7 +4,7 @@
 The list is **not** edited in this repository. It is read, every time the page loads,
 from a Google Sheet that the client maintains and publishes to the web as CSV.
 
-The home page shows the same coverage in a slim **IN THE NEWS** row under the three
+The home page shows the same coverage in a slim **IN THE MEDIA** row under the three
 cards: the three most recent rows, each as a small picture, date, headline and
 publication, with an ALL COVERAGE button through to this page. It reads the same
 sheet, so adding a row to the sheet updates both pages at once and nothing on the home
