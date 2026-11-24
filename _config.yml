@@ -35,6 +35,7 @@ defaults:
 
 exclude:
   - README.md
+  - CLAUDE.md
   - media-releases/README.md
   - news-and-media/README.md
   - news-and-media/news-template.csv
