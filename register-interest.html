@@ -762,44 +762,6 @@
           </div>
         </div>
 
-        <h3>Level of interest</h3>
-        <div class="panel-note">
-          <p>Tell us a little about the event you have in mind and the venue that might work best, whether it&rsquo;s a fundraising evening at your local RSL club, a public screening at your local cinema, or a special educational event bringing schools and students together.</p>
-          <p>Whatever you&rsquo;re imagining, we&rsquo;d love to explore how we can help make it happen.</p>
-        </div>
-        <div class="grid">
-          <div class="field">
-            <label for="ri-date">Possible date (if you have one)</label>
-            <input type="date" id="ri-date" name="possible_date" min="2027-02-17">
-          </div>
-          <div class="field">
-            <label for="ri-audience">Likely audience (best guess)</label>
-            <select id="ri-audience" name="likely_audience">
-              <option>Under 50</option>
-              <option>50&ndash;100</option>
-              <option>100&ndash;250</option>
-              <option>250&ndash;500</option>
-              <option>500+</option>
-              <option>Not sure yet</option>
-            </select>
-          </div>
-          <div class="field">
-            <label for="ri-venue">Venue (if known)</label>
-            <input type="text" id="ri-venue" name="venue" placeholder="e.g. Club auditorium, school hall">
-          </div>
-          <div class="field">
-            <label for="ri-event">Type of event you&rsquo;re considering</label>
-            <select id="ri-event" name="event_type">
-              <option>Community screening (open to public)</option>
-              <option>Ticketed fundraiser</option>
-              <option>Members-only screening</option>
-              <option>School screening</option>
-              <option>Commemorative service and screening</option>
-              <option>Not sure yet</option>
-            </select>
-          </div>
-        </div>
-
         <h3>Your details</h3>
         <div class="grid">
           <div class="field">
@@ -817,6 +779,43 @@
           <div class="field">
             <label for="ri-phone">Phone</label>
             <input type="tel" id="ri-phone" name="phone" required autocomplete="tel">
+          </div>
+        </div>
+
+        <h3>Your event <span class="aside">(optional)</span></h3>
+        <div class="panel-note">
+          <p>If you already have an event or venue in mind, such as a fundraiser at your RSL club, a screening at your local cinema, or an event for schools, let us know below. If not, just skip this section. We can work through the rest together.</p>
+        </div>
+        <div class="grid">
+          <div class="field">
+            <label for="ri-date">Possible date (if you have one)</label>
+            <input type="date" id="ri-date" name="possible_date" min="2027-02-17">
+          </div>
+          <div class="field">
+            <label for="ri-audience">Likely audience (best guess)</label>
+            <select id="ri-audience" name="likely_audience">
+              <option selected>Not sure yet</option>
+              <option>Under 50</option>
+              <option>50&ndash;100</option>
+              <option>100&ndash;250</option>
+              <option>250&ndash;500</option>
+              <option>500+</option>
+            </select>
+          </div>
+          <div class="field">
+            <label for="ri-venue">Venue (if known)</label>
+            <input type="text" id="ri-venue" name="venue" placeholder="e.g. Club auditorium, school hall">
+          </div>
+          <div class="field">
+            <label for="ri-event">Type of event you&rsquo;re considering</label>
+            <select id="ri-event" name="event_type">
+              <option selected>Not sure yet</option>
+              <option>Community screening (open to public)</option>
+              <option>Ticketed fundraiser</option>
+              <option>Members-only screening</option>
+              <option>School screening</option>
+              <option>Commemorative service and screening</option>
+            </select>
           </div>
           <div class="field full">
             <label for="ri-message">Anything else we should know? (optional)</label>
