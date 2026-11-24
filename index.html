@@ -283,67 +283,56 @@
   .hero{
     position:relative;
     width:100%;
-    min-height:max(100vh, 760px);
+    /* Shorter than the screen so the top of the three cards shows above the fold. */
+    min-height:max(80vh, 620px);
     display:flex;
     flex-direction:column;
     justify-content:flex-end;
     background:url('images/background.webp') center 22%/cover no-repeat;
     overflow:hidden;
   }
-  /* Darkens the left for the text and fades the foot into the cards' blue. */
+  /* Darkens the foot of the picture evenly across its full width and fades it
+     into the cards' blue. */
   .hero::before{
     content:'';
     position:absolute;
     inset:0;
     background:
-      linear-gradient(90deg, rgba(8,32,72,0.55) 0%, rgba(8,32,72,0.28) 38%, rgba(8,32,72,0) 62%),
-      linear-gradient(180deg, rgba(8,32,72,0) 62%, rgba(25,95,150,0.55) 88%, var(--sky-blue) 100%);
+      linear-gradient(180deg, rgba(8,32,72,0) 45%, rgba(8,32,72,0.45) 72%, rgba(25,95,150,0.8) 92%, var(--sky-blue) 100%);
     pointer-events:none;
   }
+  /* The logo, heading and button are one group, centred up and down in the
+     picture; News and Media sits at the foot. */
   .hero-content{
     position:relative;
     z-index:2;
-    padding:clamp(130px, 15vh, 170px) var(--hero-inset) clamp(56px, 9vh, 110px);
-  }
-  .hero-title{
-    display:inline-block;
-  }
-  .hero h1{
-    font-family:var(--heading-font);
-    font-weight:400;
-    font-size:clamp(76px, 7.6vw, 156px);
-    line-height:0.86;
-    letter-spacing:1px;
-    color:var(--white);
-    text-shadow:0 6px 18px rgba(4,14,26,0.35), 0 20px 50px rgba(4,14,26,0.25);
-  }
-  /* Two rules with a gold star between them, as wide as the title. */
-  .hero-rule{
+    flex:1 0 auto;
     display:flex;
-    align-items:center;
-    gap:18px;
-    margin-top:clamp(14px, 1.6vw, 26px);
+    flex-direction:column;
+    align-items:flex-start;
+    padding:clamp(110px, 13vh, 150px) var(--hero-inset) clamp(28px, 4vh, 48px);
   }
-  .hero-rule::before,
-  .hero-rule::after{
-    content:'';
-    flex:1 1 auto;
-    height:2px;
-    background:rgba(255,255,255,0.9);
+  /* The logo image (wordmark, Pacific Star, tagline) in place of a typed title. */
+  .hero-logo{
+    width:min(44vw, 820px);
+    line-height:0;
+    margin-bottom:clamp(26px, 3.5vh, 44px);
   }
-  .hero-rule svg{width:26px;height:26px;fill:var(--gold);flex:0 0 auto;}
-  .hero-tag{
-    margin-top:clamp(14px, 1.6vw, 26px);
-    text-align:center;
-    font-family:var(--display-font);
-    font-weight:600;
-    font-size:clamp(14px, 1.15vw, 19px);
-    letter-spacing:0.32em;
-    color:var(--white);
-    text-shadow:0 2px 8px rgba(4,14,26,0.5);
+  .hero-main{
+    margin:auto 0;
+    align-self:stretch;
+    display:flex;
+    flex-direction:column;
+    align-items:flex-start;
+  }
+  .hero-logo img{
+    display:block;
+    width:100%;
+    height:auto;
+    filter:drop-shadow(0 6px 18px rgba(4,14,26,0.35));
   }
   .hero-intro{
-    margin-top:clamp(48px, 9vh, 120px);
+    margin-top:0;
     max-width:640px;
     font-family:var(--body-font);
     font-size:clamp(16px, 1.25vw, 20px);
@@ -360,7 +349,7 @@
     letter-spacing:0.02em;
     text-transform:uppercase;
   }
-  .hero-intro p + p{margin-top:12px;}
+  .hero-intro h2{margin-bottom:0;}
   .hero-cta{
     display:inline-block;
     margin-top:clamp(22px, 3vh, 34px);
@@ -376,50 +365,6 @@
     transition:background 0.2s;
   }
   .hero-cta:hover{background:#e0b85e;}
-  .hero-stats{
-    list-style:none;
-    margin-top:clamp(28px, 4.5vh, 50px);
-    display:grid;
-    grid-template-columns:repeat(5, minmax(0, 1fr));
-    gap:15px;
-    max-width:1420px;
-    width:72%;
-  }
-  .hero-stats li{
-    background:rgba(32,40,58,0.86);
-    border-top:3px solid var(--gold);
-    padding:16px 18px 18px;
-  }
-  .hero-stats .num{
-    display:block;
-    font-family:var(--heading-font);
-    font-size:clamp(30px, 2.5vw, 44px);
-    line-height:1;
-    letter-spacing:0.5px;
-    color:var(--gold-soft);
-  }
-  .hero-stats .tick{
-    display:block;
-    margin-top:6px;
-    font-family:var(--mono-font);
-    font-weight:500;
-    font-size:clamp(10px, 0.72vw, 12px);
-    letter-spacing:0.12em;
-    color:var(--gold-soft);
-    font-variant-numeric:tabular-nums;
-    white-space:nowrap;
-  }
-  .hero-stats .tick:empty{display:none;}
-  .hero-stats .tick + .lbl{margin-top:8px;}
-  .hero-stats .lbl{
-    display:block;
-    margin-top:12px;
-    font-family:var(--body-font);
-    font-size:clamp(12px, 0.85vw, 15px);
-    line-height:1.4;
-    color:#f1f3f7;
-  }
-
   /* INFO STRIP */
   .info-strip{
     position:relative;
@@ -618,6 +563,16 @@
     overflow:hidden;
   }
   .news-strip-item:hover .news-strip-title{text-decoration:underline;}
+  /* In the hero, under the screening button, where the stat boxes used to be. */
+  .hero .news-strip{
+    padding:0;
+    margin-top:clamp(28px, 4.5vh, 50px);
+    width:100%;
+  }
+  .hero .news-strip h3{text-shadow:0 2px 10px rgba(4,14,26,0.55);}
+  @media (max-width:1100px){
+    .hero .news-strip{width:100%;}
+  }
   .news-strip .btn{flex:0 0 auto;}
   .news-strip .btn:hover{background:var(--white);color:#081524;}
   @media (max-width:1100px){
@@ -681,7 +636,6 @@
     nav ul{gap:20px;}
     nav a{font-size:14px;}
     :root{--hero-inset:24px;--strip-pad:16px;}
-    .hero-stats{width:100%;}
     .info-strip{padding:var(--strip-pad) var(--strip-pad) 0;gap:12px;}
     .info-card{padding:26px 28px;}
     .info-card p{max-width:60%;}
@@ -692,7 +646,6 @@
     nav ul{flex-wrap:wrap;justify-content:flex-end;gap:10px 18px;}
     nav a{font-size:12px;white-space:nowrap;}
     .brand{max-width:220px;}
-    .hero-stats{grid-template-columns:repeat(3, minmax(0, 1fr));}
     .info-strip{grid-template-columns:1fr;gap:14px;padding:var(--strip-pad);}
     .info-card{min-height:190px;}
     .info-card p{max-width:55%;}
@@ -706,11 +659,7 @@
     .brand .title{font-size:26px;}
     .brand .subtitle{font-size:9px;letter-spacing:2px;}
     :root{--hero-inset:20px;--strip-pad:14px;}
-    .hero-stats{grid-template-columns:repeat(2, minmax(0, 1fr));gap:10px;}
-    .hero-stats li{padding:14px 14px 16px;}
-    .hero-stats li:last-child:nth-child(odd){grid-column:1 / -1;}
-    .hero-tag{letter-spacing:0.16em;font-size:13px;}
-    .hero-cta{display:block;text-align:center;padding:18px 16px;letter-spacing:0.12em;}
+    .hero-cta{display:block;align-self:stretch;text-align:center;padding:18px 16px;letter-spacing:0.12em;}
     .info-strip{padding:var(--strip-pad);}
     .news-strip-item{flex:0 1 calc(50% - 10px);}
     .info-card{min-height:200px;padding:22px 22px;}
@@ -750,7 +699,8 @@
         linear-gradient(180deg, rgba(8,32,72,0.35) 0%, rgba(8,32,72,0.55) 55%, var(--sky-blue) 100%);
     }
     .hero-content{padding:110px var(--hero-inset) 36px;}
-    .hero-intro{margin-top:40px;}
+    .hero-intro{margin-top:0;}
+    .hero-logo{width:min(84vw, 520px);margin-bottom:26px;}
     .info-strip{
       position:relative;
       grid-template-columns:1fr;
@@ -955,27 +905,25 @@
 
   <section class="hero">
     <div class="hero-content">
-      <div class="hero-title">
-        <h1>DARWIN 1942</h1>
-        <div class="hero-rule" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M12 1.5l2.6 7.1 7.4.3-5.8 4.7 2 7.3L12 16.7l-6.2 4.2 2-7.3L2 8.9l7.4-.3z"/></svg></div>
-        <p class="hero-tag">THE FORGOTTEN WAR THAT RESHAPED AUSTRALIA.</p>
-      </div>
+      <!-- The Darwin 1942 logo as used on the collateral: wordmark, Pacific Star,
+           tagline. One image, so it always matches the printed version. -->
+      <div class="hero-main">
+      <h1 class="hero-logo"><img src="images/logo-pacific-star.webp" width="1540" height="510" alt="Darwin 1942: The Forgotten War That Reshaped Australia"></h1>
       <div class="hero-intro">
         <h2>Coming to communities across Australia in 2027</h2>
-        <p><em>Darwin 1942</em> is a commemorative documentary that tells the stories of veterans who served on Australian soil during WW2.</p>
-        <p>Let us know if you are interested in hosting a screening of <em>Darwin 1942</em> in your local community.</p>
       </div>
       <a class="hero-cta" href="/register-interest#eoi-form">Register your interest in screening Darwin 1942</a>
-      <ul class="hero-stats">
-        <li><span class="num">97</span><span class="lbl">RSL sub-branches have expressed interest</span></li>
-        <li><span class="num">12+</span><span class="lbl">National and capital city stations covering the story</span></li>
-        <!-- Live countdown to 9:58 am Darwin time, 19 February 2027 (the moment
-             the first raid began in 1942). Script at the foot of the page; the box
-             is removed once that moment has passed. -->
-        <li id="stat-countdown"><span class="num" id="stat-days">90 DAYS</span><span class="tick" id="stat-tick" aria-hidden="true"></span><span class="lbl">Until the 85th anniversary of the bombing of Darwin</span></li>
-        <li><span class="num">14,000</span><span class="lbl">Schools we aim to reach</span></li>
-        <li><span class="num">100,000+</span><span class="lbl">Community groups we aim to introduce to Darwin 1942</span></li>
-      </ul>
+      </div>
+
+      <!-- NEWS AND MEDIA — filled at page load from the client's Google Sheet (the same
+           one behind /news-and-media/). Hidden until there is something to show. -->
+      <section class="news-strip" id="news-strip" aria-label="News and media" hidden>
+        <div class="news-strip-head">
+          <h3>NEWS AND MEDIA</h3>
+          <a class="btn" href="/news-and-media/">ALL COVERAGE</a>
+        </div>
+        <div class="news-strip-items" id="news-strip-items"></div>
+      </section>
     </div>
   </section>
 
@@ -994,16 +942,6 @@
         <div class="featured-logos">
           <!-- <img src="images/featured/example-masthead.png" alt="Example Masthead"> -->
         </div>
-      </section>
-
-      <!-- NEWS AND MEDIA — filled at page load from the client's Google Sheet (the same
-           one behind /news-and-media/). Hidden until there is something to show. -->
-      <section class="news-strip" id="news-strip" aria-label="News and media" hidden>
-        <div class="news-strip-head">
-          <h3>NEWS AND MEDIA</h3>
-          <a class="btn" href="/news-and-media/">ALL COVERAGE</a>
-        </div>
-        <div class="news-strip-items" id="news-strip-items"></div>
       </section>
 
     <div class="info-card">
@@ -1051,32 +989,6 @@
     });
   }
 })();
-</script>
-<script>
-/* Live countdown to the 85th anniversary: 9:58 am Darwin time (ACST, UTC+9:30)
-   on 19 February 2027, when the first raid began in 1942. Days in the big
-   figure, hours/minutes/seconds ticking under it. */
-(function(){
-  var box = document.getElementById('stat-countdown');
-  var daysEl = document.getElementById('stat-days');
-  var tickEl = document.getElementById('stat-tick');
-  if (!box || !daysEl || !tickEl) return;
-  var target = Date.UTC(2027, 1, 19, 0, 28); // 09:58 ACST = 00:28 UTC
-  function pad(n){ return (n < 10 ? '0' : '') + n; }
-  function draw(){
-    var left = Math.floor((target - Date.now()) / 1000);
-    if (left <= 0) { clearInterval(timer); box.remove(); return; }
-    var d = Math.floor(left / 86400);
-    var h = Math.floor(left % 86400 / 3600);
-    var m = Math.floor(left % 3600 / 60);
-    var sec = left % 60;
-    daysEl.textContent = d + (d === 1 ? ' DAY' : ' DAYS');
-    tickEl.textContent = pad(h) + ' HRS ' + pad(m) + ' MIN ' + pad(sec) + ' SEC';
-  }
-  var timer = setInterval(draw, 1000);
-  draw();
-})();
-
 </script>
 <script src="assets/news-feed.js"></script>
 <script>
